@@ -12,15 +12,18 @@ EPSILON = sys.float_info.epsilon # typical floating-point calculation error
 
 from numpy import pi, linspace, inf, array
 from scipy.interpolate import interp1d
+
+# import matplotlib
+# matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 
 def I_mat(n1, n2, pol='u', th_0=0):
     # transfer matrix at an interface
     # TODO allow for different polarizations and angles
-    if th_0 == 0: # no difference between polarizations for normal incidence
-        r = (n1 - n2) / (n1 + n2)
-        t = (2 * n1) / (n1 + n2)
+    # if th_0 == 0: # no difference between polarizations for normal incidence
+    r = (n1 - n2) / (n1 + n2)
+    t = (2 * n1) / (n1 + n2)
 
     # elif pol == 'u':
     # elif pol == 'p':
@@ -135,7 +138,7 @@ def TransferMatrix(d_list, n_list, lam_vac, th_0, pol, x_step=1):
         absorption[layer] = (4 * np.pi * np.imag(n[layer])) / (lam_vac * 1.0e-7)
 
     return {'E_square': E_square, 'absorption': absorption, 'x_pos': x_pos, # output functions of position
-            'R': R, 'T': T,  # output overall properties of structure
+            'Reflection': Reflection, 'T': T,  # output overall properties of structure
             'd_list': d_list, 'th_0': th_0, 'n_list': n_list, 'lam_vac': lam_vac, 'pol': pol, # input structure
             }
 
@@ -146,12 +149,15 @@ class LifetimeTmm:
 
     Input the structure of the device and material refractive indices and then begin the fun!
     """
-    def __init__(self, d_list, n_list):
+    def __init__(self, d_list, n_list, x_step=1):
         """
         Initilise with the structure of the material to be simulated
         """
         self.d_list = d_list
         self.n_list = n_list
+
+        # TODO problem if one of the thicknesses in d_list is inf
+        self.x_pos = np.arange((x_step / 2.0), sum(d_list), x_step)
 
     def __call__(self, lam_vac, th_0, pol='u', x_step=1):
         """
@@ -159,6 +165,21 @@ class LifetimeTmm:
         the angle of incidence, polarization and resolution in x
         """
         return TransferMatrix(self.d_list, self.n_list, lam_vac, th_0, pol, x_step)
+
+    def reverse(self, lam_vac, th_0, pol='u', x_step=1):
+        """
+        evaluate the transfer matrix with light incident on the last layer (i.e. flip structure)
+        """
+        d_list_rev = self.d_list[::-1]
+        n_list_rev = self.n_list[::-1]
+
+        return TransferMatrix(d_list_rev, n_list_rev, lam_vac, th_0, pol, x_step)
+
+    def fluorescence(self):
+        """
+        Calculate for all wavelengths (weighted) and angles
+        """
+        pass
 
     def varyAngle(self, th_list):
         pass
