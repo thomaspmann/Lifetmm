@@ -36,13 +36,5 @@
     <ConfirmationsSetting value="0" id="Add" />
     <ConfirmationsSetting value="0" id="Remove" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.4.3 (C:\Users\mn14tm\AppData\Local\Continuum\Anaconda3\python.exe)" project-jdk-type="Python SDK" />
-  <component name="PyConsoleOptionsProvider">
-    <option name="myPythonConsoleState">
-      <console-settings sdk-home="C:\Users\mn14tm\AppData\Local\Continuum\Anaconda3\python.exe" working-directory="$PROJECT_DIR$/../../Simulation Codes">
-        <option name="mySdkHome" value="C:\Users\mn14tm\AppData\Local\Continuum\Anaconda3\python.exe" />
-        <option name="myWorkingDirectory" value="$PROJECT_DIR$/../../Simulation Codes" />
-      </console-settings>
-    </option>
-  </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.4.3 (~/anaconda/bin/python)" project-jdk-type="Python SDK" />
 </project>
