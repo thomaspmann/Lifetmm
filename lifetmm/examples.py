@@ -38,13 +38,19 @@ def sample1():
 def sample2():
     """
     sum E field over incident theta and wavelengths
+
+    Structure: Glass->Erbium->Refractive Index
+    Compare to Refractive Index -> Erb -> Glass (reversed)
+
+    Polman uses latter and just 2 layers Ref. Index->glass
+    then sums over locations of Er in glass.
     """
 
 # ---------------- SET UP DEVICE STRUCTURE ----------------
 # list of layer thicknesses in nm
-d_list = [0, 100, 300, 200, 100]
+d_list = [0, 1000, 1000,0]
 # list of refractive indices
-n_list = [1, 1.6, 1, 1.4+0.3j, 1]
+n_list = [1, 3, 1.5,1]
 # Initialise structure of device
 sample_T1 = LifetimeTmm(d_list, n_list)
 # ----------------------- END -----------------------------
@@ -64,8 +70,8 @@ data = np.array([0.]*len(sample_T1.x_pos))
 for lambda_vac in lambda_list:
     for th in th_0:
         data += sample_T1(lambda_vac, th)['E_square']
-        x_pos = sample_T1(lambda_vac, th)['x_pos']
 data /= (len(lambda_list)*len(th_0))  # Normalise again
+x_pos = sample_T1.x_pos
 # ----------------------- END -----------------------------
 
 
@@ -76,6 +82,22 @@ plt.xlabel('Position in Device (nm)')
 plt.ylabel('Normalized |E|$^2$Intensity')
 plt.title('E-Field Intensity in Device')
 # ----------------------- END -----------------------------
+
+# --------------------- DO REVERSE ------------------------
+data_rev = np.array([0.]*len(sample_T1.x_pos))
+for lambda_vac in lambda_list:
+    for th in th_0:
+        data_rev += sample_T1.reverse(lambda_vac, th)['E_square']
+data_rev /= (len(lambda_list)*len(th_0))  # Normalise again
+
+
+plt.figure()
+plt.plot(x_pos, data_rev)
+plt.xlabel('Position in Device (nm)')
+plt.ylabel('Normalized |E|$^2$Intensity')
+plt.title('E-Field Intensity in Device')
+# ----------------------- END -----------------------------
+
 
 def sample3():
     """
