@@ -69,19 +69,19 @@
 # correspond to the csv filenames in the 'matDir' ignoring the material prefix.
 # example : you have a material file named 'nk_P3HT.csv' the layer name would be 'P3HT'
 # Layer thicknesses are in nm.
-layers = ['SiO2', 'Er_Layer', 'Air', 'Epidermis', 'Dermis']
-thicknesses = [0, 1000, 100, 300, 0 ]     # in nm
+layers = ['SiO2', 'Er_Layer', 'Dermis']
+thicknesses = [0, 1000, 1000]     # in nm
 
 plotGeneration = False  # Make generation plot , True/False
 activeLayer = 1  # indexing starts from 0
 
-lambda_start = 1400  # build a wavelength range to calculate over, starting wavelength (nm)
-lambda_stop = 1600  # final wavelength (nm)
-lambda_step = 1.0  # wavelength step size
+lambda_start = 1520  # build a wavelength range to calculate over, starting wavelength (nm)
+lambda_stop = 1580  # final wavelength (nm)
+lambda_step = 10.0  # wavelength step size
 
-plotWavelengths = [1400, 1500, 1600]  # Wavelengths to plot |E|^2 for, in nm.
+plotWavelengths = [1520,1540,1580]  # Wavelengths to plot |E|^2 for, in nm.
 
-x_step = 10.0  # grid spacing of device cross section simulation in nm (default is 1.0)
+x_step = 1.0  # grid spacing of device cross section simulation in nm (default is 1.0)
 # this is where the n/k optical constants for each material are stored.
 # file format is : CSV (comma separated values)
 # each materials file is prefixed with 'nk_' and the first 'matHeader' number of lines are skipped.
@@ -92,8 +92,8 @@ matHeader = 1  # number of lines in header
 ##
 ## START OF CODE. DO NOT EDIT FURTHER.
 ##
-import matplotlib
-matplotlib.use('TkAgg') # Use for pycharm to display plots
+# import matplotlib
+# matplotlib.use('TkAgg') # Use for pycharm to display plots
 
 from os.path import join, isfile
 from scipy.interpolate import interp1d
@@ -308,9 +308,9 @@ fig2.show()
 for ind, wvln in enumerate(plotWavelengths):
     # get index
     nind = np.where(lambdas == wvln)[0]
-    print('At %d nm, absorption in layer %d = %f' % (wvln, activeLayer, Absorption[activeLayer,nind]))
-    print('Dermis refractive index real = %f' % n[4, nind].real)
-    print('Thickness of Er = %d nm' % t[activeLayer])
+    # print('At %d nm, absorption in layer %d = %f' % (wvln, activeLayer, Absorption[activeLayer,nind]))
+    # print('Dermis refractive index real = %f' % n[4, nind].real)
+    # print('Thickness of Er = %d nm' % t[activeLayer])
 
 if plotGeneration:
     # load and interpolate AM1.5G Data (mW/cm2nm)

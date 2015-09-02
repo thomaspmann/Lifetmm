@@ -2,7 +2,7 @@ from __future__ import division, print_function, absolute_import
 
 from .lifetmm_core import *
 
-from numpy import pi, linspace, inf, array
+from numpy import pi, linspace, inf, array, sum
 from scipy.interpolate import interp1d
 
 import matplotlib.pyplot as plt
@@ -10,6 +10,10 @@ import matplotlib.pyplot as plt
 # To run a sample use the following in python console:
 
 # import lifetmm.examples; lifetmm.examples.sample1()
+
+# "5 * degree" is 5 degrees expressed in radians
+# "1.2 / degree" is 1.2 radians expressed in degrees
+degree = pi / 180
 
 def test():
     loadSamples('T1')
@@ -26,11 +30,9 @@ def sample1():
     # list of wavelengths
     lambda_vac = 1550  # in nm
     # incoming light angle
-    th_0 = 0
+    th_0 = 30
     # polarization of incoming light. 's', 'p' or 'u'
-    # TODO rewrite function to allow for unpolarised light input
     pol = 's'
-
     data = TransferMatrix(d_list, n_list, lambda_vac, th_0, pol)
     # ----------------------- END -----------------------------
 
@@ -39,13 +41,6 @@ def sample1():
     d_list = [0, 1000, 1000]
     # list of refractive indices
     n_list = [1, 1.5, 1]
-    # list of wavelengths
-    lambda_vac = 1550  # in nm
-    # incoming light angle
-    th_0 = 0
-    # polarization of incoming light. 's', 'p' or 'u'
-    # TODO rewrite function to allow for unpolarised light input
-    pol = 's'
 
     data_bulk = TransferMatrix(d_list, n_list, lambda_vac, th_0, pol)
     # ----------------------- END -----------------------------
@@ -132,22 +127,39 @@ def sample3():
     # Set up sample structure and materials
     sample_T1 = LifetimeTmm(d_list, n_list)
 
-def samplePol():
-    # list of layer thicknesses in nm
-    d_list = [inf, 100, 100]
-    # list of refractive indices
-    n_list = [1, 1, 1.5]
-    # list of wavelengths to evaluate
-    lambda_list = 1550 # in nm
-    # incoming light angle (optional)
-    th_0 = 0
 
-    sample_T1 = LifetimeTmm(d_list, n_list)
-    data = sample_T1(lambda_list, th_0)
+# def samplePol():
 
-    plt.figure()
-    plt.plot(data['x_pos'], data['E_square'])
-    plt.xlabel('Position in Device (nm)')
-    plt.ylabel('Normalized |E|$^2$Intensity')
-    plt.title('E-Field Intensity in Device')
+# Loop parameters
+# list of wavelengths to evaluate
+lambda_list = [1550] # in nm
+# incoming light angle
+th_0 = linspace(0, 90, num=90+1) # in degrees (convert in function argument)
+
+# ------------- DO CALCULATIONS  -----------------
+# list of layer thicknesses in nm
+d_list = [0, 1000, 1000, 0]
+# list of refractive indices
+n_list_med = [1, 1.5, 3, 3]
+n_list_bulk = [1, 1.5, 1.5, 1.5]
+data_s = np.array([0.]*sum(d_list))
+data_p = np.array([0.]*sum(d_list))
+for lambda_vac in lambda_list:
+    for th in th_0:
+        a = TransferMatrix(d_list, n_list_med, lambda_vac, th * degree, 's')['E_square']
+        b = TransferMatrix(d_list, n_list_bulk, lambda_vac, th * degree, 's')['E_square']
+        data_s += (a/b)
+        c = TransferMatrix(d_list, n_list_med, lambda_vac, th * degree, 'p')['E_square']
+        d = TransferMatrix(d_list, n_list_bulk, lambda_vac, th * degree, 'p')['E_square']
+        data_p += (c/d)
+data_s /= (len(lambda_list)*len(th_0))  # Normalise again - average over loops
+data_p /= (len(lambda_list)*len(th_0))  # Normalise again
+data = (data_s + data_p) / 2  # Take average
+# ----------------------- END -----------------------------
+
+plt.figure()
+plt.plot(data)
+plt.xlabel('Position in Device (nm)')
+plt.ylabel('Normalized |E|$^2$Intensity')
+plt.title('E-Field Intensity in Device')
 

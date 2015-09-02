@@ -27,6 +27,17 @@ except ImportError:
 # "1.2 / degree" is 1.2 radians expressed in degrees
 degree = pi / 180
 
+def pol():
+    d_list = [inf, 1000, 1000, inf]
+    n_list = [1, 1.5, 3, 3]
+    lambda_vac = 1550 # in nm
+    th_0 = linspace(0, pi, num=90+1)
+    for th in th_0:
+        a = coh_tmm('s', n_list, d_list, th*degree, lambda_vac)['T']
+        b = coh_tmm('s', n_list, d_list, th*degree, lambda_vac)['T']
+        data = a/b
+
+    position_resolved(layer=1, dist=100, coh_tmm_data=a)
 
 def sample1():
     """
