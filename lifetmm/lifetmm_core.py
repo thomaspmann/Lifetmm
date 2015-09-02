@@ -6,9 +6,11 @@ from numpy import cos, inf, zeros, exp, conj, nan, isnan
 
 import scipy as sp
 import numpy as np
+from os.path import join, isfile
 
-import sys
-EPSILON = sys.float_info.epsilon # typical floating-point calculation error
+# TODO needed?
+# import sys
+# EPSILON = sys.float_info.epsilon # typical floating-point calculation error
 
 from numpy import pi, linspace, inf, array
 from scipy.interpolate import interp1d
@@ -18,7 +20,35 @@ from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 
 
+def loadSamples(matName='*',  matDir='samples', matHeader=22):
+    """
+    Load the spectrum of the samples. Data file in form of
+    :param matName: name of the sample to load data from
+    :param matDir: Directory name containing the data files to be loaded
+    :return:
+    """
+    # TODO change so that matDir is a parameter and it auto loads all files + option for single import
+    baseDir = '/Users/Thomas/Dropbox/PhD/Programming/Lifetmm/lifetmm'
+    fname = join( baseDir, matDir, '%s.txt' % matName)
+
+    if not isfile(fname):
+        raise ValueError('Sample not found.')
+
+    spectrumData = np.genfromtxt(fname, delimiter=',', dtype=float, skip_header=matHeader)
+    wavelength = spectrumData[:, 0]
+    intensity = spectrumData[:, 1]
+
+    return wavelength, intensity
+
 def I_mat(n1, n2, pol='u', th_0=0):
+    """
+    Calculates the interference matrix between two layers.
+    :param n1: First layer refractive index
+    :param n2: Second layer refractive index
+    :param pol: Polarisation of incoming light ('u', 's' or 'p')
+    :param th_0: Angle of incidence of light (0 for normal, pi/2 for glancing)
+    :return: I-matrix
+    """
     # transfer matrix at an interface
     # TODO allow for different polarizations and angles
     # if th_0 == 0: # no difference between polarizations for normal incidence
@@ -29,31 +59,31 @@ def I_mat(n1, n2, pol='u', th_0=0):
     # elif pol == 'p':
     # elif pol == 's':
 
-    ret = np.array([[1, r], [r, 1]], dtype=complex)
-    ret /= t
-    return ret
+    return (1/t) * np.array([[1, r], [r, 1]], dtype=complex)
 
 
 def L_mat(n, d, l):
-    # propagation matrix
-    # n = complex dielectric constant
-    # d = thickness
-    # l = wavelength
-    xi = (2 * np.pi * d * n) / l
-    L = np.array([[np.exp(complex(0, -1.0 * xi)), 0], [0, np.exp(complex(0, xi))]])
-    return L
-
-
-def TransferMatrix(d_list, n_list, lam_vac, th_0, pol, x_step=1):
     """
-    :param pol: polarisation of incoming light. Either "s", "p" or "u".
-    :param n_list: list of refractive indices (can be complex)
-    :param d_list: list of thicknesses
+    Calculates the propagation.
+    :param n: complex dielectric constant
+    :param d: thickness
+    :param l: wavelength
+    :return:  L-matrix
+    """
+    xi = (2 * np.pi * d * n) / l
+    return np.array([[np.exp(complex(0, -1.0 * xi)), 0], [0, np.exp(complex(0, xi))]])
+
+
+def TransferMatrix(d_list, n_list, lam_vac, th_0, pol='u', x_step=1):
+    """
+    Evaluate the transfer matrix over the entire structure.
+    :param pol: polarisation of incoming light ('u', 's' or 'p')
+    :param n_list: list of refractive indices for each layer (can be complex)
+    :param d_list: list of thicknesses for each layer
     :param th_0: angle of incidence (0 for normal, pi/2 for glancing)
     :param lam_vac: vacuum wavelength of light
-    :return: many things
+    :return: Dictionary of all input and output params related to structure
     """
-
     # convert lists to numpy arrays if they're not already.
     n_list = np.array(n_list)
     d_list = np.array(d_list, dtype=float)
@@ -83,7 +113,7 @@ def TransferMatrix(d_list, n_list, lam_vac, th_0, pol, x_step=1):
     R_glass = abs((1 - n[0]) / (1 + n[0])) ** 2
 
     # calculate transfer marices, and field at each wavelength and position
-    d_list[0] = 0                                          # Thickness of layer light is originating from not important
+    d_list[0] = 0               # Thickness of layer light is originating from not important
     d_cumsum = np.cumsum(d_list)                              # Start position of each layer
     x_pos = np.arange((x_step / 2.0), sum(d_list), x_step)    # x positions to evaluate E field at
     # get x_mat (specifies what layer number the corresponding point in x_pos is in):
@@ -137,16 +167,15 @@ def TransferMatrix(d_list, n_list, lam_vac, th_0, pol, x_step=1):
     for layer in range(1, num_layers):
         absorption[layer] = (4 * np.pi * np.imag(n[layer])) / (lam_vac * 1.0e-7)
 
-    return {'E_square': E_square, 'absorption': absorption, 'x_pos': x_pos, # output functions of position
+    return {'E_square': E_square, 'absorption': absorption, 'x_pos': x_pos,  # output functions of position
             'Reflection': Reflection, 'T': T,  # output overall properties of structure
-            'd_list': d_list, 'th_0': th_0, 'n_list': n_list, 'lam_vac': lam_vac, 'pol': pol, # input structure
+            'd_list': d_list, 'th_0': th_0, 'n_list': n_list, 'lam_vac': lam_vac, 'pol': pol,  # input structure
             }
 
 
 class LifetimeTmm:
     """
     Putting it all together for easy use.
-
     Input the structure of the device and material refractive indices and then begin the fun!
     """
     def __init__(self, d_list, n_list, x_step=1):
