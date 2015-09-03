@@ -23,7 +23,8 @@ def q_j(nj, n0, th_0):
     :param th_0: Angle of incidence in radians
     :return:
     """
-    return np.sqrt(nj**2 + n0**2 * np.sin(th_0))
+
+    return np.sqrt(nj**2 - n0**2 * np.sin(th_0)**2)
 
 
 def I_mat(n1, n2, n0, pol, th_0):
@@ -37,7 +38,6 @@ def I_mat(n1, n2, n0, pol, th_0):
     :return: I-matrix
     """
     # transfer matrix at an interface
-
     q1 = q_j(n1, n0, th_0)
     q2 = q_j(n2, n0, th_0)
 
@@ -56,6 +56,10 @@ def I_mat(n1, n2, n0, pol, th_0):
     else:
         raise ValueError("Polarisation must be 's' or 'p'")
 
+    if t == 0:
+        raise ValueError('Transmission is zero.')
+        return 0
+
     return (1/t) * np.array([[1, r], [r, 1]], dtype=complex)
 
 
@@ -69,9 +73,9 @@ def L_mat(n, d, lam_vac, n0, th_0):
     """
 
     eps = (2 * np.pi * q_j(n, n0, th_0)) / lam_vac
+
     return np.array([[np.exp(complex(0, -1.0 * eps * d)), 0],
                      [0, np.exp(complex(0, eps * d))]])
-
 
 def TransferMatrix(d_list, n_list, lam_vac, th_0, pol, x_step=1, reverse=False, glass=False):
     """
@@ -97,9 +101,9 @@ def TransferMatrix(d_list, n_list, lam_vac, th_0, pol, x_step=1, reverse=False, 
     if type(x_step) != int:
         raise ValueError('x_step must be an integer otherwise. Reduce SI unit'
                          'inputs for thicknesses and wavelengths for greater resolution ')
-    # TODO necessary?
-    # if (d_list[0] != inf) or (d_list[-1] != inf):
-    #     raise ValueError('d_list must start and end with inf!')
+    if th_0 >= 90 or th_0 <= -90:
+        raise ValueError('The light is not incident on the structure. Check input theta '
+                         '(0 <= theta < 90')
 
     # Flip structure if the optional argument 'reverse' is true
     if reverse:
@@ -114,13 +118,16 @@ def TransferMatrix(d_list, n_list, lam_vac, th_0, pol, x_step=1, reverse=False, 
     d_list[0] = 0               # Thickness of layer light is originating from not important
     d_cumsum = np.cumsum(d_list)                              # Start position of each layer
     x_pos = np.arange((x_step / 2.0), sum(d_list), x_step)    # x positions to evaluate E field at
+
     # get x_mat (specifies what layer number the corresponding point in x_pos is in):
     comp1 = np.kron(np.ones((num_layers, 1)), x_pos)
     comp2 = np.transpose(np.kron(np.ones((len(x_pos), 1)), d_cumsum))
+
     x_mat = sum(comp1 > comp2, 0)  # TODO might need to get changed to better match python indices - check
 
     # calculate the total system transfer matrix S
     S = I_mat(n[0], n[1], n0, pol, th_0)
+
     for layer in range(1, num_layers - 1):
         mL = L_mat(n[layer], d_list[layer], lam_vac, n0, th_0)
         mI = I_mat(n[layer], n[layer + 1], n0, pol, th_0)
