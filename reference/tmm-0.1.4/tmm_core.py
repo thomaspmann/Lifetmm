@@ -406,8 +406,8 @@ def find_in_structure_with_inf(d_list,dist):
 
     z is the distance into that layer.
     """
-    [layer,dist] = find_in_structure(d_list[1:-1],dist)
-    return [layer+1,dist]
+    [layer, dist] = find_in_structure(d_list[1:-1], dist)
+    return [layer+1, dist]
 
 def layer_starts(d_list):
     """

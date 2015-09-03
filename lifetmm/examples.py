@@ -112,54 +112,75 @@ def sample2():
 
 
 def sample3():
-    """
-    Example of varying seeing how the E field varies with wavelength
-    """
-
-    # list of layer thicknesses in nm
-    d_list = [inf,100,300,200,100]
-    # list of refractive indices
-    n_list = [1,1.6,1,1.4+0.3j,1]
-
+    # Loop parameters
     # list of wavelengths to evaluate
-    lambda_list = [600, 1550] #in nm
+    lambda_list = [1550] # in nm
+    # incoming light angle
+    th_0 = linspace(0, 90, num=90+1) # in degrees (convert in function argument)
 
-    # Set up sample structure and materials
-    sample_T1 = LifetimeTmm(d_list, n_list)
+    # ------------- DO CALCULATIONS  -----------------
+    # list of layer thicknesses in nm
+    d_list = [0, 1000, 1000, 0]
+    # list of refractive indices
+    n_list = [1, 1.5, 3, 3]
+
+    data_s = np.array([0.]*len(d_list))
+    data_p = np.array([0.]*len(d_list))
+    data = np.array([0.]*len(d_list))
+    store = []
+    storen = []
+    for n_active in np.linspace(1, 3, num=20):
+        for lambda_vac in lambda_list:
+            for th in th_0:
+                n_list[2] = n_active
+                data_s += TransferMatrix(d_list, n_list, lambda_vac, th * degree, 's')['E_avg']
+                data_p += TransferMatrix(d_list, n_list, lambda_vac, th * degree, 'p')['E_avg']
+                data += (data_s + data_p) / 2
+                # TODO add in normalisation
+        data /= (len(lambda_list)*len(th_0))  # Normalise again - divide by number of loops
+        store.append(data[1])
+        storen.append(n_active)
+    # ----------------------- END -----------------------------
+
+    plt.figure()
+    plt.plot(storen, store, 'o-')
+    plt.xlabel('Refractive index of medium')
+    plt.ylabel('Average |E|$^2$Intensity in the erbium layer per unit depth')
+    plt.title('E-Field Intensity in Erbium Layer due to change in n of sensing medium')
 
 
-# def samplePol():
+def samplePol():
 
-# Loop parameters
-# list of wavelengths to evaluate
-lambda_list = [1550] # in nm
-# incoming light angle
-th_0 = linspace(0, 90, num=90+1) # in degrees (convert in function argument)
+    # Loop parameters
+    # list of wavelengths to evaluate
+    lambda_list = [1550] # in nm
+    # incoming light angle
+    th_0 = linspace(0, 90, num=90+1) # in degrees (convert in function argument)
 
-# ------------- DO CALCULATIONS  -----------------
-# list of layer thicknesses in nm
-d_list = [0, 1000, 1000, 0]
-# list of refractive indices
-n_list_med = [1, 1.5, 3, 3]
-n_list_bulk = [1, 1.5, 1.5, 1.5]
-data_s = np.array([0.]*sum(d_list))
-data_p = np.array([0.]*sum(d_list))
-for lambda_vac in lambda_list:
-    for th in th_0:
-        a = TransferMatrix(d_list, n_list_med, lambda_vac, th * degree, 's')['E_square']
-        b = TransferMatrix(d_list, n_list_bulk, lambda_vac, th * degree, 's')['E_square']
-        data_s += (a/b)
-        c = TransferMatrix(d_list, n_list_med, lambda_vac, th * degree, 'p')['E_square']
-        d = TransferMatrix(d_list, n_list_bulk, lambda_vac, th * degree, 'p')['E_square']
-        data_p += (c/d)
-data_s /= (len(lambda_list)*len(th_0))  # Normalise again - average over loops
-data_p /= (len(lambda_list)*len(th_0))  # Normalise again
-data = (data_s + data_p) / 2  # Take average
-# ----------------------- END -----------------------------
+    # ------------- DO CALCULATIONS  -----------------
+    # list of layer thicknesses in nm
+    d_list = [0, 1000, 1000, 0]
+    # list of refractive indices
+    n_list_med = [1, 1.5, 3, 3]
+    n_list_bulk = [1, 1.5, 1.5, 1.5]
+    data_s = np.array([0.]*sum(d_list))
+    data_p = np.array([0.]*sum(d_list))
+    for lambda_vac in lambda_list:
+        for th in th_0:
+            a = TransferMatrix(d_list, n_list_med, lambda_vac, th * degree, 's')['E_square']
+            b = TransferMatrix(d_list, n_list_bulk, lambda_vac, th * degree, 's')['E_square']
+            data_s += (a/b)
+            c = TransferMatrix(d_list, n_list_med, lambda_vac, th * degree, 'p')['E_square']
+            d = TransferMatrix(d_list, n_list_bulk, lambda_vac, th * degree, 'p')['E_square']
+            data_p += (c/d)
+    data_s /= (len(lambda_list)*len(th_0))  # Normalise again - average over loops
+    data_p /= (len(lambda_list)*len(th_0))  # Normalise again
+    data = (data_s + data_p) / 2  # Take average for unpolarised light
+    # ----------------------- END -----------------------------
 
-plt.figure()
-plt.plot(data)
-plt.xlabel('Position in Device (nm)')
-plt.ylabel('Normalized |E|$^2$Intensity')
-plt.title('E-Field Intensity in Device')
+    plt.figure()
+    plt.plot(data)
+    plt.xlabel('Position in Device (nm)')
+    plt.ylabel('Normalized |E|$^2$Intensity')
+    plt.title('E-Field Intensity in Device')
 

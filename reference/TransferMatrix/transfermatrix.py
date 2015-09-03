@@ -79,7 +79,7 @@ lambda_start = 1520  # build a wavelength range to calculate over, starting wave
 lambda_stop = 1580  # final wavelength (nm)
 lambda_step = 10.0  # wavelength step size
 
-plotWavelengths = [1520,1540,1580]  # Wavelengths to plot |E|^2 for, in nm.
+plotWavelengths = [1520, 1540, 1580]  # Wavelengths to plot |E|^2 for, in nm.
 
 x_step = 1.0  # grid spacing of device cross section simulation in nm (default is 1.0)
 # this is where the n/k optical constants for each material are stored.

@@ -6,11 +6,6 @@ from numpy import cos, inf, zeros, exp, conj, nan, isnan
 
 import scipy as sp
 import numpy as np
-from os.path import join, isfile
-
-# TODO needed?
-# import sys
-# EPSILON = sys.float_info.epsilon # typical floating-point calculation error
 
 from numpy import pi, linspace, inf, array
 from scipy.interpolate import interp1d
@@ -18,28 +13,6 @@ from scipy.interpolate import interp1d
 # import matplotlib
 # matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
-
-
-def loadSamples(matName='*',  matDir='samples', matHeader=22):
-    """
-    Load the spectrum of the samples. Data file in form of
-    :param matName: name of the sample to load data from
-    :param matDir: Directory name containing the data files to be loaded
-    :return:
-    """
-    # TODO change so that matDir is a parameter and it auto loads all files + option for single import
-    baseDir = '/Users/Thomas/Dropbox/PhD/Programming/Lifetmm/lifetmm'
-    # baseDir ='M:\PhD\SimulationCodes\Lifetmm\lifetmm'
-    fname = join( baseDir, matDir, '%s.txt' % matName)
-
-    if not isfile(fname):
-        raise ValueError('Sample not found.')
-
-    spectrumData = np.genfromtxt(fname, delimiter=',', dtype=float, skip_header=matHeader)
-    wavelength = spectrumData[:, 0]
-    intensity = spectrumData[:, 1]
-
-    return wavelength, intensity
 
 
 def q_j(nj, n0, th_0):
@@ -100,7 +73,7 @@ def L_mat(n, d, lam_vac, n0, th_0):
                      [0, np.exp(complex(0, eps * d))]])
 
 
-def TransferMatrix(d_list, n_list, lam_vac, th_0, pol, x_step=1):
+def TransferMatrix(d_list, n_list, lam_vac, th_0, pol, x_step=1, reverse=False, glass=False):
     """
     Evaluate the transfer matrix over the entire structure.
     :param pol: polarisation of incoming light ('u', 's' or 'p')
@@ -111,7 +84,7 @@ def TransferMatrix(d_list, n_list, lam_vac, th_0, pol, x_step=1):
     :return: Dictionary of all input and output params related to structure
     """
     # convert lists to numpy arrays if they're not already.
-    n_list = np.array(n_list)
+    n_list = np.array(n_list, dtype=complex)
     d_list = np.array(d_list, dtype=float)
 
     # input tests
@@ -124,22 +97,18 @@ def TransferMatrix(d_list, n_list, lam_vac, th_0, pol, x_step=1):
     if type(x_step) != int:
         raise ValueError('x_step must be an integer otherwise. Reduce SI unit'
                          'inputs for thicknesses and wavelengths for greater resolution ')
-    # TODO what does this do/are these necessary?
+    # TODO necessary?
     # if (d_list[0] != inf) or (d_list[-1] != inf):
     #     raise ValueError('d_list must start and end with inf!')
-    # if abs((n_list[0]*np.sin(th_0)).imag) > 100*EPSILON:
-    #     raise ValueError('Error in n0 or th0!')
+
+    # Flip structure if the optional argument 'reverse' is true
+    if reverse:
+        d_list = d_list[::-1]
+        n_list = n_list[::-1]
 
     num_layers = d_list.size
-
-    # calculate incoherent power transmission through thick superstrate to coherent layers (air - glass)
-    # See Griffiths "Intro to Electrodynamics 3rd Ed. Eq. 9.86 & 9.87
-    # If first layer in n_list is air (n=1) then these don't do anything
-    # TODO change for polarized light/remove completely? Will affect when doing flipped structure calc.
     n = n_list
     n0 = n[0]
-    T_glass = abs((4.0 * 1.0 * n[0]) / ((1 + n[0]) ** 2))
-    R_glass = abs((1 - n[0]) / (1 + n[0])) ** 2
 
     # calculate transfer marices, and field at each wavelength and position
     d_list[0] = 0               # Thickness of layer light is originating from not important
@@ -150,22 +119,33 @@ def TransferMatrix(d_list, n_list, lam_vac, th_0, pol, x_step=1):
     comp2 = np.transpose(np.kron(np.ones((len(x_pos), 1)), d_cumsum))
     x_mat = sum(comp1 > comp2, 0)  # TODO might need to get changed to better match python indices - check
 
-    # calculate the transfer matrices for incoherent reflection/transmission at the first interface
+    # calculate the total system transfer matrix S
     S = I_mat(n[0], n[1], n0, pol, th_0)
     for layer in range(1, num_layers - 1):
         mL = L_mat(n[layer], d_list[layer], lam_vac, n0, th_0)
         mI = I_mat(n[layer], n[layer + 1], n0, pol, th_0)
         S = np.asarray(np.mat(S) * np.mat(mL) * np.mat(mI))
 
-    # JAP Vol 86 p.487 Eq 9 Power Reflection from layers other than superstrate
+    # JAP Vol 86 p.487 Eq 9: Power Reflection
     R = abs(S[1, 0] / S[0, 0]) ** 2
-    T_jap = abs(1 / S[0, 0]) ** 2 # note this is incorrect https://en.wikipedia.org/wiki/Fresnel_equations
-    # Transmission of field through glass superstrate (to the multilayered stack) Griffiths 9.85
-    #  + multiple reflection geometric series
-    T = abs((2 / (1 + n[0]))) / np.sqrt(1 - R_glass * R)
+    T = abs(1 / S[0, 0]) ** 2  # note this is incorrect https://en.wikipedia.org/wiki/Fresnel_equations
 
-    # calculate all other transfer matrices
+    # calculate incoherent power transmission through thick superstrate to coherent layers (air - glass)
+    # See Griffiths "Intro to Electrodynamics 3rd Ed. Eq. 9.86 & 9.87
+    # If first layer in n_list is air (n=1) then these don't do anything
+    if glass and not reverse:
+        T_glass = abs((4.0 * 1.0 * n[0]) / ((1 + n[0]) ** 2))
+        R_glass = abs((1 - n[0]) / (1 + n[0])) ** 2
+
+        # Transmission of field through glass superstrate to multilayered stack)
+        # See Griffiths 9.85 + multiple reflection geometric series
+        T = abs((2 / (1 + n[0]))) / np.sqrt(1 - R_glass * R)
+        # overall Reflection from device with incoherent reflections at first interface
+        R = R_glass + T_glass ** 2 * R / (1 - R_glass * R)
+
+    # calculate primed transfer matrices for info on field inside the structure
     E = np.zeros(len(x_pos), dtype=complex)  # Initialise E field
+    E_avg = np.zeros(num_layers)
     for layer in range(1, num_layers):
         xi = 2 * np.pi * n[layer] / lam_vac
         dj = d_list[layer]
@@ -173,31 +153,30 @@ def TransferMatrix(d_list, n_list, lam_vac, th_0, pol, x_step=1):
         x = x_pos[x_indices] - d_cumsum[layer - 1]
         # Calculate S_Prime
         S_prime = I_mat(n[0], n[1], n0, pol, th_0)
-        for layer in range(2, layer + 1):
-            mL = L_mat(n[layer - 1], d_list[layer - 1], lam_vac, n0, th_0)
-            mI = I_mat(n[layer - 1], n[layer], n0, pol, th_0)
+        for layerind in range(2, layer + 1):
+            mL = L_mat(n[layerind - 1], d_list[layerind - 1], lam_vac, n0, th_0)
+            mI = I_mat(n[layerind - 1], n[layerind], n0, pol, th_0)
             S_prime = np.asarray(np.mat(S_prime) * np.mat(mL) * np.mat(mI))
+
         # Calculate S_dprime (double prime)
         S_dprime = np.eye(2)
-        for layer in range(layer, num_layers - 1):
-            mI = I_mat(n[layer], n[layer + 1], n0, pol, th_0)
-            mL = L_mat(n[layer + 1], d_list[layer + 1], lam_vac, n0, th_0)
+        for layerind in range(layer, num_layers - 1):
+            mI = I_mat(n[layerind], n[layerind + 1], n0, pol, th_0)
+            mL = L_mat(n[layerind + 1], d_list[layerind + 1], lam_vac, n0, th_0)
             S_dprime = np.asarray(np.mat(S_dprime) * np.mat(mI) * np.mat(mL))
-        # Normalized Electric Field Profile
+
+        # Electric Field Profile
         num = T * (S_dprime[0, 0] * np.exp(complex(0, -1.0) * xi * (dj - x)) + S_dprime[1, 0] * np.exp(
             complex(0, 1) * xi * (dj - x)))
         den = S_prime[0, 0] * S_dprime[0, 0] * np.exp(complex(0, -1.0) * xi * dj) + S_prime[0, 1] * S_dprime[
             1, 0] * np.exp(complex(0, 1) * xi * dj)
         E[x_indices] = num / den
 
+        # TODO change the following divide
+        E_avg[layer] = sum(abs(E[x_indices])**2) / d_list[2]  # Average E field inside the layer
+
     # |E|^2
     E_square = abs(E[:]) ** 2
-
-    # overall Reflection from device with incoherent reflections at first interface
-    Reflection = R_glass + T_glass ** 2 * R / (1 - R_glass * R)
-
-    # print('R_jap: %f, T_jap: %f' % (R, T_jap))
-    # print('Reflection: %f, T: %f' % (Reflection, T))
 
     # Absorption coefficient in 1/cm
     absorption = np.zeros(num_layers)
@@ -205,7 +184,7 @@ def TransferMatrix(d_list, n_list, lam_vac, th_0, pol, x_step=1):
         absorption[layer] = (4 * np.pi * np.imag(n[layer])) / (lam_vac * 1.0e-7)
 
     return {'E_square': E_square, 'absorption': absorption, 'x_pos': x_pos,  # output functions of position
-            'Reflection': Reflection, 'T': T,  # output overall properties of structure
+            'R': R, 'T': T, 'E': E, 'E_avg': E_avg,  # output overall properties of structure
             'd_list': d_list, 'th_0': th_0, 'n_list': n_list, 'lam_vac': lam_vac, 'pol': pol,  # input structure
             }
 
