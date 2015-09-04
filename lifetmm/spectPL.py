@@ -51,6 +51,5 @@ plt.legend(prop={'size': 12}, ncol=2)
 plt.xlabel('Wavelength (nm)')
 plt.ylabel('Intensity (A.U.')
 plt.title('Spectrum of T-series samples')
-
 # fig.savefig('moreColors.png')
 plt.show()

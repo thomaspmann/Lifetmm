@@ -179,14 +179,20 @@ def TransferMatrix(d_list, n_list, lam_vac, th_0, pol, x_step=1, reverse=False, 
             S_dprime = np.asarray(np.mat(S_dprime) * np.mat(mI) * np.mat(mL))
 
         # Electric Field Profile
-        num = T * (S_dprime[0, 0] * np.exp(complex(0, -1.0) * eps * (dj - x)) + S_dprime[1, 0] * np.exp(
-            complex(0, 1) * eps * (dj - x)))
+        num = S_dprime[0, 0] * np.exp(complex(0, -1.0) * eps * (dj - x)) + S_dprime[1, 0] * np.exp(
+            complex(0, 1) * eps * (dj - x))
         den = S_prime[0, 0] * S_dprime[0, 0] * np.exp(complex(0, -1.0) * eps * dj) + S_prime[0, 1] * S_dprime[
             1, 0] * np.exp(complex(0, 1) * eps * dj)
         E[x_indices] = num / den
 
-        # TODO change the following divide
-        E_avg[layer] = sum(abs(E[x_indices])**2) / d_list[2]  # Average E field inside the layer
+        # TODO check is using T only for glass superstrate correct here?
+        # T used is just a normalizing factor which shouldn't
+        if glass:
+            E[x_indices] *= T
+
+        # Calculate the average E field in the layers between the ambient and substrate medium
+        if not d_list[layer] == 0:
+            E_avg[layer] = sum(abs(E[x_indices])**2) / (x_step*d_list[layer])  # Average E field inside the layer
 
     # |E|^2
     E_square = abs(E[:]) ** 2
