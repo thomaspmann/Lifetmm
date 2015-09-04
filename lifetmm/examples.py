@@ -21,24 +21,25 @@ degree = pi / 180
 lambda_list = [1550] # in nm
 lambda_vac = 1550
 # incoming light angle
-th_0 = linspace(0, 90, num=90+1) # in degrees (convert in function argument)
+th_0 = linspace(0, 90, num=90+1, endpoint=False) # in degrees (convert in function argument)
 
 # ------------- DO CALCULATIONS  -----------------
-# list of layer thicknesses in nm
-d_list = [0, 1000, 1000, 0]
+# list of layer thicknesses in nm. First and last layer are semi-infinite ambient and substrate layers
+d_list = [inf, 10000, 10000, inf]
 # list of refractive indices
-n_list_med = [1, 1.5, 3, 3]
-n_list_bulk = [1, 1.5, 1.5, 1.5]
+n_list = [1, 1.5, 3, 3]
 
-# for th in th_0:
-data = TransferMatrix(d_list, n_list_med, lambda_vac, 90 * degree, 's')['E_square']
-    # print(th)
+data = np.array([0.]*sum(d_list[1:-1]))
+for th in th_0:
+    data += TransferMatrix(d_list, n_list, lambda_vac, th * degree, 's')['E_square']
 
 plt.figure()
 plt.plot(data)
 plt.xlabel('Position in Device (nm)')
 plt.ylabel('Normalized |E|$^2$Intensity')
 plt.title('E-Field Intensity in Device')
+plt.show()
+
 
 def sample1():
     """
