@@ -140,8 +140,9 @@ def TransferMatrix(d_list, n_list, lam_vac, th_0, pol, x_step=1, reverse=False, 
         S = np.asarray(np.mat(S) * np.mat(mL) * np.mat(mI))
 
     # JAP Vol 86 p.487 Eq 9 and 10: Power Reflection and Transmission
-    R = abs(S[1, 0] / S[0, 0]) ** 2
-    T = abs(1 / S[0, 0]) ** 2  # note this is incorrect https://en.wikipedia.org/wiki/Fresnel_equations
+    # R = abs(S[1, 0] / S[0, 0]) ** 2
+    # T = abs(1 / S[0, 0]) ** 2  # note this is incorrect https://en.wikipedia.org/wiki/Fresnel_equations
+    T = R = 1
 
     # Calculate incoherent power transmission into the glass - if glass is the ambient medium input
     # See Griffiths "Intro to Electrodynamics 3rd Ed. Eq. 9.86 & 9.87
@@ -201,6 +202,15 @@ def TransferMatrix(d_list, n_list, lam_vac, th_0, pol, x_step=1, reverse=False, 
     absorption = np.zeros(num_layers)
     for layer in range(1, num_layers):
         absorption[layer] = (4 * np.pi * np.imag(n[layer])) / (lam_vac * 1.0e-7)
+
+    # Flip back to normal
+    if reverse:
+        d_list = d_list[::-1]
+        n_list = n_list[::-1]
+        E_square = E_square[::-1]
+        E_avg = E_avg[::-1]
+        E = E[::-1]
+        absorption = absorption[::-1]
 
     return {'E_square': E_square, 'absorption': absorption, 'x_pos': x_pos,  # output functions of position
             'R': R, 'T': T, 'E': E, 'E_avg': E_avg,  # output overall properties of structure

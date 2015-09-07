@@ -16,27 +16,48 @@ import matplotlib.pyplot as plt
 # "1.2 / degree" is 1.2 radians expressed in degrees
 degree = pi / 180
 
+mmTOnm = 1E6
+
+
 def test():
     # Loop parameters
     # list of wavelengths to evaluate
     lambda_vac = 1550
-    # incoming light angle
-    th_0 = linspace(0, 90, num=90+1, endpoint=False) # in degrees (convert in function argument)
+    # incoming light angle (in degrees)
+    th_0 = linspace(0, 90, num=90, endpoint=False)
 
-    # ------------- DO CALCULATIONS  -----------------
     # list of layer thicknesses in nm. First and last layer are semi-infinite ambient and substrate layers
-    d_list = [inf, 10000, 10000, inf]
+    d_list = [inf, 1000, inf]
     # list of refractive indices
-    n_list = [1.5, 1.5, 1.5, 1.5]
+    n_list = [1.5, 1.5, 3]
+    n_listB = [1.5, 1.5, 1.5]
 
     data = np.zeros(sum(d_list[1:-1]))
-    E_avg = np.zeros(len(d_list))
+    E_avg =0
+
+    runs = 0
+
     for th in th_0:
-        data += TransferMatrix(d_list, n_list, lambda_vac, th * degree, 's')['E_square']
-        E_avg += TransferMatrix(d_list, n_list, lambda_vac, th * degree, 's')['E_avg']
+        for pol in ['s', 'p']:
+            for rev in [True, False]:
+                runs += 1
+                data += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_square'] /
+                         TransferMatrix(d_list, n_listB, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
+
+                E_avg += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1] /
+                         TransferMatrix(d_list, n_listB, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1])
+
+        # E_avg += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, 's', reverse=True)['E_avg'] +
+        #     TransferMatrix(d_list, n_list, lambda_vac, th * degree, 's', reverse=False)['E_avg']) /2
+
+    # Normalise
+    data /= runs
+    E_avg /= runs
+
+    print(E_avg)
 
     plt.figure()
-    plt.plot(E_avg)
+    plt.plot(data)
     plt.xlabel('Position in Device (nm)')
     plt.ylabel('Normalized |E|$^2$Intensity')
     plt.title('E-Field Intensity in Device')
@@ -141,40 +162,51 @@ def sample3():
     # list of wavelengths to evaluate
     lambda_list = [1550]  # in nm
     # incoming light angle
-    th_0 = linspace(0, 90, num=10, endpoint=False)  # in degrees (convert in function argument)
+    th_0 = linspace(0, 90, num=45, endpoint=False)  # in degrees (convert in function argument)
 
-    # ------------- DO CALCULATIONS  -----------------
     # list of layer thicknesses in nm
     d_list = [inf, 1500, 300, 10000, inf]
     # list of refractive indices
-    n_list_med = [1.5, 1.5, 1, 3, 3]
+    n_list_med = [1.5, 1.5+0.1j, 1, 1.4, 3]
+    n_list_bulk = [1.5, 1.5+0.1j, 1, 1, 1]
     # TODO zoran: bulk just gives 1 for all layers in E_avg - only when no imaginary component to n
     # TODO zoran: cos theta weighting present in both medium and bulk cancels => no effect => not needed?
-    n_list_bulk = [1.5, 1.5, 1.5, 1.5, 1.5]
+
+    # n range of sensing medium
+    nrange = linspace(1, 3, num=40)
+    # layer which is the sensing medium
+    medium = 4
+
+    # Initialise arrays
     data_s = np.zeros(len(d_list[1:-1]))
     data_p = np.zeros(len(d_list[1:-1]))
-    data = np.zeros(len(linspace(1, 3)))
-    x = np.zeros(len(linspace(1, 3)))
+    y_E_avg = np.zeros(len(nrange))
+    x_n = np.zeros(len(nrange))
+
     runs = 0
-    for i, n in enumerate(linspace(1, 3, num=10)):
-        n_list_med[3] = n
+    for i, n in enumerate(nrange):
+        n_list_med[medium] = n
         for lambda_vac in lambda_list:
             for th in th_0:
                 runs += 1
-                a = TransferMatrix(d_list, n_list_med, lambda_vac, th * degree, 's')['E_avg']
-                b = TransferMatrix(d_list, n_list_bulk, lambda_vac, th * degree, 's')['E_avg']
-                data_s += (a[1:-1]/b[1:-1])
-                c = TransferMatrix(d_list, n_list_med, lambda_vac, th * degree, 'p')['E_avg']
-                d = TransferMatrix(d_list, n_list_bulk, lambda_vac, th * degree, 'p')['E_avg']
-                data_p += (c[1:-1]/d[1:-1])
+                a = TransferMatrix(d_list, n_list_med, lambda_vac, th * degree, 's')['E_avg'] +\
+                    TransferMatrix(d_list, n_list_med, lambda_vac, th * degree, 's', reverse=True)['E_avg']
+                b = TransferMatrix(d_list, n_list_bulk, lambda_vac, th * degree, 's')['E_avg'] +\
+                    TransferMatrix(d_list, n_list_bulk, lambda_vac, th * degree, 's', reverse=True)['E_avg']
+                data_s += (a/b)
+                c = TransferMatrix(d_list, n_list_med, lambda_vac, th * degree, 'p')['E_avg'] +\
+                     TransferMatrix(d_list, n_list_med, lambda_vac, th * degree, 'p')['E_avg']
+                d = TransferMatrix(d_list, n_list_bulk, lambda_vac, th * degree, 'p')['E_avg'] +\
+                    TransferMatrix(d_list, n_list_bulk, lambda_vac, th * degree, 'p', reverse=True)['E_avg']
+                data_p += (c/d)
         data_s /= runs  # Normalise again - average over loops
         data_p /= runs  # Normalise again
-        data[i] = (data_s[0] + data_p[0]) / 2  # Take average for unpolarised light
-        x[i] = n
+        y_E_avg[i] = (data_s[0] + data_p[0]) / 2  # Take average for unpolarised light
+        x_n[i] = n
     # ----------------------- END -----------------------------
 
     plt.figure()
-    plt.plot(x,data, 'o-')
+    plt.plot(x_n,y_E_avg, 'o-')
     plt.xlabel('Refractive index of medium')
     plt.ylabel('Average |E|$^2$Intensity in the erbium layer per unit depth')
     plt.title('E-Field Intensity in Erbium Layer due to change in n of sensing medium')
@@ -217,4 +249,4 @@ def samplePol():
     # plt.savefig('moreColors.png')
     plt.show()
 
-sample3()
+test()
