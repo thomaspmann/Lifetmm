@@ -75,7 +75,7 @@ def test2():
     th_0 = linspace(0, 90, num=90, endpoint=False)
 
     # list of layer thicknesses in nm
-    d_list = [inf, 1000, 1000, inf]
+    d_list = [inf, 2000, 2000, inf]
     # list of refractive indices
     n_list = [1.5, 1.5, 3, 3]
     n_listB = [1.5, 1.5, 1.5, 1.5]
@@ -86,11 +86,15 @@ def test2():
     runs = 0
 
     for th in th_0:
+        # TODO two p polarizations for x and y parallel waves and 1 s for z direction. Average to get isotropic.
+        # however results look less similar to those in the polman paper ['s', 'p', 'p']:
         for pol in ['s', 'p']:
             for rev in [True, False]:
                 runs += 1
                 data += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
-
+                # TODO the bulk always just equals one... so no normalising
+                a = (TransferMatrix(d_list, n_listB, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
+                b = (TransferMatrix(d_list, n_listB, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1])
                 E_avg += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1] /
                           TransferMatrix(d_list, n_listB, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1])
 
@@ -105,7 +109,7 @@ def test2():
     plt.axhline(y=1, linestyle='--', color='k')
     for i, xmat in enumerate(dsum):
         plt.axvline(x=xmat, linestyle='-', color='r', lw=2)
-        plt.text(xmat-70, max(data)*0.99,'n: %.2f' % n_list[i+1], rotation=90)
+        plt.text(xmat-300, max(data)*0.99,'n: %.2f' % n_list[i+1])
     plt.xlabel('Position in Device (nm)')
     plt.ylabel('Normalized |E|$^2$Intensity')
     plt.title('E-Field Intensity in Device. E_avg in Erbium: %.4f' % E_avg)
