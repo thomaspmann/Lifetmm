@@ -38,13 +38,10 @@ def test():
 
     for th in th_0:
         for pol in ['s', 'p']:
-            for rev in [True, False]:
+            for rev in [False, True]:
                 runs += 1
-                data += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_square'] /
-                         TransferMatrix(d_list, n_listB, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
-
-                E_avg += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1] /
-                          TransferMatrix(d_list, n_listB, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1])
+                data += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
+                E_avg += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1])
 
     data /= runs
     E_avg /= runs
@@ -62,7 +59,7 @@ def test():
     plt.ylabel('Normalized |E|$^2$Intensity')
     plt.title('E-Field Intensity in Device. E_avg in Erbium: %.4f' % E_avg)
     plt.legend()
-    plt.savefig('figs/test.png')
+    # plt.savefig('figs/fwdbkwd_sp.png')
     plt.show()
 
 def test2():
@@ -124,7 +121,7 @@ def sample1():
     """
     # Loop parameters
     # list of wavelengths to evaluate
-    lambda_vac = 1550
+    lambda_vac = 1537
     # incoming light angle (in degrees)
     th_0 = linspace(0, 90, num=90, endpoint=False)
 
@@ -138,8 +135,8 @@ def sample1():
 
     nRange = linspace(1, 3, num=100)
     ydata = np.zeros(len(nRange))
-
     for i, n in enumerate(nRange):
+        print('i is %d and n is %f' % (i, n))
         E_avg = 0
         runs = 0
         n_list[2] = n
@@ -150,8 +147,7 @@ def sample1():
                     # data += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_square'] /
                     #          TransferMatrix(d_list, n_listB, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
 
-                    E_avg += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1] /
-                              TransferMatrix(d_list, n_listB, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1])
+                    E_avg += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1])
         ydata[i] = E_avg/runs
 
     # Normalise
@@ -165,7 +161,7 @@ def sample1():
     plt.xlabel('Refractive Index of Sensing Medium')
     plt.ylabel('Average |E|$^2$Intensity Inside the Erbium Layer')
     plt.title('Average E-Field Intensity in Device')
-    plt.savefig('figs/BigOleLoop_air.png')
+    plt.savefig('figs/erlayersandwich2.png')
     plt.show()
 
 
@@ -302,4 +298,4 @@ def samplePol():
     # plt.savefig('moreColors.png')
     plt.show()
 
-test2()
+sample1()

@@ -82,7 +82,7 @@ def L_mat(n, d, lam_vac, n0, th_0):
 def TransferMatrix(d_list, n_list, lam_vac, th_0, pol, x_step=1, reverse=False, glass=False):
     """
     Evaluate the transfer matrix over the entire structure.
-    :param pol: polarisation of incoming light ('u', 's' or 'p')
+    :param pol: polarisation of incoming light ('s' or 'p')
     :param n_list: list of refractive indices for each layer (can be complex)
     :param d_list: list of thicknesses for each layer
     :param th_0: angle of incidence (0 for normal, pi/2 for glancing)
