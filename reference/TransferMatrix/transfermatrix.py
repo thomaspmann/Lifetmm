@@ -69,17 +69,17 @@
 # correspond to the csv filenames in the 'matDir' ignoring the material prefix.
 # example : you have a material file named 'nk_P3HT.csv' the layer name would be 'P3HT'
 # Layer thicknesses are in nm.
-layers = ['Er_Layer', 'Er_Layer', 'Dermis', 'Dermis']
-thicknesses = [0, 1000, 1000, 0]     # in nm
+layers = ['SiO2', 'ITOsorizon', 'PEDOT', 'P3HTPCMB_BHJ', 'Ca', 'Al']
+thicknesses = [0, 1100, 35, 220, 7, 200]     # in nm
 
-plotGeneration = False  # Make generation plot , True/False
-activeLayer = 1  # indexing starts from 0
+plotGeneration = True  # Make generation plot , True/False
+activeLayer = 4  # indexing starts from 0
 
-lambda_start = 1540  # build a wavelength range to calculate over, starting wavelength (nm)
-lambda_stop = 1540  # final wavelength (nm)
+lambda_start = 300  # build a wavelength range to calculate over, starting wavelength (nm)
+lambda_stop = 800  # final wavelength (nm)
 lambda_step = 1.0  # wavelength step size
 
-plotWavelengths = [1540]  # Wavelengths to plot |E|^2 for, in nm.
+plotWavelengths = [400, 500, 600]  # Wavelengths to plot |E|^2 for, in nm.
 
 x_step = 1.0  # grid spacing of device cross section simulation in nm (default is 1.0)
 # this is where the n/k optical constants for each material are stored.

@@ -19,28 +19,31 @@ degree = pi / 180
 mmTOnm = 1E6
 
 
-def test():
+def mcgehee():
+    '''
+    Copy of the stanford group simulation at 600nm
+    '''
     # list of wavelengths to evaluate
-    lambda_vac = 1537
+    lambda_vac = 600
     # incoming light angle (in degrees)
     th_0 = linspace(0, 90, num=90, endpoint=False)
 
     # list of layer thicknesses in nm
-    d_list = [inf, 1000, 1000, inf]
+    d_list = [inf, 110, 35, 220, 7, inf]
     # list of refractive indices
-    n_list = [1.5, 1.5, 3, 3]
-    n_listB = [1.5, 1.5, 1.5, 1.5]
+    n_list = [1.4504, 1.7704+0.01161j, 1.4621+0.04426j, 2.12+0.3166016j, 2.095+2.3357j, 1.20252+7.25439j]
+
 
     data = np.zeros(sum(d_list[1:-1]))
 
     E_avg = 0
     runs = 0
 
-    for th in th_0:
-        for pol in ['s', 'p']:
-            for rev in [False, True]:
+    for th in [0]:
+        for pol in ['s']:
+            for rev in [False]:
                 runs += 1
-                data += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
+                data += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev, glass=True)['E_square'])
                 E_avg += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1])
 
     data /= runs
@@ -52,9 +55,9 @@ def test():
     plt.plot(data, label='data')
     dsum = np.cumsum(d_list[1:-1])
     plt.axhline(y=1, linestyle='--', color='k')
-    for i, xmat in enumerate(dsum):
-        plt.axvline(x=xmat, linestyle='-', color='r', lw=2)
-        plt.text(xmat-70, max(data)*0.99,'n: %.2f' % n_list[i+1], rotation=90)
+    # for i, xmat in enumerate(dsum):
+        # plt.axvline(x=xmat, linestyle='-', color='r', lw=2)
+        # plt.text(xmat-70, max(data)*0.99,'n: %.2f' % n_list[i+1], rotation=90)
     plt.xlabel('Position in Device (nm)')
     plt.ylabel('Normalized |E|$^2$Intensity')
     plt.title('E-Field Intensity in Device. E_avg in Erbium: %.4f' % E_avg)
@@ -62,7 +65,7 @@ def test():
     # plt.savefig('figs/fwdbkwd_sp.png')
     plt.show()
 
-def test2():
+def test():
     """
     Same as test() but no normalising
     """
@@ -75,25 +78,17 @@ def test2():
     d_list = [inf, 2000, 2000, inf]
     # list of refractive indices
     n_list = [1.5, 1.5, 3, 3]
-    n_listB = [1.5, 1.5, 1.5, 1.5]
 
+    # Initialise
     data = np.zeros(sum(d_list[1:-1]))
-
-    E_avg = 0
-    runs = 0
-
+    E_avg = 0; runs = 0;
+    # Run
     for th in th_0:
-        # TODO two p polarizations for x and y parallel waves and 1 s for z direction. Average to get isotropic.
-        # however results look less similar to those in the polman paper ['s', 'p', 'p']:
         for pol in ['s', 'p']:
-            for rev in [True, False]:
+            for rev in [False, True]:
                 runs += 1
-                data += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
-                # TODO the bulk always just equals one... so no normalising
-                a = (TransferMatrix(d_list, n_listB, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
-                b = (TransferMatrix(d_list, n_listB, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1])
-                E_avg += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1] /
-                          TransferMatrix(d_list, n_listB, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1])
+                data += (np.cos(th * degree) * TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
+                E_avg += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1])
 
     data /= runs
     E_avg /= runs
@@ -110,7 +105,7 @@ def test2():
     plt.xlabel('Position in Device (nm)')
     plt.ylabel('Normalized |E|$^2$Intensity')
     plt.title('E-Field Intensity in Device. E_avg in Erbium: %.4f' % E_avg)
-    plt.savefig('figs/test2.png')
+    plt.savefig('figs/final.png')
     plt.show()
 
 
@@ -435,4 +430,4 @@ def finger2():
     plt.savefig('figs/finger2_weighted_largerchange.png')
     plt.show()
 
-finger2()
+test()
