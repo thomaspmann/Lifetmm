@@ -75,19 +75,19 @@ def test():
     th_0 = linspace(0, 90, num=90, endpoint=False)
 
     # list of layer thicknesses in nm
-    d_list = [inf, 2000, 2000, inf]
+    d_list = [inf, 1000, 1000, inf]
     # list of refractive indices
     n_list = [1.5, 1.5, 3, 3]
 
     # Initialise
     data = np.zeros(sum(d_list[1:-1]))
-    E_avg = 0; runs = 0;
+    E_avg = 0; runs = 0
     # Run
     for th in th_0:
         for pol in ['s', 'p']:
             for rev in [False, True]:
                 runs += 1
-                data += (np.cos(th * degree) * TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
+                data += (np.sin(th * degree) * TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
                 E_avg += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1])
 
     data /= runs
@@ -105,8 +105,8 @@ def test():
     plt.xlabel('Position in Device (nm)')
     plt.ylabel('Normalized |E|$^2$Intensity')
     plt.title('E-Field Intensity in Device. E_avg in Erbium: %.4f' % E_avg)
-    plt.savefig('figs/final.png')
-    plt.show()
+    plt.savefig('figs/final_fwbk.png')
+    # plt.show()
 
 
 def sample1():
