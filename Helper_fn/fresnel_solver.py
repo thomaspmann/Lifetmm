@@ -5,13 +5,14 @@ __author__ = 'mn14tm'
 # for non-magnetic, isotropic media
 
 from numpy import sin,cos,deg2rad,rad2deg,arcsin,arange,allclose
+import numpy as np
 import matplotlib.pyplot as plt
 import scipy as sp
 
 
 ni = 1.5                        # Refractive index of incident light medium
 nt = 1                          # Refractive index of transmitted light medium
-i = deg2rad(arange(0,90,0.1))   # Angle of incidence (radians)
+i = deg2rad(np.linspace(0, 90, 90))   # Angle of incidence (radians)
 
 # Calculate angle of transmittance from Snell's Law
 t = sp.arcsin(ni*sin(i)/nt)
