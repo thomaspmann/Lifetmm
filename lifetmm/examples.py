@@ -67,7 +67,7 @@ def mcgehee():
 
 def test():
     """
-    Same as test() but no normalising
+
     """
     # list of wavelengths to evaluate
     lambda_vac = 1537
@@ -77,36 +77,53 @@ def test():
     # list of layer thicknesses in nm
     d_list = [inf, 1000, 1000, inf]
     # list of refractive indices
-    n_list = [1.5, 1.5, 3, 3]
+    n_list = [3, 3, 1.5, 1.5]
+    n_listRef = [3, 1.5, 1.5, 1.5]
 
-    # Initialise
-    data = np.zeros(sum(d_list[1:-1]))
-    E_avg = 0; runs = 0
-    # Run
+    # Initialise and run
+    E_profile = np.zeros(sum(d_list[1:-1]))
+    E_profileRef = np.zeros(sum(d_list[1:-1]))
+    E_avg = 0
+    runs = 0
+    weighting = 0
     for th in th_0:
         for pol in ['s', 'p']:
             for rev in [False, True]:
                 runs += 1
-                data += (np.sin(th * degree) * TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
-                E_avg += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1])
+                if rev:
+                    weighting = n_list[-1]
+                elif not rev:
+                    weighting = n_list[0]
 
-    data /= runs
+                weighting *= (np.sin(th * degree) * np.cos(th * degree))
+
+                E_profile += (weighting * TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
+                # E_profileRef += (weighting * TransferMatrix(d_list, n_listRef, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
+
+                E_avg += (weighting * TransferMatrix(d_list, n_list, lambda_vac,
+                                                    th * degree, pol, reverse=rev)['E_avg'][1])
+
+    E_profile /= runs
+    # E_profileRef /= runs
+    # E_final = np.true_divide(E_profile, E_profileRef)
+    # E_final = E_profile/E_profileRef
     E_avg /= runs
 
-    print(E_avg)
-
     plt.figure()
-    plt.plot(data)
+    plt.plot(E_profile, 'b', label='E')
+    # plt.plot(E_profileRef, 'r', label='ref')
+    # plt.plot(E_final, 'g', label='Normalised')
     dsum = np.cumsum(d_list[1:-1])
     plt.axhline(y=1, linestyle='--', color='k')
     for i, xmat in enumerate(dsum):
         plt.axvline(x=xmat, linestyle='-', color='r', lw=2)
-        plt.text(xmat-300, max(data)*0.99,'n: %.2f' % n_list[i+1])
+        plt.text(xmat-300, max(E_profile)*0.99,'n: %.2f' % n_list[i+1])
     plt.xlabel('Position in Device (nm)')
     plt.ylabel('Normalized |E|$^2$Intensity')
     plt.title('E-Field Intensity in Device. E_avg in Erbium: %.4f' % E_avg)
-    plt.savefig('figs/final_fwbk.png')
-    # plt.show()
+    plt.legend(loc='best')
+    plt.savefig('figs/test3.png')
+    plt.show()
 
 
 def sample1():
@@ -258,6 +275,7 @@ def sample3():
     plt.savefig('figs/LDOS_medium_%.4f.png' % E_avg)
     plt.show()
 
+
 def samplePol():
     # Loop parameters
     # list of wavelengths to evaluate
@@ -293,6 +311,7 @@ def samplePol():
     plt.title('E-Field Intensity in Device')
     # plt.savefig('moreColors.png')
     plt.show()
+
 
 def amerov():
     """
@@ -340,6 +359,7 @@ def amerov():
     plt.savefig('figs/amerov1p37_3.png')
     plt.show()
 
+
 def finger():
     """
     Vary the refractive index of the medium and evaluate the average electric field strength
@@ -385,49 +405,5 @@ def finger():
     plt.savefig('figs/finger.png')
     plt.show()
 
-def finger2():
-    """
-    Vary the refractive index of the medium and evaluate the average electric field strength
-    inside the erbium layer compared to in bulk
-    """
-    # Loop parameters
-    # list of wavelengths to evaluate
-    lambda_vac = 1537
-    # incoming light angle (in degrees)
-    th_0 = linspace(0, 90, num=90, endpoint=False)
-
-    # list of layer thicknesses in nm. First and last layer are semi-infinite ambient and substrate layers
-    d_list = [inf, 1000, 100, inf]
-    # list of refractive indices
-    n_list = [1.5, 1.5, 1, 1.37]
-
-    mM = linspace(0, 40, num=200)
-    nRange = [2.73E-4 * x + 1.325 for x in mM]
-    # nRange = 1.325 + mM * 2.73E-5
-
-    ydata = np.zeros(len(nRange))
-    for i, n in enumerate(nRange):
-        # print('i is %d and n is %f' % (i, n))
-        E_avg = 0
-        runs = 0
-        n_list[3] = n
-        print('i is %d and n is %f' % (i, n_list[3]))
-        for th in th_0:
-            for pol in ['s', 'p']:
-                for rev in [True, False]:
-                    runs += 1
-                    # data += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_square'] /
-                    #          TransferMatrix(d_list, n_listB, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
-
-                    E_avg += (np.cos(th*degree)*TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1])
-        ydata[i] = E_avg/runs
-
-    plt.figure()
-    plt.plot(mM, 1/ydata)
-    plt.xlabel('Glucose concentration in water (mM)')
-    plt.ylabel('Lifetime (1/E^2)')
-    plt.title('Average E-Field Intensity in Device')
-    plt.savefig('figs/finger2_weighted_largerchange.png')
-    plt.show()
 
 test()
