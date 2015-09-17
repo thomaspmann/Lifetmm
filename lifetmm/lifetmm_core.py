@@ -23,7 +23,7 @@ def q_j(nj, n0, th_0):
     :return:
     """
 
-    return np.sqrt(nj**2 - n0**2 * np.sin(th_0)**2)
+    return sp.sqrt(nj**2 - n0**2 * np.sin(th_0)**2)
 
 
 def I_mat(n1, n2, n0, pol, th_0):
@@ -37,26 +37,25 @@ def I_mat(n1, n2, n0, pol, th_0):
     :return: I-matrix
     """
 
-    if th_0 == 0:  # no difference between polarizations for normal incidence
-        r = (n1 - n2) / (n1 + n2)
-        t = (2 * n1) / (n1 + n2)
+    # if th_0 == 0:  # no difference between polarizations for normal incidence
+    #     r = (n1 - n2) / (n1 + n2)
+    #     t = (2 * n1) / (n1 + n2)
+
+    # transfer matrix at an interface
+    q1 = q_j(n1, n0, th_0)
+    q2 = q_j(n2, n0, th_0)
+
+    if pol == 's':
+        r = (q1 - q2) / (q1 + q2)
+        t = (2 * q1) / (q1 + q2)
+
+    elif pol == 'p':
+        r = (q1 * n2**2 - q2 * n1**2) / (q1 * n2**2 + q2 * n1**2)
+        t = (2 * n1 * n2 * q1) / (q1 * n2**2 + q2 * n1**2)
 
     else:
-        # transfer matrix at an interface
-        q1 = q_j(n1, n0, th_0)
-        q2 = q_j(n2, n0, th_0)
-
-        if pol == 's':
-            r = (q1 - q2) / (q1 + q2)
-            t = (2 * q1) / (q1 + q2)
-
-        elif pol == 'p':
-            r = (q1 * n2**2 - q2 * n1**2) / (q1 * n2**2 + q2 * n1**2)
-            t = (2 * n1 * n2 * q1) / (q1 * n2**2 + q2 * n1**2)
-
-        else:
-            raise ValueError("Polarisation must be 's' or 'p' when angle of incidence is"
-                             " not 90$\degree$s")
+        raise ValueError("Polarisation must be 's' or 'p' when angle of incidence is"
+                         " not 90$\degree$s")
 
     if t == 0:
         raise ValueError('Transmission is zero. Check input parameters.')

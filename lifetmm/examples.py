@@ -67,10 +67,10 @@ def mcgehee():
 
 def test():
     # list of wavelengths to evaluate
-    lambda_vac = 1537
+    lambda_vac = [1540]
     # incoming light angle (in degrees)
     th_0 = linspace(0, 90, num=90, endpoint=False)
-
+    # th_0=[0]
     # list of layer thicknesses in nm
     d_list = [inf, 1000, 1000, inf]
     # list of refractive indices
@@ -83,22 +83,23 @@ def test():
     E_avg = 0
     runs = 0
     weighting = 0
-    for th in th_0:
-        for pol in ['s', 'p']:
-            for rev in [False, True]:
-                runs += 1
-                if rev:
-                    weighting = n_list[-1]
-                elif not rev:
-                    weighting = n_list[0]
+    for lam in lambda_vac:
+        for th in th_0:
+            for pol in ['s', 'p']:
+                for rev in [False, True]:
+                    runs += 1
+                    if rev:
+                        weighting = n_list[-1]
+                    elif not rev:
+                        weighting = n_list[0]
 
-                weighting *= (np.sin(th * degree) * np.cos(th * degree))
+                    weighting *= (np.sin(th * degree))
 
-                E_profile += (weighting * TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
-                # E_profileRef += (weighting * TransferMatrix(d_list, n_listRef, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
+                    E_profile += (weighting * TransferMatrix(d_list, n_list, lam, th * degree, pol, reverse=rev)['E_square'])
+                    # E_profileRef += (weighting * TransferMatrix(d_list, n_listRef, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
 
-                E_avg += (weighting * TransferMatrix(d_list, n_list, lambda_vac,
-                                                    th * degree, pol, reverse=rev)['E_avg'][1])
+                    E_avg += (weighting * TransferMatrix(d_list, n_list, lam,
+                                                        th * degree, pol, reverse=rev)['E_avg'][1])
 
     E_profile /= runs
     # E_profileRef /= runs
@@ -118,7 +119,7 @@ def test():
     plt.xlabel('Position in Device (nm)')
     plt.ylabel('Normalized |E|$^2$Intensity')
     plt.title('E-Field Intensity in Device. E_avg in Erbium: %.4f' % E_avg)
-    plt.legend(loc='best')
+    # plt.legend(loc='best')
     plt.savefig('figs/test3.png')
     plt.show()
 
@@ -129,10 +130,10 @@ def sample1():
     inside the erbium layer compared to in bulk
     """
         # list of wavelengths to evaluate
-    lambda_vac = 1537
+    lambda_vac = 1540
     # incoming light angle (in degrees)
     # th_0 = linspace(0, 90, num=90, endpoint=False)
-    th_0 = [60]
+    th_0 = [0]
 
     # list of layer thicknesses in nm
     d_list = [inf, 1000, 1000, inf]
@@ -157,7 +158,6 @@ def sample1():
                 weighting *= (np.sin(th * degree) * np.cos(th * degree))
 
                 E_profile += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
-                # E_profileRef += (weighting * TransferMatrix(d_list, n_listRef, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
 
                 E_avg += (weighting * TransferMatrix(d_list, n_list, lambda_vac,
                                                     th * degree, pol, reverse=rev)['E_avg'][1])
@@ -185,138 +185,54 @@ def sample1():
     plt.show()
 
 
-def sample2():
-    """
-    Show the LDOS inside the erbium layer relative to the bulk
-        Averaged over all angles (0-90 degrees)
-        Averaged over s and p polarisations
-    """
-
-    # list of wavelengths to evaluate
-    lambda_vac = 1550
-    # incoming light angle (in degrees)
-    th_0 = linspace(0, 90, num=90, endpoint=False)
-
-    # list of layer thicknesses in nm
-    d_list = [inf, 1000, inf]
-    # list of refractive indices
-    n_list = [1.5, 1.5, 1]
-    n_listB = [1.5, 1.5, 1.5]
-
-    data = np.zeros(sum(d_list[1:-1]))
-
-    E_avg = 0
-    runs = 0
-    for th in th_0:
-        for pol in ['s', 'p']:
-            for rev in [True, False]:
-                runs += 1
-                data += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_square'] /
-                         TransferMatrix(d_list, n_listB, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
-
-                E_avg += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1] /
-                          TransferMatrix(d_list, n_listB, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1])
-
-    # Normalise
-    data /= runs
-    E_avg /= runs
-
-    print(E_avg)
-
-    plt.figure()
-    plt.plot(data)
-    plt.xlabel('Position in Device (nm)')
-    plt.ylabel('Normalized |E|$^2$Intensity')
-    plt.title('E-Field Intensity in Device')
-    plt.savefig('figs/LDOS.png')
-    plt.show()
-
-
-def sample3():
-    """
-    Show the LDOS inside the erbium layer relative to the bulk
-        Averaged over all angles (0-90 degrees)
-        Averaged over s and p polarisations
-    """
-
-    # list of wavelengths to evaluate
-    lambda_vac = 1550
-    # incoming light angle (in degrees)
-    th_0 = linspace(0, 90, num=90, endpoint=False)
-
-    # list of layer thicknesses in nm
-    d_list = [inf, 1000, 200, 1000, inf]
-    # list of refractive indices
-    n_list = [1.5, 1.5, 1, 1.41, 1.41]
-    n_listB = [1.5, 1.5, 1.5, 1.5, 1.5]
-
-    data = np.zeros(sum(d_list[1:-1]))
-    E_avg = 0
-    runs = 0
-
-    for th in th_0:
-        for pol in ['s', 'p']:
-            for rev in [True, False]:
-                runs += 1
-                data += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_square'] /
-                         TransferMatrix(d_list, n_listB, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
-
-                E_avg += (TransferMatrix(d_list, n_list, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1] /
-                          TransferMatrix(d_list, n_listB, lambda_vac, th * degree, pol, reverse=rev)['E_avg'][1])
-    # Normalise over all runs
-    data /= runs
-    E_avg /= runs
-
-    print(E_avg)
-
-    plt.figure()
-    plt.plot(data)
-    dsum = np.cumsum(d_list[1:-1])
-    plt.axhline(y=1, linestyle='--', color='k')
-    for i, xmat in enumerate(dsum):
-        plt.axvline(x=xmat, linestyle='-', color='r', lw=2)
-        plt.text(xmat-70, max(data)*0.99,'n: %.2f' % n_list[i+1], rotation=90)
-    plt.xlabel('Position in Device (nm)')
-    plt.ylabel('Normalized |E|$^2$Intensity')
-    plt.title('E-Field Intensity in Device. E_avg in Erbium: %.4f' % E_avg)
-    plt.savefig('figs/LDOS_medium_%.4f.png' % E_avg)
-    plt.show()
-
-
 def samplePol():
-    # Loop parameters
     # list of wavelengths to evaluate
-    lambda_list = [1550]  # in nm
-    # incoming light angle
-    th_0 = linspace(0, 90, num=90+1, endpoint=False) # in degrees (convert in function argument)
-
-    # ------------- DO CALCULATIONS  -----------------
+    lambda_vac = [1540]
+    # incoming light angle (in degrees)
+    th_0 = linspace(0, 90, num=90, endpoint=False)
+    # th_0=[0]
     # list of layer thicknesses in nm
-    d_list = [inf, 10000, 10000, inf]
+    d_list = [inf, 1000, 100, inf]
     # list of refractive indices
-    n_list_med = [1, 1.5, 3, 3]
-    n_list_bulk = [1, 1.5, 1.5, 1.5]
-    data_s = np.zeros(sum(d_list[1:-1]))
-    data_p = np.zeros(sum(d_list[1:-1]))
-    for lambda_vac in lambda_list:
-        for th in th_0:
-            a = TransferMatrix(d_list, n_list_med, lambda_vac, th * degree, 's')['E_square']
-            b = TransferMatrix(d_list, n_list_bulk, lambda_vac, th * degree, 's')['E_square']
-            data_s += (a/b)
-            c = TransferMatrix(d_list, n_list_med, lambda_vac, th * degree, 'p')['E_square']
-            d = TransferMatrix(d_list, n_list_bulk, lambda_vac, th * degree, 'p')['E_square']
-            data_p += (c/d)
-    data_s /= (len(lambda_list)*len(th_0))  # Normalise again - average over loops
-    data_p /= (len(lambda_list)*len(th_0))  # Normalise again
-    data = (data_s + data_p) / 2  # Take average for unpolarised light
-    # ----------------------- END -----------------------------
+    n_list = [1.5, 1.5, 1.5, 1.5]
+
+    # List of medium refractive indices
+    nmed_list = linspace(1, 2, num=500)
+
+    # Initialise and run
+    # E_profile = np.zeros(sum(d_list[1:-1]))
+
+    data = []
+    for nmed in [0]:
+        runs = 0
+        E_avg = 0
+        weighting = 0
+        # n_list[-1] = nmed
+        print('Medium n:' + str(nmed))
+        for lam in lambda_vac:
+            for th in th_0:
+                for pol in ['s', 'p']:
+                    for rev in [False, True]:
+                        runs += 1
+                        if rev:
+                            weighting = n_list[-1]
+                        elif not rev:
+                            weighting = n_list[0]
+
+                        weighting *= (np.sin(th * degree))
+
+                        E_avg += (weighting * TransferMatrix(d_list, n_list, lam, th * degree, pol, reverse=rev)
+                                                                                                        ['E_avg'][1])
+        E_avg /= runs
+        data.append(E_avg)
+    data = np.asarray(data)
 
     plt.figure()
-    plt.plot(data)
-    plt.xlabel('Position in Device (nm)')
-    plt.ylabel('Normalized |E|$^2$Intensity')
-    plt.title('E-Field Intensity in Device')
-    # plt.savefig('moreColors.png')
+    plt.plot(nmed_list, data, 'b')
+    plt.xlabel('n of medium')
+    plt.ylabel('Average |E|$^2$Intensity in Erbium layer')
+    plt.title('1000nm erbium, 100nm air, infinite medium')
+    plt.savefig('figs/bulk.png')
     plt.show()
 
 
@@ -413,4 +329,4 @@ def finger():
     plt.show()
 
 
-sample1()
+samplePol()
