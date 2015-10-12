@@ -71,9 +71,9 @@ def test():
     # incoming light angle (in degrees)
     th_0 = linspace(0, 90, num=90, endpoint=False)
     # list of layer thicknesses in nm
-    d_list = [inf, 1000, 100, 1000, inf]
+    d_list = [inf, 1000, 1000, 1000, inf]
     # list of refractive indices
-    n_list = [1.5, 1.5, 1, 3, 3]
+    n_list = [1.5, 1.5, 1, 1.41, 1.41]
 
     # Initialise and run
     E_profile = np.zeros(sum(d_list[1:-1]))
@@ -114,7 +114,7 @@ def test():
     plt.ylabel('Normalized |E|$^2$Intensity')
     plt.title('E-Field Intensity in Device. E_avg in Erbium: %.4f' % E_avg)
     # plt.legend(loc='best')
-    plt.savefig('figs/test3.png')
+    plt.savefig('figs/test5.png')
     plt.show()
 
 
@@ -306,5 +306,7 @@ def finger():
     plt.savefig('figs/finger.png')
     plt.show()
 
+
+test()
 # fingdist()
-sample()
+# sample()
