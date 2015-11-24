@@ -3,7 +3,7 @@ from __future__ import division, print_function, absolute_import
 # from .lifetmm_core import *
 from lifetmm import *
 
-from numpy import pi, linspace, inf, array, sum
+from numpy import pi, linspace, inf, array, sum, cos, sin
 from scipy.interpolate import interp1d
 
 import matplotlib.pyplot as plt
@@ -69,18 +69,18 @@ def test():
     # list of wavelengths to evaluate
     lambda_vac = [1540]
     # incoming light angle (in degrees)
-    th_0 = linspace(0, 90, num=90, endpoint=False)
+    th_0 = linspace(1, 90, num=90, endpoint=False)
     # list of layer thicknesses in nm
-    d_list = [inf, 1000, 1000, 1000, inf]
+    d_list = [inf, 1000, 1000, inf]
     # list of refractive indices
-    n_list = [1.5, 1.5, 1, 1.41, 1.41]
+    n_list = [1.5, 1.5, 3, 3]
 
     # Initialise and run
     E_profile = np.zeros(sum(d_list[1:-1]))
-
     E_avg = 0
     runs = 0
     weighting = 0
+
     for lam in lambda_vac:
         for th in th_0:
             for pol in ['s', 'p']:
@@ -91,16 +91,15 @@ def test():
                     elif not rev:
                         weighting = n_list[0]
 
-                    weighting *= (np.sin(th * degree))
+                    weighting *= (1/sin(th * degree))
 
-                    E_profile += (weighting * TransferMatrix(d_list, n_list, lam, th * degree, pol, reverse=rev)['E_square'])
-                    # E_profileRef += (weighting * TransferMatrix(d_list, n_listRef, lambda_vac, th * degree, pol, reverse=rev)['E_square'])
+                    E_profile += weighting * TransferMatrix(d_list, n_list, lam, th * degree, pol, reverse=rev)['E_square']
 
-                    E_avg += (weighting * TransferMatrix(d_list, n_list, lam,
-                                                        th * degree, pol, reverse=rev)['E_avg'][1])
+                    # E_avg += (weighting * TransferMatrix(d_list, n_list, lam,
+                    #                                     th * degree, pol, reverse=rev)['E_avg'][1])
 
     E_profile /= runs
-    E_avg /= runs
+    # E_avg /= runs
 
     plt.figure()
     plt.plot(E_profile, 'b', label='E')
@@ -114,7 +113,7 @@ def test():
     plt.ylabel('Normalized |E|$^2$Intensity')
     plt.title('E-Field Intensity in Device. E_avg in Erbium: %.4f' % E_avg)
     # plt.legend(loc='best')
-    plt.savefig('figs/test5.png')
+    plt.savefig('figs/test_1dsin.png')
     plt.show()
 
 
@@ -195,7 +194,7 @@ def samplePol():
                         elif not rev:
                             weighting = n_list[0]
 
-                        weighting *= (np.sin(th * degree))
+                        weighting *= (1-np.sin(th * degree))
 
                         E_avg += (weighting * TransferMatrix(d_list, n_list, lam, th * degree, pol, reverse=rev)
                                                                                                         ['E_avg'][1])
@@ -209,7 +208,7 @@ def samplePol():
     plt.xlabel('n of medium')
     plt.ylabel('Average |E|$^2$Intensity in Erbium layer')
     plt.title('1000nm erbium, 1000nm sensing medium (n = x axis).')
-    plt.savefig('figs/samplePol2.png')
+    plt.savefig('figs/samplePol_1min_sin.png')
     plt.show()
 
 
@@ -243,7 +242,7 @@ def sample():
                         elif not rev:
                             weighting = n_list[0]
 
-                        weighting *= (np.sin(th * degree))
+                        weighting *= (sin(th * degree))
 
                         E_avg += (weighting * TransferMatrix(d_list, n_list, lam, th * degree, pol, reverse=rev)
                                                                                                         ['E_avg'][1])
@@ -308,5 +307,6 @@ def finger():
 
 
 test()
+# samplePol()
 # fingdist()
 # sample()
