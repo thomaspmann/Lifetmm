@@ -1,8 +1,5 @@
 # Import functions to allow backwards compatability
 from __future__ import division, print_function, absolute_import
-# TODO think I need to import range for pythons 2.7
-
-from numpy import cos, inf, zeros, exp, conj, nan, isnan
 
 import scipy as sp
 import numpy as np
@@ -13,6 +10,7 @@ from scipy.interpolate import interp1d
 # import matplotlib
 # matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+
 
 def q_j(nj, n0, th_0):
     """
@@ -106,9 +104,9 @@ def TransferMatrix(d_list, n_list, lam_vac, th_0, pol, x_step=1, reverse=False, 
     if type(x_step) != int:
         raise ValueError('x_step must be an integer otherwise. Reduce SI unit'
                          'inputs for thicknesses and wavelengths for greater resolution ')
-    if th_0 >= 90 or th_0 <= -90:
+    if th_0 >= pi/2 or th_0 <= -pi/2:
         raise ValueError('The light is not incident on the structure. Check input theta '
-                         '(0 <= theta < 90')
+                         '(0 <= theta < pi/2')
 
     # Flip structure if the optional argument 'reverse' is True
     if reverse:

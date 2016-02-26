@@ -61,7 +61,6 @@ def mcgehee():
     plt.ylabel('Normalized |E|$^2$Intensity')
     plt.title('E-Field Intensity in Device. E_avg in Erbium: %.4f' % E_avg)
     plt.legend()
-    # plt.savefig('figs/fwdbkwd_sp.png')
     plt.show()
 
 
@@ -71,7 +70,7 @@ def test():
     # incoming light angle (in degrees)
     th_0 = linspace(1, 90, num=90, endpoint=False)
     # list of layer thicknesses in nm
-    d_list = [inf, 1000, 1000, inf]
+    d_list = [inf, 2000, 1000, inf]
     # list of refractive indices
     n_list = [1.5, 1.5, 3, 3]
 
@@ -83,15 +82,17 @@ def test():
 
     for lam in lambda_vac:
         for th in th_0:
-            for pol in ['s', 'p']:
-                for rev in [False, True]:
+            print('Analysing theta = %.2f' % th)
+            for pol in ['p', 's']:
+                for rev in [False]:
                     runs += 1
                     if rev:
                         weighting = n_list[-1]
                     elif not rev:
                         weighting = n_list[0]
 
-                    weighting *= (1/sin(th * degree))
+                    weighting *= sin(th * degree)
+                    print(weighting)
 
                     E_profile += weighting * TransferMatrix(d_list, n_list, lam, th * degree, pol, reverse=rev)['E_square']
 
@@ -113,7 +114,7 @@ def test():
     plt.ylabel('Normalized |E|$^2$Intensity')
     plt.title('E-Field Intensity in Device. E_avg in Erbium: %.4f' % E_avg)
     # plt.legend(loc='best')
-    plt.savefig('figs/test_1dsin.png')
+    # plt.savefig('figs/test_1dsin.png')
     plt.show()
 
 
@@ -306,7 +307,8 @@ def finger():
     plt.show()
 
 
-test()
+mcgehee()
+# test()
 # samplePol()
 # fingdist()
 # sample()
