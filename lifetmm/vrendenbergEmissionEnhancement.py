@@ -26,8 +26,8 @@ def g(r_bot, r_top):
 def contourPlot():
     plt.figure()
 
-    x = np.linspace(0, 0.99, 200)    # r_bot
-    y = np.linspace(0, 0.99, 200)    # r_top
+    x = np.linspace(0, 0.9, 200)    # r_bot
+    y = np.linspace(0, 0.9, 200)    # r_top
     X, Y = np.meshgrid(x, y)
 
     zs = np.array([g(r_bot, r_top)
@@ -40,7 +40,7 @@ def contourPlot():
     lv = 30  # Levels of colours
     CS = plt.contourf(X, Y, Z, lv,
                       # levels=np.arange(0, 100, 5),
-                      norm=colors.LogNorm(vmin=Z.min(), vmax=Z.max()),
+                      # norm=colors.LogNorm(vmin=Z.min(), vmax=Z.max()),
                       cmap=plt.cm.plasma,
                       origin=origin)
 
@@ -66,7 +66,7 @@ def contourPlot():
 
 def varyBot():
     r_top = 0.04
-    r_bot = np.linspace(0.1, 0.11, 200)
+    r_bot = np.linspace(0.1, 0.9, 200)
 
     plt.figure()
     plt.plot(r_bot, g(r_bot, r_top))
@@ -76,5 +76,5 @@ def varyBot():
 
 if __name__ == "__main__":
 
-    # contourPlot()
-    varyBot()
+    contourPlot()
+    # varyBot()
