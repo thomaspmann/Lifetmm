@@ -59,7 +59,7 @@ def contourPlot():
     cbar.add_lines(CS2)
 
     # plt.title('')
-    # plt.savefig('Images/contourfplot.png', dpi=900)
+    plt.savefig('Images/Vrendenberg_contourfplot.png', dpi=900)
 
     plt.show()
 

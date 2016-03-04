@@ -3,8 +3,8 @@ import scipy as sp
 import scipy.integrate as integrate
 import matplotlib.pyplot as plt
 
-from .walpita import *
-
+# from .walpita import *
+from lifetmm import *
 from numpy import cos, sin, inf, zeros, exp, conj, nan, isnan, pi
 
 def prepareStruct(d_layers, n_layers, Lz = 1E5):
