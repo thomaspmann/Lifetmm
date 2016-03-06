@@ -2,11 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4ac1dfc0-6866-4a32-9e20-f0079340d3fb" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/lifetmm/figs/Thumbs.db" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lifetmm/examples.py" afterPath="$PROJECT_DIR$/lifetmm/examples.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lifetmm/lifetmm_core.py" afterPath="$PROJECT_DIR$/lifetmm/lifetmm_core.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lifetmm/tester.py" afterPath="$PROJECT_DIR$/lifetmm/tester.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lifetmm/vredenberg.py" afterPath="$PROJECT_DIR$/lifetmm/vredenberg.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lifetmm/vrendenbergEmissionEnhancement.py" afterPath="$PROJECT_DIR$/lifetmm/vrendenbergEmissionEnhancement.py" />
     </list>
     <ignored path="Lifetmm.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -31,7 +29,7 @@
         <entry file="file://$PROJECT_DIR$/lifetmm/vredenberg.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="107" column="54" selection-start-line="107" selection-start-column="45" selection-end-line="107" selection-end-column="54" />
+              <caret line="17" column="27" selection-start-line="17" selection-start-column="27" selection-end-line="17" selection-end-column="27" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -43,7 +41,7 @@
         <entry file="file://$PROJECT_DIR$/lifetmm/lifetmm_core.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="24" column="0" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
+              <caret line="253" column="0" selection-start-line="253" selection-start-column="0" selection-end-line="253" selection-end-column="0" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -54,15 +52,11 @@
       <file leaf-file-name="examples.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lifetmm/examples.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.30307943">
-              <caret line="115" column="0" selection-start-line="115" selection-start-column="0" selection-end-line="115" selection-end-column="0" />
+            <state vertical-scroll-proportion="1.0225443">
+              <caret line="151" column="30" selection-start-line="151" selection-start-column="30" selection-end-line="151" selection-end-column="30" />
               <folding>
-                <element signature="e#515#1695#0" expanded="false" />
-                <element signature="e#1718#2906#0" expanded="false" />
-                <element signature="e#4377#5966#0" expanded="false" />
-                <element signature="e#5990#7513#0" expanded="false" />
-                <element signature="e#7534#9060#0" expanded="false" />
-                <element signature="e#9081#10724#0" expanded="false" />
+                <element signature="e#516#1704#0" expanded="false" />
+                <element signature="e#1730#3153#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -72,9 +66,14 @@
         <entry file="file://$PROJECT_DIR$/lifetmm/tester.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="170" column="0" selection-start-line="170" selection-start-column="0" selection-end-line="170" selection-end-column="0" />
+              <caret line="156" column="0" selection-start-line="156" selection-start-column="0" selection-end-line="156" selection-end-column="0" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
+                <element signature="e#8387#9567#0" expanded="false" />
+                <element signature="e#9590#11179#0" expanded="false" />
+                <element signature="e#11203#12726#0" expanded="false" />
+                <element signature="e#12747#14273#0" expanded="false" />
+                <element signature="e#14294#15937#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -104,7 +103,7 @@
         <entry file="file://$PROJECT_DIR$/reference/tmm/tmm_core.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="925" column="0" selection-start-line="925" selection-start-column="0" selection-end-line="925" selection-end-column="0" />
+              <caret line="448" column="24" selection-start-line="448" selection-start-column="12" selection-end-line="448" selection-end-column="24" />
               <folding>
                 <element signature="e#534#598#0" expanded="true" />
               </folding>
@@ -132,10 +131,10 @@
         <option value="$PROJECT_DIR$/lifetmm/Testbook.ipynb" />
         <option value="$PROJECT_DIR$/lifetmm/walpita.py" />
         <option value="$PROJECT_DIR$/lifetmm/vrendenbergEmissionEnhancement.py" />
-        <option value="$PROJECT_DIR$/lifetmm/tester.py" />
         <option value="$PROJECT_DIR$/lifetmm/vredenberg.py" />
-        <option value="$PROJECT_DIR$/lifetmm/lifetmm_core.py" />
+        <option value="$PROJECT_DIR$/lifetmm/tester.py" />
         <option value="$PROJECT_DIR$/lifetmm/examples.py" />
+        <option value="$PROJECT_DIR$/lifetmm/lifetmm_core.py" />
       </list>
     </option>
   </component>
@@ -250,8 +249,8 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="editor.preferences.appearance" />
+    <property name="last_opened_file_path" value="$USER_HOME$/AppData/Local/GitHub/PortableGit_cf76fc1621ac41ad4fe86c420ab5ff403f1808b9/cmd/git.exe" />
+    <property name="settings.editor.selected.configurable" value="vcs.Git" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
     <property name="ignore_missing_gitignore" value="true" />
   </component>
@@ -515,8 +514,8 @@
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18124342" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32746115" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32900432" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32676348" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32883817" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33091286" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32900432" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -559,7 +558,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="35" />
+      <option name="time" value="36" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -568,7 +567,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -576,12 +574,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="63" column="33" selection-start-line="63" selection-start-column="33" selection-end-line="63" selection-end-column="33" />
-          <folding>
-            <element signature="e#0#18#0" expanded="false" />
-            <element signature="e#146#438#0" expanded="false" />
-            <element signature="e#470#971#0" expanded="false" />
-            <element signature="e#1006#1516#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -635,12 +627,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#18#0" expanded="false" />
-            <element signature="e#146#438#0" expanded="false" />
-            <element signature="e#470#971#0" expanded="false" />
-            <element signature="e#1006#1516#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -694,12 +680,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#18#0" expanded="false" />
-            <element signature="e#146#438#0" expanded="false" />
-            <element signature="e#470#971#0" expanded="false" />
-            <element signature="e#1006#1516#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -904,7 +884,20 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.828479">
           <caret line="61" column="36" selection-start-line="61" selection-start-column="36" selection-end-line="61" selection-end-column="36" />
-          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lifetmm/walpita.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="1.0676328">
+          <caret line="63" column="33" selection-start-line="63" selection-start-column="33" selection-end-line="63" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydev_imps/_pydev_execfile.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.46537843">
+          <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
         </state>
       </provider>
     </entry>
@@ -916,17 +909,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lifetmm/walpita.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.0676328">
-          <caret line="63" column="33" selection-start-line="63" selection-start-column="33" selection-end-line="63" selection-end-column="33" />
-          <folding>
-            <element signature="e#146#438#0" expanded="false" />
-            <element signature="e#1006#1516#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/reference/TransferMatrix/transfermatrix.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -935,40 +917,27 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lifetmm/tester.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="170" column="0" selection-start-line="170" selection-start-column="0" selection-end-line="170" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/reference/tmm/tmm_core.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="925" column="0" selection-start-line="925" selection-start-column="0" selection-end-line="925" selection-end-column="0" />
+          <caret line="448" column="24" selection-start-line="448" selection-start-column="12" selection-end-line="448" selection-end-column="24" />
           <folding>
             <element signature="e#534#598#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydev_imps/_pydev_execfile.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.46537843">
-          <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lifetmm/vredenberg.py">
+    <entry file="file://$PROJECT_DIR$/lifetmm/tester.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="107" column="54" selection-start-line="107" selection-start-column="45" selection-end-line="107" selection-end-column="54" />
+          <caret line="156" column="0" selection-start-line="156" selection-start-column="0" selection-end-line="156" selection-end-column="0" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#8387#9567#0" expanded="false" />
+            <element signature="e#9590#11179#0" expanded="false" />
+            <element signature="e#11203#12726#0" expanded="false" />
+            <element signature="e#12747#14273#0" expanded="false" />
+            <element signature="e#14294#15937#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -976,7 +945,17 @@
     <entry file="file://$PROJECT_DIR$/lifetmm/lifetmm_core.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="24" column="0" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
+          <caret line="253" column="0" selection-start-line="253" selection-start-column="0" selection-end-line="253" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lifetmm/vredenberg.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="17" column="27" selection-start-line="17" selection-start-column="27" selection-end-line="17" selection-end-column="27" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
@@ -985,15 +964,11 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lifetmm/examples.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.30307943">
-          <caret line="115" column="0" selection-start-line="115" selection-start-column="0" selection-end-line="115" selection-end-column="0" />
+        <state vertical-scroll-proportion="1.0225443">
+          <caret line="151" column="30" selection-start-line="151" selection-start-column="30" selection-end-line="151" selection-end-column="30" />
           <folding>
-            <element signature="e#515#1695#0" expanded="false" />
-            <element signature="e#1718#2906#0" expanded="false" />
-            <element signature="e#4377#5966#0" expanded="false" />
-            <element signature="e#5990#7513#0" expanded="false" />
-            <element signature="e#7534#9060#0" expanded="false" />
-            <element signature="e#9081#10724#0" expanded="false" />
+            <element signature="e#516#1704#0" expanded="false" />
+            <element signature="e#1730#3153#0" expanded="false" />
           </folding>
         </state>
       </provider>

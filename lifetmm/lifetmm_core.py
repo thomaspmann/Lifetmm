@@ -1,7 +1,7 @@
 import scipy as sp
 import numpy as np
 
-from numpy import pi, exp, sin, inf, sqrt
+from numpy import pi, exp, sin, cos, inf, sqrt
 # from scipy.interpolate import interp1d
 
 
@@ -13,7 +13,7 @@ def thetaCritical(m, n_list):
     the largest refractive index, or pi/2, whichever comes first.
     """
 
-    # Evaluate largest refractive index of claddings
+    # Evaluate largest refractive index of either cladding
     n_clad = max(n_list[0], n_list[-1])
 
     # Using Snell's law evaluate the critical angle or return pi/2 if does not exist
@@ -43,6 +43,10 @@ def H(theta):
         return 0
 
 
+def H_term(th_1, th_s):
+    # Evaluate H bracketed weighting term
+    return (H(th_1) + H(th_s)) / (H(th_1)*cos(th_1) + H(th_s)*cos(th_s)).real
+
 
 class LifetimeTmm:
     def __init__(self, d_list, n_list, x_step=1):
@@ -66,6 +70,9 @@ class LifetimeTmm:
 
     def setPolarization(self, pol):
         self.pol = pol
+
+    def setActiveLayer(self, m):
+        self.m = m
 
     def setAngle(self, th_0, units='radians'):
 
@@ -92,7 +99,7 @@ class LifetimeTmm:
         self.lam_vac = lam_vac
 
     def calculate(self):
-        result = LifetimeTmm.TransferMatrix(self)
+        result = LifetimeTmm.transfer_matrix(self)
 
         self.x_pos = result['x_pos']
         self.R = result['R']
@@ -138,7 +145,7 @@ class LifetimeTmm:
         eps = (2*pi*qj) / lam_vac
         return np.array([[exp(-1j*eps*dj), 0], [0, exp(1j*eps*dj)]], dtype=complex)
 
-    def TransferMatrix(self):
+    def transfer_matrix(self):
         d_list = self.d_list
         n_list = self.n_list
         lam_vac = self.lam_vac
@@ -225,3 +232,38 @@ class LifetimeTmm:
                 'R': R, 'T': T, 'E': E, 'E_avg': E_avg,  # output overall properties of structure
                 'd_list': d_list, 'th_0': th_0, 'n_list': n_list, 'lam_vac': lam_vac, 'pol': pol,  # input structure
                 }
+
+    def flip(self):
+        """
+        Flip the function front-to-back, to describe a(d-z) instead of a(z),
+        where d is layer thickness.
+        """
+        self.d_list = self.d_list.reverse()
+        self.n_list = self.n_list.reverse()
+        self.m = len(self.d_list)-self.m-1
+
+    def Mj2(self, th_1, th_s):
+        # eps0 = 8.854187817E-12  # Vacuum permitivity (F.m^-1)
+        eps0 = 1  # Cancels out with bit before Mj2
+        n_1 = self.n_list[1]
+        n_s = self.n_list[-2]
+
+        E_1 = self.E_avg[1]
+        E_s = self.E_avg[-2]
+        return 2 / eps0 * (n_1*H(th_1)*(abs(E_1)**2) + n_s*H(th_s)*abs(E_s)**2)
+
+    def prepareStruct(self, Lz=1E5):
+        """ Insert pseudo layers of the ambient and substrate layers into the structure. Used for averaging.
+        """
+
+        d_list = self.d_list
+        n_list = self.n_list
+
+        d1 = Lz/(2*n_list[0])
+        ds = Lz/(2*n_list[-1])
+
+        d_list = np.insert(d_list, 1, [d1])
+        d_list = np.insert(d_list, -1, [ds])
+
+        n_list = np.insert(n_list, 1, n_list[0])
+        n_list = np.insert(n_list, -1, n_list[-1])
