@@ -2,7 +2,7 @@ from __future__ import division, print_function, absolute_import
 
 # from .lifetmm_core import *
 from lifetmm import *
-
+from tqdm import *
 from numpy import pi, linspace, inf, array, sum, cos, sin
 from scipy.interpolate import interp1d
 
@@ -129,49 +129,59 @@ def vrendenbergen():
 
 
 def test():
-    # list of layer thicknesses in nm
-    d_list = [inf, 1000, 50, 50, 100, 25, 50, 50, 1000, inf]
-    # list of refractive indices
-    n_list = [1, 1, 3, 1, 1.54, 1, 3, 1, 3, 3]
-    # Doped layer (mote array index starts at zero)
-    m = 4
+    # # list of layer thicknesses in nm
+    # d_list = [inf, 1000, 50, 50, 100, 25, 50, 50, 1000, inf]
+    # # list of refractive indices
+    # n_list = [1, 1, 3, 1, 1.54, 1, 3, 1, 3, 3]
+    # # Doped layer (mote array index starts at zero)
+    # m = 4
 
     # list of layer thicknesses in nm
-    d_list = [inf, 1000, 100, 1000, inf]
+    d_list = [inf, 250, 500, 1000, inf]
     # list of refractive indices
-    n_list = [1.54, 1.54, 1.54, 3, 3]
+    n_list = [1.54, 1.54, 1.54, 1.54, 1.54]
     # Doped layer (mote array index starts at zero)
     m = 2
 
     # list of free space wavelengths to evaluate
-    lambda_vac = 150
+    lambda_vac = 1550
     # Bulk refractive index
     n_a = n_list[m]
 
     structure = LifetimeTmm(d_list, n_list)
     structure.set_active_layer(m)
     structure.set_wavelength(lambda_vac)
-    structure.set_bulk_refract(n_a)
+    structure.set_bulk_n(n_a)
 
-    structure.show_structure()
-
-    structure.set_angle(0)
-    structure.set_polarization('s')
-    # x, E_square = structure.layer_EField(m)
-    x, E_square = structure.transfer_matrix()
-    plt.figure()
-    plt.plot(x, E_square)
-    dsum = getattr(structure, 'd_cumsum')
-    plt.axhline(y=1, linestyle='--', color='k')
-    for i, xmat in enumerate(dsum):
-        plt.axvline(x=xmat, linestyle='-', color='r', lw=2)
-    plt.xlabel('Position in Device (nm)')
-    plt.ylabel('Normalized |E|$^2$Intensity')
+    # structure.show_structure()
+    #
+    # structure.set_angle(0)
+    # structure.set_polarization('s')
+    # x, E_square = structure.layer_E_Field(m)
+    # x, E_square = structure.transfer_matrix()
+    # plt.figure()
+    # plt.plot(x, E_square)
+    # dsum = getattr(structure, 'd_cumsum')
+    # plt.axhline(y=1, linestyle='--', color='k')
+    # for i, xmat in enumerate(dsum):
+    #     plt.axvline(x=xmat, linestyle='-', color='r', lw=2)
+    # plt.xlabel('Position in Device (nm)')
+    # plt.ylabel('Normalized |E|$^2$Intensity')
     # plt.title('E-Field Intensity in Device. E_avg in Erbium: %.4f' % E_avg)
     # plt.legend(title='Theta')
-    plt.show()
+    # plt.show()
 
-    result = structure.purcell_factor()
+    # # Evaluate using scipy's integrate function one x at a time
+    # Ez = []
+    # for x in tqdm(range(d_list[m])):
+    #     # print('Evaluating at x = {:.2f}'.format(x))
+    #     Ez.append(structure.purcell_factor_z(x))
+    # plt.figure()
+    # plt.plot(Ez)
+    # plt.show()
+
+    # Evaluate for entire layer at once
+    result = structure.purcell_factor_layer()
     plt.figure()
     plt.plot(result)
     plt.show()

@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4ac1dfc0-6866-4a32-9e20-f0079340d3fb" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/dictionaries/mn14tm.xml" afterPath="$PROJECT_DIR$/.idea/dictionaries/mn14tm.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lifetmm/Testbook.ipynb" afterPath="$PROJECT_DIR$/lifetmm/Testbook.ipynb" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lifetmm/examples.py" afterPath="$PROJECT_DIR$/lifetmm/examples.py" />
@@ -44,13 +43,13 @@
           <file leaf-file-name="lifetmm_core.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/lifetmm/lifetmm_core.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.85396385">
-                  <caret line="464" column="63" selection-start-line="464" selection-start-column="63" selection-end-line="464" selection-end-column="63" />
+                <state vertical-scroll-proportion="-0.1349096">
+                  <caret line="552" column="0" selection-start-line="552" selection-start-column="0" selection-end-line="552" selection-end-column="0" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
-                    <element signature="e#181#478#1" expanded="false" />
-                    <element signature="e#813#1009#1" expanded="false" />
-                    <element signature="e#2178#2262#1" expanded="false" />
+                    <element signature="e#217#514#1" expanded="false" />
+                    <element signature="e#849#1045#1" expanded="false" />
+                    <element signature="e#1658#1742#1" expanded="false" />
                   </folding>
                 </state>
               </provider>
@@ -60,7 +59,7 @@
             <entry file="file://$PROJECT_DIR$/lifetmm/tester.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state vertical-scroll-proportion="0.0">
-                  <caret line="136" column="12" selection-start-line="136" selection-start-column="12" selection-end-line="137" selection-end-column="34" />
+                  <caret line="155" column="55" selection-start-line="155" selection-start-column="55" selection-end-line="155" selection-end-column="55" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                     <element signature="e#9590#11179#0" expanded="false" />
@@ -107,16 +106,16 @@
         </leaf>
       </split-first>
       <split-second>
-        <leaf>
+        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file leaf-file-name="examples.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/lifetmm/examples.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.7357441">
-                  <caret line="166" column="59" selection-start-line="166" selection-start-column="59" selection-end-line="166" selection-end-column="59" />
+                <state vertical-scroll-proportion="0.5465925">
+                  <caret line="177" column="46" selection-start-line="177" selection-start-column="46" selection-end-line="177" selection-end-column="46" />
                   <folding>
-                    <element signature="e#515#1709#0" expanded="false" />
-                    <element signature="e#1732#2849#0" expanded="false" />
-                    <element signature="e#2877#4217#0" expanded="false" />
+                    <element signature="e#533#1727#0" expanded="false" />
+                    <element signature="e#1750#2867#0" expanded="false" />
+                    <element signature="e#2895#4235#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
@@ -199,7 +198,7 @@
     <ConfirmationsSetting value="0" id="Remove" />
   </component>
   <component name="ProjectView">
-    <navigator currentView="ProjectPane" proportions="" version="1">
+    <navigator proportions="" version="1">
       <flattenPackages />
       <showMembers />
       <showModules />
@@ -212,54 +211,7 @@
       <manualOrder />
       <foldersAlwaysOnTop value="true" />
     </navigator>
-    <panes>
-      <pane id="ProjectPane">
-        <subPane>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Lifetmm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Lifetmm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Lifetmm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Lifetmm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Lifetmm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="lifetmm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
-      <pane id="Scratches" />
-      <pane id="Scope">
-        <subPane subId="Problems" />
-        <subPane subId="Project Files">
-          <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
-    </panes>
+    <panes />
   </component>
   <component name="PropertiesComponent">
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../Notebooks" />
@@ -572,11 +524,6 @@
           </properties>
           <option name="timeStamp" value="50" />
         </breakpoint>
-        <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/lifetmm/lifetmm_core.py</url>
-          <line>428</line>
-          <option name="timeStamp" value="57" />
-        </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
@@ -589,7 +536,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="64" />
+      <option name="time" value="76" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
@@ -598,7 +545,6 @@
         <watch expression="n_list[m]" language="Python" />
         <watch expression="self.n_list[m]" language="Python" />
         <watch expression="self.n_list[self.m]" language="Python" />
-        <watch expression="mL" language="Python" />
       </configuration>
     </watches-manager>
   </component>
@@ -652,9 +598,9 @@
           <caret line="196" column="0" selection-start-line="196" selection-start-column="0" selection-end-line="196" selection-end-column="0" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#181#478#1" expanded="false" />
-            <element signature="e#813#1009#1" expanded="false" />
-            <element signature="e#2178#2262#1" expanded="false" />
+            <element signature="e#217#514#1" expanded="false" />
+            <element signature="e#849#1045#1" expanded="false" />
+            <element signature="e#1658#1742#1" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -708,9 +654,9 @@
           <caret line="60" column="19" selection-start-line="60" selection-start-column="19" selection-end-line="60" selection-end-column="60" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#181#478#1" expanded="false" />
-            <element signature="e#813#1009#1" expanded="false" />
-            <element signature="e#2178#2262#1" expanded="false" />
+            <element signature="e#217#514#1" expanded="false" />
+            <element signature="e#849#1045#1" expanded="false" />
+            <element signature="e#1658#1742#1" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -888,13 +834,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Continuum/Anaconda3/Lib/site-packages/scipy/integrate/quadpack.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33333334">
-          <caret line="380" column="0" selection-start-line="380" selection-start-column="0" selection-end-line="380" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lifetmm/vrendenbergEmissionEnhancement.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.828479">
@@ -924,16 +863,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lifetmm/vredenberg.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="34" column="54" selection-start-line="34" selection-start-column="54" selection-end-line="34" selection-end-column="54" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/AppData/Local/Continuum/Anaconda3/Lib/site-packages/numpy/core/numeric.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.66183573">
@@ -946,7 +875,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.2190016">
           <caret line="8" column="0" selection-start-line="8" selection-start-column="0" selection-end-line="8" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -954,6 +882,23 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.33333334">
           <caret line="86" column="0" selection-start-line="86" selection-start-column="0" selection-end-line="86" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lifetmm/vredenberg.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="34" column="54" selection-start-line="34" selection-start-column="54" selection-end-line="34" selection-end-column="54" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/reference/TransferMatrix/transfermatrix.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="10" column="29" selection-start-line="10" selection-start-column="29" selection-end-line="10" selection-end-column="29" />
           <folding />
         </state>
       </provider>
@@ -962,6 +907,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="39" column="15" selection-start-line="39" selection-start-column="15" selection-end-line="39" selection-end-column="15" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Continuum/Anaconda3/Lib/site-packages/scipy/integrate/quadpack.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.33333334">
+          <caret line="380" column="0" selection-start-line="380" selection-start-column="0" selection-end-line="380" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -976,18 +929,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/reference/TransferMatrix/transfermatrix.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="10" column="29" selection-start-line="10" selection-start-column="29" selection-end-line="10" selection-end-column="29" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lifetmm/tester.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="136" column="12" selection-start-line="136" selection-start-column="12" selection-end-line="137" selection-end-column="34" />
+          <caret line="155" column="55" selection-start-line="155" selection-start-column="55" selection-end-line="155" selection-end-column="55" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
             <element signature="e#9590#11179#0" expanded="false" />
@@ -1000,25 +945,25 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lifetmm/examples.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.7357441">
-          <caret line="166" column="59" selection-start-line="166" selection-start-column="59" selection-end-line="166" selection-end-column="59" />
+        <state vertical-scroll-proportion="0.5465925">
+          <caret line="177" column="46" selection-start-line="177" selection-start-column="46" selection-end-line="177" selection-end-column="46" />
           <folding>
-            <element signature="e#515#1709#0" expanded="false" />
-            <element signature="e#1732#2849#0" expanded="false" />
-            <element signature="e#2877#4217#0" expanded="false" />
+            <element signature="e#533#1727#0" expanded="false" />
+            <element signature="e#1750#2867#0" expanded="false" />
+            <element signature="e#2895#4235#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lifetmm/lifetmm_core.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.85396385">
-          <caret line="464" column="63" selection-start-line="464" selection-start-column="63" selection-end-line="464" selection-end-column="63" />
+        <state vertical-scroll-proportion="-0.1349096">
+          <caret line="552" column="0" selection-start-line="552" selection-start-column="0" selection-end-line="552" selection-end-column="0" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#181#478#1" expanded="false" />
-            <element signature="e#813#1009#1" expanded="false" />
-            <element signature="e#2178#2262#1" expanded="false" />
+            <element signature="e#217#514#1" expanded="false" />
+            <element signature="e#849#1045#1" expanded="false" />
+            <element signature="e#1658#1742#1" expanded="false" />
           </folding>
         </state>
       </provider>
