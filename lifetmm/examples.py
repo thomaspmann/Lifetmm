@@ -19,176 +19,81 @@ mmTOnm = 1E6
 
 
 def mcgehee():
-    '''
-    Copy of the stanford group simulation at 600nm
-    '''
+    st = LifetimeTmm()
+    st.add_layer(0, 1.4504)
+    st.add_layer(110, 1.7704+0.01161j)
+    st.add_layer(35, 1.4621+0.04426j, active=True)
+    st.add_layer(220,2.12+0.3166016j)
+    st.add_layer(7, 2.095+2.3357j)
+    st.add_layer(0, 1.20252+7.25439j)
 
-    # list of layer thicknesses in nm
-    d_list = [inf, 110, 35, 220, 7, inf]
-    # list of refractive indices
-    n_list = [1.4504, 1.7704+0.01161j, 1.4621+0.04426j, 2.12+0.3166016j, 2.095+2.3357j, 1.20252+7.25439j]
-    # list of wavelengths to evaluate
-    lambda_vac = 600
-
-    structure = LifetimeTmm(d_list, n_list)
-    structure.setWavelength(lambda_vac)
-
-    data = np.zeros(sum(d_list[1:-1]))
-    for th in [0]:
-        for pol in ['s']:
-            structure.setPolarization(pol)
-            structure.setAngle(th)
-            structure.transfer_matrix()
-            data = getattr(structure, 'E_square')
+    st.set_wavelength(600)
+    st.set_bulk_n(1.54)
+    st.set_angle(0)
+    st.set_polarization('s')
+    x, y = st.structure_E_field()
 
     plt.figure()
-    plt.plot(data, label='data')
-    dsum = getattr(structure, 'd_cumsum')
+    plt.plot(x, y)
+    dsum = getattr(st, 'd_cumsum')
     plt.axhline(y=1, linestyle='--', color='k')
     for i, xmat in enumerate(dsum):
         plt.axvline(x=xmat, linestyle='-', color='r', lw=2)
         # plt.text(xmat-70, max(data)*0.99,'n: %.2f' % n_list[i+1], rotation=90)
     plt.xlabel('Position in Device (nm)')
     plt.ylabel('Normalized |E|$^2$Intensity')
-    # plt.title('E-Field Intensity in Device. E_avg in Erbium: %.4f' % E_avg)
-    plt.legend()
     plt.show()
 
 
-def mcgehee2():
-    # list of layer thicknesses in nm
-    d_list = [inf, 110, 35, 220, 7, inf]
-    # list of refractive indices
-    n_list = [1.4504, 1.7704+0.01161j, 1.4621+0.04426j, 2.12+0.3166016j, 2.095+2.3357j, 1.20252]
-    # list of wavelengths to evaluate
-    lambda_vac = 600
+def purcell_layer():
+    st = LifetimeTmm()
+    Er = 1.54
+    st.add_layer(0, Er)
+    st.add_layer(500, Er)
+    st.add_layer(10, Er, active=True)
+    st.add_layer(500, Er)
+    st.add_layer(0, Er)
 
-    structure = LifetimeTmm(d_list, n_list)
-    structure.setWavelength(lambda_vac)
+    st.set_wavelength(1500)
+    st.set_bulk_n(Er)
 
-    data = np.zeros(sum(d_list[1:-1]))
-    for th in [0]:
-        for pol in ['s']:
-            structure.setPolarization(pol)
-            structure.setAngle(th)
-            structure.transfer_matrix()
-            data = getattr(structure, 'E_square')
+    y = st.purcell_factor_layer()
 
     plt.figure()
-    plt.plot(data, label='data')
-    dsum = getattr(structure, 'd_cumsum')
+    plt.plot(y)
     plt.axhline(y=1, linestyle='--', color='k')
-    for i, xmat in enumerate(dsum):
-        plt.axvline(x=xmat, linestyle='-', color='r', lw=2)
-        # plt.text(xmat-70, max(data)*0.99,'n: %.2f' % n_list[i+1], rotation=90)
-    plt.xlabel('Position in Device (nm)')
-    plt.ylabel('Normalized |E|$^2$Intensity')
-    # plt.title('E-Field Intensity in Device. E_avg in Erbium: %.4f' % E_avg)
-    plt.legend()
+    plt.xlabel('Position in layer (nm)')
+    plt.ylabel('Purcell Factor')
     plt.show()
 
+def purcell_z():
+    st = LifetimeTmm()
+    Er = 1.54
+    st.add_layer(0, Er)
+    st.add_layer(500, Er)
+    st.add_layer(10, Er, active=True)
+    st.add_layer(500, Er)
+    st.add_layer(0, Er)
 
-def vrendenbergen():
-    # list of layer thicknesses in nm
-    d_list = [inf, 110, 35, 220, 7, inf]
-    # list of refractive indices
-    n_list = [1.4504, 1.7704+0.01161j, 1.4621+0.04426j, 2.12+0.3166016j, 2.095+2.3357j, 1.20252+7.25439j]
-    # list of wavelengths to evaluate
-    lambda_vac = 600
-    # Doped layer (mote array index starts at zero)
-    m = 3
-    # Bulk refractive index
-    n_a = n_list[m]
+    st.set_wavelength(1500)
+    st.set_bulk_n(Er)
 
-    structure = LifetimeTmm(d_list, n_list)
-    structure.setActiveLayer(m)
-    structure.setWavelength(lambda_vac)
-    structure.setBulkRefract(n_a)
-
-    data = np.zeros(sum(d_list[1:-1]))
-    for th in [0]:
-        for pol in ['s']:
-            structure.setPolarization(pol)
-            structure.setAngle(th)
-            structure.vrendenberg()
-            # structure.transfer_matrix()
-            data = getattr(structure, 'E_square')
-
+    # Evaluate using scipy's integrate function one x at a time
+    # dsum = getattr(st, 'd_cumsum')
+    y = []
+    for x in tqdm(range(10)):
+        # print('Evaluating at x = {:.2f}'.format(x))
+        y.append(st.purcell_factor_z(x))
     plt.figure()
-    plt.plot(data, label='data')
-    dsum = getattr(structure, 'd_cumsum')
+    plt.plot(y)
     plt.axhline(y=1, linestyle='--', color='k')
-    for i, xmat in enumerate(dsum):
-        plt.axvline(x=xmat, linestyle='-', color='r', lw=2)
-        # plt.text(xmat-70, max(data)*0.99,'n: %.2f' % n_list[i+1], rotation=90)
-    plt.xlabel('Position in Device (nm)')
-    plt.ylabel('Normalized |E|$^2$Intensity')
-    # plt.title('E-Field Intensity in Device. E_avg in Erbium: %.4f' % E_avg)
-    plt.legend()
+    plt.xlabel('Position in layer (nm)')
+    plt.ylabel('Purcell Factor')
     plt.show()
-
-
-def test():
-    # # list of layer thicknesses in nm
-    # d_list = [inf, 1000, 50, 50, 100, 25, 50, 50, 1000, inf]
-    # # list of refractive indices
-    # n_list = [1, 1, 3, 1, 1.54, 1, 3, 1, 3, 3]
-    # # Doped layer (mote array index starts at zero)
-    # m = 4
-
-    # list of layer thicknesses in nm
-    d_list = [inf, 250, 500, 1000, inf]
-    # list of refractive indices
-    n_list = [1.54, 1.54, 1.54, 1.54, 1.54]
-    # Doped layer (mote array index starts at zero)
-    m = 2
-
-    # list of free space wavelengths to evaluate
-    lambda_vac = 1550
-    # Bulk refractive index
-    n_a = n_list[m]
-
-    structure = LifetimeTmm(d_list, n_list)
-    structure.set_active_layer(m)
-    structure.set_wavelength(lambda_vac)
-    structure.set_bulk_n(n_a)
-
-    # structure.show_structure()
-    #
-    # structure.set_angle(0)
-    # structure.set_polarization('s')
-    # x, E_square = structure.layer_E_Field(m)
-    # x, E_square = structure.transfer_matrix()
-    # plt.figure()
-    # plt.plot(x, E_square)
-    # dsum = getattr(structure, 'd_cumsum')
-    # plt.axhline(y=1, linestyle='--', color='k')
-    # for i, xmat in enumerate(dsum):
-    #     plt.axvline(x=xmat, linestyle='-', color='r', lw=2)
-    # plt.xlabel('Position in Device (nm)')
-    # plt.ylabel('Normalized |E|$^2$Intensity')
-    # plt.title('E-Field Intensity in Device. E_avg in Erbium: %.4f' % E_avg)
-    # plt.legend(title='Theta')
-    # plt.show()
-
-    # # Evaluate using scipy's integrate function one x at a time
-    # Ez = []
-    # for x in tqdm(range(d_list[m])):
-    #     # print('Evaluating at x = {:.2f}'.format(x))
-    #     Ez.append(structure.purcell_factor_z(x))
-    # plt.figure()
-    # plt.plot(Ez)
-    # plt.show()
-
-    # Evaluate for entire layer at once
-    result = structure.purcell_factor_layer()
-    plt.figure()
-    plt.plot(result)
-    plt.show()
-
 
 if __name__ == "__main__":
     # mcgehee()
-    test()
-    # vrendenbergen()
+    # purcell_z()
+    purcell_layer()
+
 

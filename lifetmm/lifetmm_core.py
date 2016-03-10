@@ -50,33 +50,23 @@ def H_term(th_1, th_s):
 
 
 class LifetimeTmm:
-    def __init__(self, d_list, n_list, x_step=1):
+    def __init__(self):
         """
         Initilise with the structure of the material to be simulated
         """
-        # convert lists to numpy arrays if they're not already.
-        n_list = np.array(n_list, dtype=complex)
-        d_list = np.array(d_list, dtype=float)
-
-        # input tests
-        if (d_list[0] != inf) or (d_list[-1] != inf):
-            raise ValueError('d_list must start and end with inf!')
-        if (n_list.ndim != 1) or (d_list.ndim != 1) or (n_list.size != d_list.size):
-            raise ValueError("Problem with n_list or d_list!")
-        if type(x_step) != int:
-            raise ValueError('x_step must be an integer. Reduce SI unit'
-                             'inputs for thicknesses and wavelengths for greater resolution ')
-
-        # Set first and last layer thicknesses to zero (from inf) - helps for summing later in program
-        d_list[0] = 0
-        d_list[-1] = 0
-        # # Start position of each layer
-        self.d_cumsum = np.cumsum(d_list)
-        self.num_layers = np.size(d_list)
-        self.d_list = d_list
-        self.n_list = n_list
-        self.x_step = x_step
+        self.d_list = np.array([], dtype=float)
+        self.n_list = np.array([], dtype=complex)
+        self.m_list = np.array([], dtype=bool)
+        self.d_cumsum = np.array([], dtype=float)
+        self.num_layers = 0
         self.pol = 'u'
+
+    def add_layer(self, d, n, active=False):
+        self.d_list = np.append(self.d_list, d)
+        self.n_list = np.append(self.n_list, n)
+        self.m_list = np.append(self.m_list, active)
+        self.d_cumsum = np.cumsum(self.d_list)
+        self.num_layers = np.size(self.d_list)
 
     def set_active_layer(self, m):
         self.m = m
@@ -114,39 +104,6 @@ class LifetimeTmm:
             self.th = th * pi / 180
         else:
             raise ValueError('Units of angle not recognised. Please enter \'radians\' or \'degrees\'.')
-
-    def flip(self):
-        """
-        Flip the function front-to-back, to describe a(d-z) instead of a(z),
-        where d is layer thickness.
-        """
-        self.d_list = self.d_list[::-1]
-        self.n_list = self.n_list[::-1]
-        self.d_cumsum = self.d_cumsum[::-1]
-        self.m = len(self.d_list)-1-self.m
-
-    def _prepare_struct(self, Lz=1E3):
-        """ Insert pseudo layers of the ambient and substrate layers into the structure. Used for averaging.
-        """
-        d_list = self. d_list
-        n_list = self.n_list
-        self.m += 1
-
-        # TODO: check with zoran it is OK to neglect absorption. This might be why only ok for weakly absorbing medium
-        d1 = Lz/(2*n_list[0].real)
-        ds = Lz/(2*n_list[-1].real)
-
-        d_list = np.insert(d_list, 1, [d1])
-        d_list = np.insert(d_list, -1, [ds])
-
-        n_list = np.insert(n_list, 1, n_list[0])
-        n_list = np.insert(n_list, -1, n_list[-1])
-
-        self.n_list = n_list
-        self.d_list = d_list
-        # Re-evaluate start position of each layer and number of layers
-        self.d_cumsum = np.cumsum(d_list)
-        self.num_layers = np.size(d_list)
 
     def I_mat(self, nj, nk):
         pol = self.pol
@@ -191,13 +148,32 @@ class LifetimeTmm:
             S = S @ mL @ mI
         return S
 
-    def transfer_matrix(self):
+    def calc_R_and_T(self):
+        S = self.system_matrix()
+        R = abs(S[1, 0] / S[0, 0]) ** 2
+        T = abs(1 / S[0, 0]) ** 2  # note this is incorrect https://en.wikipedia.org/wiki/Fresnel_equations
+        return R, T
+
+    def calc_absorption(self):
+        lam_vac = self.lam_vac
+        n_list = self.n_list
+        num_layers = self.num_layers
+
+        # Absorption coefficient in 1/cm
+        absorption = np.zeros(num_layers)
+        for layer in range(1, num_layers):
+            absorption[layer] = (4*pi*np.imag(n_list[layer])) / (lam_vac*1.0e-7)
+        return absorption
+
+    def structure_E_field(self, x_step=1):
+
+        self._simulation_test(x_step)
+
         d_list = self.d_list
         n_list = self.n_list
         n = n_list
         lam_vac = self.lam_vac
         th = self.th
-        x_step = self.x_step
         d_cumsum = self.d_cumsum
         num_layers = self.num_layers
 
@@ -253,32 +229,17 @@ class LifetimeTmm:
 
         return x_pos, E_square
 
-    def calc_R_and_T(self):
-        S = self.system_matrix()
-        R = abs(S[1, 0] / S[0, 0]) ** 2
-        T = abs(1 / S[0, 0]) ** 2  # note this is incorrect https://en.wikipedia.org/wiki/Fresnel_equations
-        return R, T
+    def layer_E_Field(self, x_step=1, result='E'):
 
-    def calc_absorption(self):
-        lam_vac = self.lam_vac
-        n_list = self.n_list
-        num_layers = self.num_layers
+        self._simulation_test(x_step)
 
-        # Absorption coefficient in 1/cm
-        absorption = np.zeros(num_layers)
-        for layer in range(1, num_layers):
-            absorption[layer] = (4*pi*np.imag(n_list[layer])) / (lam_vac*1.0e-7)
-        return absorption
-
-    def layer_E_Field(self, result='E'):
         d_list = self.d_list
         n_list = self.n_list
         n = n_list
         num_layers = self.num_layers
         lam_vac = self.lam_vac
         th = self.th
-        x_step = self.x_step
-        m = self.m
+        m = np.where(self.m_list == True)[0][0]
 
         # calculate primed transfer matrices for info on field inside the structure layer
         qj = sqrt(n[m]**2 - n[0].real**2 * sin(th)**2)
@@ -314,14 +275,16 @@ class LifetimeTmm:
         else:
             return x, E
 
-    def z_E_Field(self, x, result='E'):
+    def z_E_Field(self, x, x_step=1, result='E'):
+        self._simulation_test(x_step)
+
         d_list = self.d_list
         n_list = self.n_list
         n = n_list
         num_layers = self.num_layers
         lam_vac = self.lam_vac
         th = self.th
-        m = self.m
+        m = np.where(self.m_list == True)[0][0]
 
         # calculate primed transfer matrices for info on field inside the structure layer
         qj = sqrt(n[m]**2 - n[0].real**2 * sin(th)**2)
@@ -358,19 +321,54 @@ class LifetimeTmm:
         ns = self.n_list[-1]
         return 2 / (n1*H(th_1)*(abs(c1)**2 + abs(d1)**2) + ns*H(th_s)*(abs(cs)**2 + abs(ds)**2))
 
+    def flip(self):
+        """
+        Flip the function front-to-back, to describe a(d-z) instead of a(z),
+        where d is layer thickness.
+        """
+        self.d_list = self.d_list[::-1]
+        self.n_list = self.n_list[::-1]
+        self.m_list = self.m_list[::-1]
+        self.d_cumsum = self.d_cumsum[::-1]
+
+    def _prepare_struct(self, Lz=1E3):
+        """ Insert pseudo layers of the ambient and substrate layers into the structure. Used for averaging.
+        """
+        d_list = self.d_list
+        n_list = self.n_list
+        m_list = self.m_list
+        # TODO: check with zoran it is OK to neglect absorption. This might be why only ok for weakly absorbing medium
+        d1 = Lz/(2*n_list[0].real)
+        ds = Lz/(2*n_list[-1].real)
+
+        d_list = np.insert(d_list, 1, [d1])
+        d_list = np.insert(d_list, -1, [ds])
+
+        n_list = np.insert(n_list, 1, n_list[0])
+        n_list = np.insert(n_list, -1, n_list[-1])
+
+        m_list = np.insert(m_list, 1, False)
+        m_list = np.insert(m_list, -1, False)
+
+        self.n_list = n_list
+        self.d_list = d_list
+        self.m_list = m_list
+        self.d_cumsum = np.cumsum(d_list)
+        self.num_layers = np.size(d_list)
+
     def purcell_factor_layer(self):
         # Insert Pseudo layers for ambient and substrate
         self._prepare_struct()
 
         d_list = self.d_list
         n_list = self.n_list
-        m = self.m
+        m = np.where(self.m_list == True)[0][0]
         n_a = self.n_a
 
         # Evaluate upper bound of integration limit
         th_critical = thetaCritical(m, n_list)
         # Range of emission angles in active layer to evaluate over.
-        resolution = 2**10 + 1
+        resolution = 2**14 + 1
         th_emission, dth = np.linspace(0, th_critical, resolution, endpoint=False, retstep=True)
         integral = np.zeros((resolution, d_list[m]), dtype=complex)
         print('\nNumber of iterations per polarisation: {}'.format(resolution))
@@ -451,16 +449,15 @@ class LifetimeTmm:
                     last_term = n_list[m]**2 * cos(th_m) * sin(th_m)
                     # integral[i, :] += first_term*h_term*last_term
                     U_q = first_term*h_term*last_term
-                    # TODO: check that i should be averaging the two propagating modes. Makes sense results wise.
-                    integral[i, :] += (U_j + U_q) / 2
+                    integral[i, :] += (U_j+U_q)
 
         if np.isreal(integral.all()):
             # Discard zero imaginary part
             integral = integral.real
         else:
             raise ValueError('Cannot integrate a complex number with scipy romb algorithm.')
-        result = integrate.romb(integral, dx=dth, axis=0)
-        return result
+        purcell_factor = integrate.romb(integral, dx=dth.real, axis=0) / 2
+        return purcell_factor
 
     def purcell_factor_z(self, x):
         # Insert Pseudo layers for ambient and substrate
@@ -468,7 +465,7 @@ class LifetimeTmm:
 
         d_list = self.d_list
         n_list = self.n_list
-        m = self.m
+        m = np.where(self.m_list == True)[0][0]
         n_a = self.n_a
 
         def func(th_m, x):
@@ -546,7 +543,7 @@ class LifetimeTmm:
                 h_term = H_term(th_1, th_s)
                 last_term = n_list[m]**2 * cos(th_m) * sin(th_m)
                 U_q = first_term*h_term*last_term
-                return (U_j + U_q)/2
+                return U_j + U_q
 
         # Evaluate upper bound of integration limit
         th_critical = thetaCritical(m, n_list)
@@ -555,7 +552,7 @@ class LifetimeTmm:
         for pol in ['s', 'p']:
             self.set_polarization(pol)
             y, error = integrate.quad(func, 0, th_critical, args=(x,))
-            result += y
+            result += (y/2)
         return result
 
     def show_structure(self):
@@ -592,3 +589,10 @@ class LifetimeTmm:
         ax.set_xlim([0, d_cumsum[-1]])
         ax.set(xlabel=r'x', ylabel=r'A.U.')
         plt.show()
+
+    def _simulation_test(self, x_step):
+        if (self.d_list[0] != 0) or (self.d_list[-1] != 0):
+            raise ValueError('Structure must start and end with 0!')
+        if type(x_step) != int:
+            raise ValueError('x_step must be an integer. Reduce SI unit'
+                             'inputs for thicknesses and wavelengths for greater resolution ')
