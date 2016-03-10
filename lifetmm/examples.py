@@ -39,7 +39,6 @@ def mcgehee():
     plt.axhline(y=1, linestyle='--', color='k')
     for i, xmat in enumerate(dsum):
         plt.axvline(x=xmat, linestyle='-', color='r', lw=2)
-        # plt.text(xmat-70, max(data)*0.99,'n: %.2f' % n_list[i+1], rotation=90)
     plt.xlabel('Position in Device (nm)')
     plt.ylabel('Normalized |E|$^2$Intensity')
     plt.show()
@@ -71,7 +70,7 @@ def purcell_z():
     Er = 1.54
     st.add_layer(0, Er)
     st.add_layer(500, Er)
-    st.add_layer(10, Er, active=True)
+    st.add_layer(100, Er, active=True)
     st.add_layer(500, Er)
     st.add_layer(0, Er)
 
@@ -81,7 +80,7 @@ def purcell_z():
     # Evaluate using scipy's integrate function one x at a time
     # dsum = getattr(st, 'd_cumsum')
     y = []
-    for x in tqdm(range(10)):
+    for x in tqdm(range(100)):
         # print('Evaluating at x = {:.2f}'.format(x))
         y.append(st.purcell_factor_z(x))
     plt.figure()
@@ -93,7 +92,7 @@ def purcell_z():
 
 if __name__ == "__main__":
     # mcgehee()
-    # purcell_z()
-    purcell_layer()
+    purcell_z()
+    # purcell_layer()
 
 

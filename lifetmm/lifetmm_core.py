@@ -551,7 +551,7 @@ class LifetimeTmm:
         result = 0
         for pol in ['s', 'p']:
             self.set_polarization(pol)
-            y, error = integrate.quad(func, 0, th_critical, args=(x,))
+            y, error = integrate.quad(func, 0, th_critical, args=(x,), epsrel=1E-3)
             result += (y/2)
         return result
 
