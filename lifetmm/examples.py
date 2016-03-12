@@ -101,9 +101,9 @@ def test():
     st = LifetimeTmm()
     Er = 1.5
     lam = 1540
-    st.add_layer(0, 3)
-    st.add_layer(2000, Er, active=True)
     st.add_layer(0, Er)
+    st.add_layer(2000, Er, active=True)
+    st.add_layer(0, 1)
 
     st.set_wavelength(lam)
     st.set_bulk_n(Er)

@@ -103,7 +103,6 @@ class LifetimeTmm:
             self.th = th * pi / 180
         else:
             raise ValueError('Units of angle not recognised. Please enter \'radians\' or \'degrees\'.')
-        # self.S_primed_matrix() #TODO any advantage creating separate s primed function?
 
     def I_mat(self, nj, nk):
         pol = self.pol
@@ -116,20 +115,16 @@ class LifetimeTmm:
         if pol in ['s', 'u']:
             r = (qj - qk) / (qj + qk)
             t = (2 * qj) / (qj + qk)
-        elif pol in 'p':
+        else:  # pol is 'p'
             r = (qj * nk**2 - qk * nj**2) / (qj * nk**2 + qk * nj**2)
             t = (2 * nj * nk * qj) / (qj * nk**2 + qk * nj**2)
-        else:
-            raise ValueError('Error with polarisation when calculating I_mat.')
         if t == 0:
             raise ValueError('Transmission is zero, cannot evaluate I+mat. Check input parameters.')
         return (1/t) * np.array([[1, r], [r, 1]], dtype=complex)
 
     def L_mat(self, nj, dj):
-        lam_vac = self.lam_vac
-        n0 = self.n_list[0]
-        qj = q(nj, n0, self.th)
-        eps = (2*pi*qj) / lam_vac
+        qj = q(nj, self.n_list[0], self.th)
+        eps = (2*pi*qj) / self.lam_vac
         # TODO: when eps is imaginary and dj is large the exponent becomes v. large and causes a crash. Factor out 2pi?
         delta = eps*dj
         return np.array([[exp(-1j*delta), 0], [0, exp(1j*delta)]], dtype=complex)
@@ -217,7 +212,7 @@ class LifetimeTmm:
         else:
             return x_pos, E
 
-    def layer_E_Field(self, x_step=1, result='E'):
+    def layer_E_Field(self, x_step=1):
 
         self._simulation_test(x_step)
 
@@ -227,12 +222,6 @@ class LifetimeTmm:
         lam_vac = self.lam_vac
         th = self.th
         m = np.where(self.m_list == True)[0][0]
-
-        # calculate primed transfer matrices for info on field inside the structure layer
-        qj = sqrt(n[m]**2 - n[0].real**2 * sin(th)**2)
-        eps = (2*pi*qj) / lam_vac
-        dj = d_list[m]
-        x = np.arange((x_step / 2.0), dj, x_step)
 
         # Calculate S_Prime
         S_prime = self.I_mat(n[0], n[1])
@@ -249,18 +238,18 @@ class LifetimeTmm:
             S_dprime = S_dprime @ mI @ mL
 
         #  Electric Field Profile
+        qj = q(n[m], n[0], th)
+        eps = (2*pi*qj) / lam_vac
+        dj = d_list[m]
+        x = np.arange((x_step / 2.0), dj, x_step)
         num = S_dprime[0, 0] * exp(-1j*eps*(dj-x)) + S_dprime[1, 0] * exp(1j*eps*(dj-x))
         den = S_prime[0, 0] * S_dprime[0, 0] * exp(-1j*eps*dj) + S_prime[0, 1] * S_dprime[1, 0] * exp(1j*eps*dj)
         E = num / den
 
-        if result == 'E_square':
-            E_square = abs(E[:])**2
-            return x, E_square
-        elif result == 'E_avg':
-            E_avg = sum(abs(E)**2) / (x_step*dj)
-            return E_avg
-        else:
-            return x, E
+        E_square = abs(E[:])**2
+        E_avg = sum(abs(E)**2) / (x_step*dj)
+
+        return {'E': E, 'E_square': E_square, 'E_avg': E_avg}
 
     def z_E_Field(self, x, x_step=1, result='E'):
         self._simulation_test(x_step)
@@ -341,7 +330,7 @@ class LifetimeTmm:
     def purcell_factor_layer(self):
         # Insert Pseudo layers for ambient and substrate
         self._prepare_struct()
-        self.show_structure()
+        # self.show_structure()
         d_list = self.d_list
         n_list = self.n_list
         m = np.where(self.m_list == True)[0][0]
@@ -351,12 +340,22 @@ class LifetimeTmm:
         th_critical = thetaCritical(m, n_list)
         # Range of emission angles in active layer to evaluate over.
         resolution = 2**13 + 1
+        resolution = 2**9 + 1
         th_emission, dth = np.linspace(0, th_critical, resolution, endpoint=False, retstep=True)
         integral = np.zeros((resolution, d_list[m]), dtype=complex)
-        print('\nNumber of iterations per polarisation: {}'.format(resolution))
+
+        # Params for tqdm progress bar
+        kwargs = {
+            'total': resolution,
+            'unit': 'theta',
+            'unit_scale': True,
+            'leave': True,
+        }
+
         for pol in ['s', 'p']:
             self.set_polarization(pol)
-            for i, th_m in tqdm(enumerate(th_emission)):
+            # print('Solving for polarization: {}'.format(pol))
+            for i, th_m in tqdm(enumerate(th_emission), **kwargs):
                 # Corresponding emission angle in superstrate
                 th_1 = snell(n_list[m], n_list[0], th_m)
                 # Corresponding emission angle in substrate
@@ -365,7 +364,7 @@ class LifetimeTmm:
                 if np.iscomplex(th_s):
                     self.set_angle(th_1)
                     # Evaluate E(x)**2 inside active layer
-                    x, u_z = self.structure_E_field()
+                    u_z = self.layer_E_Field()['E']
                     S = self.system_matrix()
                     c1 = 1
                     d1 = S[1, 0] / S[0, 0]
@@ -379,7 +378,7 @@ class LifetimeTmm:
                     self.flip()
                     self.set_angle(th_s)
                     # Evaluate E(x)**2 inside active layer
-                    x, u_z = self.layer_E_Field()
+                    u_z = self.layer_E_Field()['E']
                     # Flip field back to forward direction
                     u_z = u_z[::-1]
                     S = self.system_matrix()
@@ -396,7 +395,7 @@ class LifetimeTmm:
                     # First mode j (D_s = 0)
                     self.set_angle(th_1)
                     # Evaluate E(x)**2 inside active layer
-                    x, u_j = self.layer_E_Field()
+                    u_j = self.layer_E_Field()['E']
                     S = self.system_matrix()
                     c1j = 1
                     d1j = S[1, 0] / S[0, 0]
@@ -410,7 +409,7 @@ class LifetimeTmm:
                     # Second mode q (C_s = 0)
                     self.set_angle(th_1)  #TODO theta 1 or s? I think 1
                     # Evaluate E(x)**2 inside active layer
-                    x, v_p = self.layer_E_Field()
+                    v_p = self.layer_E_Field()['E']
                     S = self.system_matrix()
                     c1p = 1
                     d1p = S[1, 1] / S[0, 1]
