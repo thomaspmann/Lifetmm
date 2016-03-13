@@ -30,13 +30,12 @@ def mcgehee():
     st.show_structure()
 
     st.set_wavelength(600)
-    st.set_bulk_n(1.54)
     st.set_angle(0)
     st.set_polarization('s')
-    x, y = st.structure_E_field(result='E_square')
+    y = st.structure_E_field()['E_square']
 
     plt.figure()
-    plt.plot(x, y)
+    plt.plot(y)
     dsum = getattr(st, 'd_cumsum')
     plt.axhline(y=1, linestyle='--', color='k')
     for i, xmat in enumerate(dsum):
@@ -101,9 +100,9 @@ def test():
     st = LifetimeTmm()
     Er = 1.5
     lam = 1540
-    st.add_layer(0, Er)
+    st.add_layer(0, 3)
     st.add_layer(2000, Er, active=True)
-    st.add_layer(0, 1)
+    st.add_layer(0, Er)
 
     st.set_wavelength(lam)
     st.set_bulk_n(Er)
@@ -121,6 +120,6 @@ def test():
 if __name__ == "__main__":
     # mcgehee()
     # purcell_z()
-    # purcell_layer()
-    test()
+    purcell_layer()
+    # test()
 
