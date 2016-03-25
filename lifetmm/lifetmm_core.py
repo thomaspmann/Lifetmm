@@ -184,6 +184,13 @@ class LifetimeTmm:
         n = self.n_list
         m = self.m
 
+        # calculate the total system transfer matrix S
+        S = self.I_mat(n[0], n[1])
+        for layer in range(1, self.num_layers - 1):
+            mL = self.L_mat(n[layer], d_list[layer])
+            mI = self.I_mat(n[layer], n[layer + 1])
+            S = S @ mL @ mI
+
         # Calculate S_Prime
         S_prime = self.I_mat(n[0], n[1])
         for layerind in range(2, m + 1):
@@ -197,6 +204,117 @@ class LifetimeTmm:
             mI = self.I_mat(n[layerind], n[layerind + 1])
             mL = self.L_mat(n[layerind + 1], d_list[layerind + 1])
             S_dprime = S_dprime @ mI @ mL
+
+        # Store matrices
+        self.S = S
+        self.S_prime = S_prime
+        self.S_dprime = S_dprime
+
+        #  Electric Field Profile
+        qj = self.q(n[m], n[0], self.th)
+        eps = (2*pi*qj) / self.lam_vac
+        dj = d_list[m]
+        x = np.arange((x_step / 2.0), dj, x_step)
+        num = S_dprime[0, 0] * exp(-1j*eps*(dj-x)) + S_dprime[1, 0] * exp(1j*eps*(dj-x))
+        den = S_prime[0, 0] * S_dprime[0, 0] * exp(-1j*eps*dj) + S_prime[0, 1] * S_dprime[1, 0] * exp(1j*eps*dj)
+        E = num / den
+
+        E_square = abs(E[:])**2
+        E_avg = sum(E_square) / (x_step*dj)
+
+        return {'x': x, 'E': E, 'E_square': E_square, 'E_avg': E_avg}
+
+    def layer_E_Field_rev(self, x_step=1):
+
+        self._simulation_test(x_step)
+
+        d_list = self.d_list
+        n = self.n_list
+        m = self.m
+
+        # calculate the total system transfer matrix S
+        S = self.I_mat(n[0], n[1])
+        for layer in range(1, self.num_layers - 1):
+            mL = self.L_mat(n[layer], d_list[layer])
+            mI = self.I_mat(n[layer], n[layer + 1])
+            S = S @ mL @ mI
+
+        # Calculate S_Prime
+        S_prime = self.I_mat(n[0], n[1])
+        for layerind in range(2, m + 1):
+            mL = self.L_mat(n[layerind - 1], d_list[layerind - 1])
+            mI = self.I_mat(n[layerind - 1], n[layerind])
+            S_prime = S_prime @ mL @ mI
+
+        # Calculate S_dprime (double prime)
+        S_dprime = np.eye(2)
+        for layerind in range(m, self.num_layers - 1):
+            mI = self.I_mat(n[layerind], n[layerind + 1])
+            mL = self.L_mat(n[layerind + 1], d_list[layerind + 1])
+            S_dprime = S_dprime @ mI @ mL
+
+        # Store matrices
+        self.S = S
+        self.S_prime = S_prime
+        self.S_dprime = S_dprime
+
+        #  Electric Field Profile
+        qj = self.q(n[m], n[0], self.th)
+        eps = (2*pi*qj) / self.lam_vac
+        dj = d_list[m]
+        x = np.arange((x_step / 2.0), dj, x_step)
+        num = S_dprime[0, 0] * exp(-1j*eps*(dj-x)) + S_dprime[1, 0] * exp(1j*eps*(dj-x))
+        den = S_prime[0, 0] * S_dprime[0, 0] * exp(-1j*eps*dj) + S_prime[0, 1] * S_dprime[1, 0] * exp(1j*eps*dj)
+        E = num / den
+
+        E_square = abs(E[:])**2
+        E_avg = sum(E_square) / (x_step*dj)
+
+        return {'x': x, 'E': E, 'E_square': E_square, 'E_avg': E_avg}
+
+    def layer_E_Field_vp(self, x_step=1):
+
+        self._simulation_test(x_step)
+
+        d_list = self.d_list
+        n = self.n_list
+        m = self.m
+
+        # calculate the total system transfer matrix S
+        S = self.I_mat(n[0], n[1])
+        for layer in range(1, self.num_layers - 1):
+            mL = self.L_mat(n[layer], d_list[layer])
+            mI = self.I_mat(n[layer], n[layer + 1])
+            S = S @ mL @ mI
+
+        # Calculate S_Prime
+        S_prime = self.I_mat(n[0], n[1])
+        for layerind in range(2, m + 1):
+            mL = self.L_mat(n[layerind - 1], d_list[layerind - 1])
+            mI = self.I_mat(n[layerind - 1], n[layerind])
+            S_prime = S_prime @ mL @ mI
+
+        # Calculate S_dprime (double prime)
+        S_dprime = np.eye(2)
+        for layerind in range(m, self.num_layers - 1):
+            mI = self.I_mat(n[layerind], n[layerind + 1])
+            mL = self.L_mat(n[layerind + 1], d_list[layerind + 1])
+            S_dprime = S_dprime @ mI @ mL
+
+        # Store matrices
+        self.S = S
+        self.S_prime = S_prime
+        self.S_dprime = S_dprime
+
+        # Rearrange to satisfy vp BCs - swap columns of matrix
+        def swap_cols(arr, frm, to):
+            arr[:, [frm, to]] = arr[:, [to, frm]]
+
+        def swap_rows(arr, frm, to):
+            arr[[frm, to], :] = arr[[to, frm], :]
+
+        swap_cols(S_prime, 1, 0)
+        swap_cols(S_prime, 1, 0)
 
         #  Electric Field Profile
         qj = self.q(n[m], n[0], self.th)
@@ -288,7 +406,7 @@ class LifetimeTmm:
         th_critical = self.thetaCritical()
         # Range of emission angles in active layer to evaluate over.
         resolution = 2**13 + 1
-        resolution = 2**9 + 1
+        resolution = 2**10 + 1
         th_emission, dth = np.linspace(0, th_critical, resolution, endpoint=False, retstep=True)
         integral = np.zeros((resolution, d_list[m]), dtype=complex)
 
@@ -313,7 +431,8 @@ class LifetimeTmm:
                     self.set_angle(th_1)
                     # Evaluate E(x)**2 inside active layer
                     u_z = self.layer_E_Field()['E_square']
-                    S = self.system_matrix()
+                    # S = self.system_matrix()
+                    S = self.S
                     c1 = 1
                     d1 = S[1, 0] / S[0, 0]
                     cs = 1 / S[0, 0]
@@ -329,7 +448,8 @@ class LifetimeTmm:
                     u_z = self.layer_E_Field()['E_square']
                     # Flip field back to forward direction
                     u_z = u_z[::-1]
-                    S = self.system_matrix()
+                    # S = self.system_matrix()
+                    S = self.S
                     c1 = 0
                     d1 = 1 / S[0, 0]
                     cs = S[1, 0] / S[0, 0]
@@ -343,7 +463,8 @@ class LifetimeTmm:
                     # First mode j (D_s = 0)
                     self.set_angle(th_1)
                     u_j = self.layer_E_Field()['E_square']
-                    S = self.system_matrix()
+                    # S = self.system_matrix()
+                    S = self.S
                     c1j = 1
                     d1j = S[1, 0] / S[0, 0]
                     csj = 1 / S[0, 0]
@@ -355,12 +476,17 @@ class LifetimeTmm:
 
                     # Second mode q (C_s = 0)
                     # self.set_angle(th_1)  #TODO error here. v_p == u_j as nothing has changed. need new formula for E
-                    v_p = self.layer_E_Field()['E_square']
-                    S = self.system_matrix()
-                    c1p = 1
-                    d1p = S[1, 1] / S[0, 1]
+                    v_p = self.layer_E_Field_vp()['E_square']
+                    # S = self.system_matrix()
+                    S = self.S
+                    # c1p = 1
+                    # d1p = S[1, 1] / S[0, 1]
+                    # csp = 0
+                    # dsp = 1 / S[0, 1]
+                    c1p = S[0, 1]
+                    d1p = S[1, 1]
                     csp = 0
-                    dsp = 1 / S[0, 1]
+                    dsp = 1
                     # Make orthogonal to other mode
                     num = np.conjugate(c1j)*c1p + np.conjugate(d1j)*d1p
                     den = abs(c1j)**2 + abs(d1j)**2 + (n_list[-1]/n_list[0])*abs(csj)**2
