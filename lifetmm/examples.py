@@ -23,16 +23,17 @@ def mcgehee():
     st.add_layer(0, 1.4504)
     st.add_layer(110, 1.7704+0.01161j)
     st.add_layer(35, 1.4621+0.04426j, active=True)
-    st.add_layer(220,2.12+0.3166016j)
+    st.add_layer(220, 2.12+0.3166016j)
     st.add_layer(7, 2.095+2.3357j)
     st.add_layer(0, 1.20252+7.25439j)
 
-    st.show_structure()
+    # st.show_structure()
 
     st.set_wavelength(600)
-    st.set_angle(0)
     st.set_polarization('s')
-    y = st.structure_E_field()['E_square']
+    st.set_angle(0)
+
+    y = st.structure_E_field(time_reversal=False)['E_square']
 
     plt.figure()
     plt.plot(y)
@@ -49,16 +50,15 @@ def purcell_layer():
     st = LifetimeTmm()
     Er = 1.5
     lam = 1540
-    st.add_layer(0, 1)
-    # st.add_layer(500, Er)
-    st.add_layer(4*lam/(2*pi), Er, active=True)
-    # st.add_layer(2000,3)
+
     st.add_layer(0, Er)
+    st.add_layer(2000, Er, active=True)
+    # st.add_layer(4*lam/(2*pi), Er, active=True)
+    st.add_layer(0, 3)
 
     st.set_wavelength(lam)
     st.set_bulk_n(Er)
 
-    # st.show_structure()
     y = st.purcell_factor_layer()
 
     plt.figure()
@@ -100,6 +100,7 @@ def test():
     st = LifetimeTmm()
     Er = 1.5
     lam = 1540
+
     st.add_layer(0, Er)
     st.add_layer(2000, Er, active=True)
     st.add_layer(0, 3)
@@ -109,6 +110,7 @@ def test():
 
     # st.show_structure()
     y = st.purcell_factor_layer()
+    # y = st.layer_E_Field()['E_square']
 
     plt.figure()
     plt.plot(y)
@@ -120,6 +122,6 @@ def test():
 if __name__ == "__main__":
     # mcgehee()
     # purcell_z()
-    # purcell_layer()
-    test()
+    purcell_layer()
+    # test()
 
