@@ -22,10 +22,11 @@ def mcgehee():
     st = LifetimeTmm()
     st.add_layer(0, 1.4504)
     st.add_layer(110, 1.7704+0.01161j)
-    st.add_layer(35, 1.4621+0.04426j, active=True)
+    st.add_layer(35, 1.4621+0.04426j)
     st.add_layer(220, 2.12+0.3166016j)
     st.add_layer(7, 2.095+2.3357j)
-    st.add_layer(0, 1.20252+7.25439j)
+    st.add_layer(200, 1.20252 + 7.25439j)
+    st.add_layer(0, 1.20252 + 7.25439j)
 
     # st.show_structure()
 
@@ -41,6 +42,32 @@ def mcgehee():
     plt.axhline(y=1, linestyle='--', color='k')
     for i, xmat in enumerate(dsum):
         plt.axvline(x=xmat, linestyle='-', color='r', lw=2)
+    plt.xlabel('Position in Device (nm)')
+    plt.ylabel('Normalized |E|$^2$Intensity')
+    plt.show()
+
+
+def mcgehee2():
+    st = LifetimeTmm()
+    st.add_layer(0, 1.4504)
+    st.add_layer(110, 1.7704 + 0.01161j)
+    st.add_layer(35, 1.4621 + 0.04426j)
+    st.add_layer(220, 2.12 + 0.3166016j, active=True)
+    st.add_layer(7, 2.095 + 2.3357j)
+    st.add_layer(200, 1.20252 + 7.25439j)
+    st.add_layer(0, 1.20252 + 7.25439j)
+
+    # st.show_structure()
+
+    st.set_wavelength(600)
+    st.set_polarization('s')
+    st.set_angle(0)
+
+    y = st.layer_E_Field()['E_square']
+
+    plt.figure()
+    plt.plot(y)
+    plt.axhline(y=1, linestyle='--', color='k')
     plt.xlabel('Position in Device (nm)')
     plt.ylabel('Normalized |E|$^2$Intensity')
     plt.show()
@@ -98,19 +125,16 @@ def purcell_z():
 
 def test():
     st = LifetimeTmm()
-    Er = 1.5
-    lam = 1540
 
-    st.add_layer(0, Er)
-    st.add_layer(2000, Er, active=True)
-    st.add_layer(0, 3)
+    st.add_layer(0, 3.48)
+    st.add_layer(1500, 3.48)
+    st.add_layer(1500, 1)
+    st.add_layer(0, 1)
 
-    st.set_wavelength(lam)
-    st.set_bulk_n(Er)
+    st.set_wavelength(1540)
+    st.set_polarization('s')
 
-    # st.show_structure()
-    y = st.purcell_factor_layer()
-    # y = st.layer_E_Field()['E_square']
+    y = st.structure_E_Field()['E_square']
 
     plt.figure()
     plt.plot(y)
@@ -121,7 +145,8 @@ def test():
 
 if __name__ == "__main__":
     # mcgehee()
+    # mcgehee2()
     # purcell_z()
-    purcell_layer()
-    # test()
+    # purcell_layer()
+    test()
 

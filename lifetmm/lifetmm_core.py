@@ -88,25 +88,46 @@ class LifetimeTmm:
         eps = (2*pi*qj) / self.lam_vac
         # TODO: check delta factorisation works
         delta = eps*dj
-        if delta > 100:
-            import warnings
-            warnings.warn("Warning...........Layer is thick and a factor of 2pi is "
-                          "factored out of the exponent in the phase matrix calculation.")
-            from decimal import Decimal
-            delta = Decimal(delta) % Decimal(2*pi)
-
+        # if delta > 100:
+        #     import warnings
+        #     warnings.warn("Warning...........Layer is thick and a factor of 2pi is "
+        #                   "factored out of the exponent in the phase matrix calculation.")
+        #     from decimal import Decimal
+        #     delta = Decimal(delta) % Decimal(2*pi)
         return np.array([[exp(-1j*delta), 0], [0, exp(1j*delta)]], dtype=complex)
 
-    def system_matrix(self):
+    def calc_s_matrix(self):
         d_list = self.d_list
-        n_list = self.n_list
+        n = self.n_list
+        num_layers = self.num_layers
         # calculate the total system transfer matrix S
-        S = self.I_mat(n_list[0], n_list[1])
-        for layer in range(1, self.num_layers - 1):
-            mL = self.L_mat(n_list[layer], d_list[layer])
-            mI = self.I_mat(n_list[layer], n_list[layer + 1])
+        S = self.I_mat(n[0], n[1])
+        for layer in range(1, num_layers - 1):
+            mL = self.L_mat(n[layer], d_list[layer])
+            mI = self.I_mat(n[layer], n[layer + 1])
             S = S @ mL @ mI
         return S
+
+    def calc_s_primed(self):
+        d_list = self.d_list
+        n = self.n_list
+        # Active layer
+        m = self.m
+
+        # Calculate S_Prime
+        S_prime = self.I_mat(n[0], n[1])
+        for v in range(1, m):
+            mL = self.L_mat(n[v], d_list[v])
+            mI = self.I_mat(n[v], n[v + 1])
+            S_prime = S_prime @ mL @ mI
+        # Calculate S_dPrime (doubled prime)
+        S_dprime = self.I_mat(n[m], n[m + 1])
+        for v in range(m + 1, self.num_layers - 1):
+            mL = self.L_mat(n[v], d_list[v])
+            mI = self.I_mat(n[v], n[v + 1])
+            S_dprime = S_dprime @ mL @ mI
+
+        return S_prime, S_dprime
 
     def calc_R_and_T(self):
         S = self.system_matrix()
@@ -133,38 +154,21 @@ class LifetimeTmm:
         num_layers = self.num_layers
 
         # calculate the total system transfer matrix S
-        S = self.I_mat(n[0], n[1])
-        for layer in range(1, self.num_layers - 1):
-            mL = self.L_mat(n[layer], d_list[layer])
-            mI = self.I_mat(n[layer], n[layer + 1])
-            S = S @ mL @ mI
+        S = self.calc_s_matrix()
 
         # x positions to evaluate E field at over entire structure
         x_pos = np.arange((x_step / 2.0), sum(d_list), x_step)
-
         # get x_mat - specifies what layer the corresponding point in x_pos is in
         comp1 = np.kron(np.ones((num_layers, 1)), x_pos)
         comp2 = np.transpose(np.kron(np.ones((len(x_pos), 1)), d_cumsum))
         x_mat = sum(comp1 > comp2, 0)
 
-        # calculate primed transfer matrices for info on field inside the structure
-        E = np.zeros(len(x_pos), dtype=complex)  # Initialise E field
+        E = np.zeros(len(x_pos), dtype=complex)
         E_avg = np.zeros(num_layers)
 
-        for layer in range(1, num_layers):
-            # Calculate S_Prime
-            S_prime = self.I_mat(n[0], n[1])
-            for layer_ind in range(2, layer + 1):
-                mL = self.L_mat(n[layer_ind - 1], d_list[layer_ind - 1])
-                mI = self.I_mat(n[layer_ind - 1], n[layer_ind])
-                S_prime = S_prime @ mL @ mI
-
-            # Calculate S_dprime (double prime)
-            S_dprime = np.eye(2)
-            for layer_ind in range(layer, num_layers - 1):
-                mI = self.I_mat(n[layer_ind], n[layer_ind + 1])
-                mL = self.L_mat(n[layer_ind + 1], d_list[layer_ind + 1])
-                S_dprime = S_dprime @ mI @ mL
+        for layer in range(1, num_layers - 1):
+            self.m = layer
+            S_prime, S_dprime = self.calc_s_primed()
 
             #  Electric Field Profile
             qj = self.q(n[layer], n[0], self.th)
@@ -174,18 +178,18 @@ class LifetimeTmm:
             x = x_pos[x_indices] - d_cumsum[layer - 1]  # Calculate depth into layer
 
             # Original Calculation
-            # num = S_dprime[0, 0]*exp(-1j*eps*(dj-x)) + S_dprime[1, 0]*exp(1j*eps*(dj-x))
-            # den = S_prime[0, 0]*S_dprime[0, 0]*exp(-1j*eps*dj) + S_prime[0, 1]*S_dprime[1, 0]*exp(1j*eps*dj)
-            # E[x_indices] = num / den
+            num = S_dprime[0, 0]*exp(-1j*eps*(dj-x)) + S_dprime[1, 0]*exp(1j*eps*(dj-x))
+            den = S_prime[0, 0]*S_dprime[0, 0]*exp(-1j*eps*dj) + S_prime[0, 1]*S_dprime[1, 0]*exp(1j*eps*dj)
+            E[x_indices] = num / den
 
-            # Alternate Calculation
-            if not time_reversal:
-                rR = S[1, 0] / S[0, 0]
-            else:
-                rR = S[1, 1] / S[0, 1]
-            t_plus = (S_prime[1, 1] - rR * S_prime[0, 1]) / np.linalg.det(S_prime)
-            t_mimus = (rR * S_prime[0, 0] - S_prime[1, 0]) / np.linalg.det(S_prime)
-            E[x_indices] = t_plus*exp(1j*eps*x) + t_mimus*exp(-1j*eps*x)
+            # # Alternate Calculation
+            # if not time_reversal:
+            #     rR = S[1, 0] / S[0, 0]
+            # else:
+            #     rR = S[1, 1] / S[0, 1]
+            # t_plus = (S_prime[1, 1] - rR * S_prime[0, 1]) / np.linalg.det(S_prime)
+            # t_mimus = (rR * S_prime[0, 0] - S_prime[1, 0]) / np.linalg.det(S_prime)
+            # E[x_indices] = t_plus*exp(1j*eps*x) + t_mimus*exp(-1j*eps*x)
 
             # Average E field inside the layers
             if not d_list[layer] == 0:
@@ -201,44 +205,16 @@ class LifetimeTmm:
 
         d_list = self.d_list
         n = self.n_list
-        m = self.m
 
-        # calculate the total system transfer matrix S
-        S = self.I_mat(n[0], n[1])
-        for layer in range(1, self.num_layers - 1):
-            mL = self.L_mat(n[layer], d_list[layer])
-            mI = self.I_mat(n[layer], n[layer + 1])
-            S = S @ mL @ mI
-
-        # Calculate S_Prime
-        S_prime = self.I_mat(n[0], n[1])
-        for layerind in range(2, m + 1):
-            mL = self.L_mat(n[layerind - 1], d_list[layerind - 1])
-            mI = self.I_mat(n[layerind - 1], n[layerind])
-            S_prime = S_prime @ mL @ mI
-
-        # Calculate S_dprime (double prime)
-        S_dprime = np.eye(2)
-        for layerind in range(m, self.num_layers - 1):
-            mI = self.I_mat(n[layerind], n[layerind + 1])
-            mL = self.L_mat(n[layerind + 1], d_list[layerind + 1])
-            S_dprime = S_dprime @ mI @ mL
-
-        # Store matrices
-        self.S = S
-        self.S_prime = S_prime
-        self.S_dprime = S_dprime
+        # calculate the transfer matrices
+        S = self.calc_s_matrix()
+        S_prime, S_dprime = self.calc_s_primed()
 
         #  Electric Field Profile
-        qj = self.q(n[m], n[0], self.th)
+        qj = self.q(n[self.m], n[0], self.th)
         eps = (2*pi*qj) / self.lam_vac
-        dj = d_list[m]
+        dj = d_list[self.m]
         x = np.arange((x_step / 2.0), dj, x_step)
-
-        # Original Calculation
-        # num = S_dprime[0, 0] * exp(-1j*eps*(dj-x)) + S_dprime[1, 0] * exp(1j*eps*(dj-x))
-        # den = S_prime[0, 0] * S_dprime[0, 0] * exp(-1j*eps*dj) + S_prime[0, 1] * S_dprime[1, 0] * exp(1j*eps*dj)
-        # E = num / den
 
         # Alternate Calculation
         if not time_reversal:
@@ -246,77 +222,43 @@ class LifetimeTmm:
         else:
             rR = S[1, 1] / S[0, 1]
 
-        t_plus = (S_prime[1, 1] - rR * S_prime[0, 1]) / np.linalg.det(S_prime)
-        t_mimus = (rR * S_prime[0, 0] - S_prime[1, 0]) / np.linalg.det(S_prime)
-        E = t_plus * exp(1j * eps * x) + t_mimus * exp(-1j * eps * x)
+        t_plus = (S_prime[1, 1] - rR*S_prime[0, 1]) / np.linalg.det(S_prime)
+        t_minus = (rR*S_prime[0, 0] - S_prime[1, 0]) / np.linalg.det(S_prime)
+        E = t_plus*exp(1j*eps*x) + t_minus*exp(-1j*eps*x)
 
         E_square = abs(E[:])**2
         E_avg = sum(E_square) / (x_step*dj)
 
+        # Store matrices
+        self.S = S
+        self.S_prime = S_prime
+        self.S_dprime = S_dprime
+
         return {'x': x, 'E': E, 'E_square': E_square, 'E_avg': E_avg}
 
-    def flip(self):
-        """ Flip the structure front-to-back.
-        """
-        self.d_list = self.d_list[::-1]
-        self.n_list = self.n_list[::-1]
-        self.m_list = self.m_list[::-1]
-        self.m = np.where(self.m_list == True)[0][0]
-        self.d_cumsum = np.cumsum(self.d_list)
-
-    def _prepare_struct(self, Lz=1E4):
-        """ Insert pseudo layers of the ambient and substrate layers into the structure.
-        Used for averaging.
-        """
-        d_list = self.d_list
-        n_list = self.n_list
-        m_list = self.m_list
-        # TODO: check with zoran it is OK to neglect absorption.
-        # This might be why only ok for weakly absorbing medium
-        d1 = Lz/(2*n_list[0].real)
-        ds = Lz/(2*n_list[-1].real)
-
-        d_list = np.insert(d_list, 1, [d1])
-        d_list = np.insert(d_list, -1, [ds])
-
-        n_list = np.insert(n_list, 1, n_list[0])
-        n_list = np.insert(n_list, -1, n_list[-1])
-
-        m_list = np.insert(m_list, 1, False)
-        m_list = np.insert(m_list, -1, False)
-
-        self.n_list = n_list
-        self.d_list = d_list
-        self.m_list = m_list
-        self.m = np.where(self.m_list == True)[0][0]
-        self.d_cumsum = np.cumsum(d_list)
-        self.num_layers = np.size(d_list)
-
-    def thetaCritical(self):
-        """
-        :return: Return the angle at which TIRF occurs between the layer containing the
-        atom and the cladding with the largest refractive index, or pi/2, whichever comes
-        first.
-        """
-        n_list = self.n_list
-        m = self.m
-        assert len(n_list) > 2, 'Structure must have at least 3 layers; two cladding and one active.'
-        assert 0 < m < len(n_list), 'Active layer can not be the cladding.'
-
-        # Evaluate largest refractive index of either cladding
-        n_clad = max(n_list[0], n_list[-1])
-
-        # Using Snell's law evaluate the critical angle or return pi/2 if does not exist
-        angle = sp.arcsin(n_clad/n_list[m])
-        if np.isreal(angle):
-            return angle
-        else:
-            return pi/2
-
     def purcell_factor_layer(self):
+        def H(theta):
+            if np.isreal(theta):
+                return 1
+            else:
+                return 0
+
+        def H_term(th_1, th_s):
+            # Evaluate H bracketed weighting term
+            num = H(th_1) + H(th_s)
+            den = H(th_1) * cos(th_1) + H(th_s) * cos(th_s)
+            result = num / den
+            assert np.isreal(result), 'Error: H_term is imaginary'
+            return result.real
+
+        def Mj2(th_1, th_s, c1, d1, cs, ds):
+            n1 = self.n_list[0]
+            ns = self.n_list[-1]
+            return 2 / (n1*H(th_1)*(abs(c1)**2 + abs(d1)**2) + ns*H(th_s)*(abs(cs)**2 + abs(ds)**2))
+
         # Insert Pseudo layers for ambient and substrate
         self._prepare_struct()
-        self.show_structure()
+        # self.show_structure()
 
         d_list = self.d_list
         n_list = self.n_list
@@ -326,8 +268,8 @@ class LifetimeTmm:
         # Evaluate upper bound of integration limit
         th_critical = self.thetaCritical()
         # Range of emission angles in active layer to evaluate over.
-        # resolution = 2**13 + 1
-        resolution = 2**1 + 1
+        resolution = 2**13 + 1
+        resolution = 2**11 + 1
         th_emission, dth = np.linspace(0, th_critical, resolution, endpoint=False, retstep=True)
         integral = np.zeros((resolution, d_list[m]), dtype=complex)
 
@@ -357,9 +299,9 @@ class LifetimeTmm:
                     d1 = S[1, 0] / S[0, 0]
                     cs = 1 / S[0, 0]
                     ds = 0
-                    first_term = self.Mj2(th_1, th_s, c1, d1, cs, ds) * u_z / (2*n_a)
+                    first_term = Mj2(th_1, th_s, c1, d1, cs, ds) * u_z / (2*n_a)
                     last_term = n_list[m]**2 * cos(th_m) * sin(th_m)
-                    integral[i, :] = first_term*self.H_term(th_1, th_s)*last_term
+                    integral[i, :] = first_term*H_term(th_1, th_s)*last_term
                 elif np.iscomplex(th_1):
                     self.flip()
                     self.set_angle(th_s)
@@ -373,9 +315,9 @@ class LifetimeTmm:
                     cs = S[1, 0] / S[0, 0]
                     ds = 1
                     self.flip()
-                    first_term = self.Mj2(th_1, th_s, c1, d1, cs, ds) * u_z / (2*n_a)
+                    first_term = Mj2(th_1, th_s, c1, d1, cs, ds) * u_z / (2*n_a)
                     last_term = n_list[m]**2 * cos(th_m) * sin(th_m)
-                    integral[1, :] = first_term*self.H_term(th_1, th_s)*last_term
+                    integral[1, :] = first_term*H_term(th_1, th_s)*last_term
                 else:
                     # First mode j (D_s = 0)
                     self.set_angle(th_1)
@@ -385,9 +327,9 @@ class LifetimeTmm:
                     d1j = S[1, 0] / S[0, 0]
                     csj = 1 / S[0, 0]
                     dsj = 0
-                    first_term = self.Mj2(th_1, th_s, c1j, d1j, csj, dsj) * u_j / (2*n_a)
+                    first_term = Mj2(th_1, th_s, c1j, d1j, csj, dsj) * u_j / (2*n_a)
                     last_term = n_list[m]**2 * cos(th_m) * sin(th_m)
-                    U_j = first_term*self.H_term(th_1, th_s)*last_term
+                    U_j = first_term*H_term(th_1, th_s)*last_term
 
                     # Second mode q (C_s = 0)
                     v_p = self.layer_E_Field(time_reversal=True)['E_square']
@@ -402,9 +344,9 @@ class LifetimeTmm:
                     den = abs(c1j)**2 + abs(d1j)**2 + (n_list[-1]/n_list[0])*abs(csj)**2
                     b = - num / den
                     u_q = b*u_j + v_p
-                    first_term = (3/(2*n_a)) * self.Mj2(th_1, th_s, c1p, d1p, csp, dsp) * u_q / (2*n_a)
+                    first_term = (3/(2*n_a)) * Mj2(th_1, th_s, c1p, d1p, csp, dsp) * u_q / (2*n_a)
                     last_term = n_list[m]**2 * cos(th_m) * sin(th_m)
-                    U_q = first_term*self.H_term(th_1, th_s)*last_term
+                    U_q = first_term*H_term(th_1, th_s)*last_term
 
                     integral[i, :] = (U_j+U_q)
 
@@ -453,26 +395,6 @@ class LifetimeTmm:
         ax.set(xlabel=r'x', ylabel=r'A.U.')
         plt.show()
 
-    @staticmethod
-    def H(theta):
-        if np.isreal(theta):
-            return 1
-        else:
-            return 0
-
-    def H_term(self, th_1, th_s):
-        # Evaluate H bracketed weighting term
-        num = self.H(th_1) + self.H(th_s)
-        den = self.H(th_1)*cos(th_1) + self.H(th_s)*cos(th_s)
-        result = num/den
-        assert np.isreal(result), 'Error: H_term is imaginary'
-        return result.real
-
-    def Mj2(self, th_1, th_s, c1, d1, cs, ds):
-        n1 = self.n_list[0]
-        ns = self.n_list[-1]
-        return 2 / (n1*self.H(th_1)*(abs(c1)**2 + abs(d1)**2) + ns*self.H(th_s)*(abs(cs)**2 + abs(ds)**2))
-
     def _simulation_test(self, x_step):
         if (self.d_list[0] != 0) or (self.d_list[-1] != 0):
             raise ValueError('Structure must start and end with 0!')
@@ -493,3 +415,61 @@ class LifetimeTmm:
         # arcsin(2) due to branch cut
         return sp.arcsin(np.real_if_close(n_1*sin(th_1) / n_2))
 
+    def flip(self):
+        """ Flip the structure front-to-back.
+        """
+        self.d_list = self.d_list[::-1]
+        self.n_list = self.n_list[::-1]
+        self.m_list = self.m_list[::-1]
+        self.m = np.where(self.m_list == True)[0][0]
+        self.d_cumsum = np.cumsum(self.d_list)
+
+
+    def _prepare_struct(self, Lz=1E5):
+        """ Insert pseudo layers of the ambient and substrate layers into the structure.
+        Used for averaging.
+        """
+        d_list = self.d_list
+        n_list = self.n_list
+        m_list = self.m_list
+        # TODO: check with zoran it is OK to neglect absorption.
+        # This might be why only ok for weakly absorbing medium
+        d1 = Lz / (2 * n_list[0].real)
+        ds = Lz / (2 * n_list[-1].real)
+
+        d_list = np.insert(d_list, 1, [d1])
+        d_list = np.insert(d_list, -1, [ds])
+
+        n_list = np.insert(n_list, 1, n_list[0])
+        n_list = np.insert(n_list, -1, n_list[-1])
+
+        m_list = np.insert(m_list, 1, False)
+        m_list = np.insert(m_list, -1, False)
+
+        self.n_list = n_list
+        self.d_list = d_list
+        self.m_list = m_list
+        self.m = np.where(self.m_list == True)[0][0]
+        self.d_cumsum = np.cumsum(d_list)
+        self.num_layers = np.size(d_list)
+
+    def thetaCritical(self):
+        """
+        :return: Return the angle at which TIRF occurs between the layer containing the
+        atom and the cladding with the largest refractive index, or pi/2, whichever comes
+        first.
+        """
+        n_list = self.n_list
+        m = self.m
+        assert len(n_list) > 2, 'Structure must have at least 3 layers; two cladding and one active.'
+        assert 0 < m < len(n_list), 'Active layer can not be the cladding.'
+
+        # Evaluate largest refractive index of either cladding
+        n_clad = max(n_list[0], n_list[-1])
+
+        # Using Snell's law evaluate the critical angle or return pi/2 if does not exist
+        angle = sp.arcsin(n_clad / n_list[m])
+        if np.isreal(angle):
+            return angle
+        else:
+            return pi / 2
