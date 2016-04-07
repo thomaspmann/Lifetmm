@@ -12,7 +12,7 @@ class LifetimeTmm:
         self.d_list = np.array([], dtype=float)
         self.n_list = np.array([], dtype=complex)
         self.d_cumsum = np.array([], dtype=float)
-        self.x_step = 1
+        self.z_step = 1
         self.lam_vac = 0
         self.num_layers = 0
         self.pol = 'u'
@@ -86,11 +86,10 @@ class LifetimeTmm:
         return np.array([[exp(-1j*delta), 0], [0, exp(1j*delta)]], dtype=complex)
 
     def _simulation_test(self):
-        x_step = self.x_step
         if (self.d_list[0] != 0) or (self.d_list[-1] != 0):
             raise ValueError('Structure must start and end with 0!')
-        if type(x_step) != int:
-            raise ValueError('x_step must be an integer. Reduce SI unit'
+        if type(self.z_step) != int:
+            raise ValueError('z_step must be an integer. Reduce SI unit'
                              'inputs for thicknesses and wavelengths for greater resolution ')
 
     def flip(self):
@@ -120,13 +119,18 @@ class LifetimeTmm:
             mL = self.L_mat(n[v], d_list[v])
             mI = self.I_mat(n[v], n[v + 1])
             S_prime = S_prime @ mL @ mI
+        return S_prime
+
+    def calc_s_dprimed(self, layer):
+        d_list = self.d_list
+        n = self.n_list
         # Calculate S_dPrime (doubled prime)
         S_dprime = self.I_mat(n[layer], n[layer + 1])
         for v in range(layer + 1, self.num_layers - 1):
             mL = self.L_mat(n[v], d_list[v])
             mI = self.I_mat(n[v], n[v + 1])
             S_dprime = S_dprime @ mL @ mI
-        return S_prime, S_dprime
+        return S_dprime
 
     @staticmethod
     def matrix_2x2_determinant(matrix):
@@ -134,20 +138,18 @@ class LifetimeTmm:
 
     def layer_E_field(self, layer, time_reversal=False):
         self._simulation_test()
-        time_reversal=False
         d_list = self.d_list
         n = self.n_list
-        lam_vac = self.lam_vac
 
         # calculate the transfer matrices
         S = self.calc_s_matrix()
-        S_prime, S_dprime = self.calc_s_primed(layer)
+        S_prime = self.calc_s_primed(layer)
 
         # Wavevector components in layer
         qj = self.q(n[layer], n[0], self.th)
-        kj_z = (2 * pi * qj) / lam_vac
+        kj_z = (2 * pi * qj) / self.lam_vac
 
-        x = np.arange((self.x_step / 2.0), d_list[layer], self.x_step)
+        z = np.arange((self.z_step / 2.0), d_list[layer], self.z_step)
 
         #  Electric Field Profile
         det_S_prime = self.matrix_2x2_determinant(S_prime)
@@ -156,27 +158,42 @@ class LifetimeTmm:
             # In units of W_0
             Wj = (S_prime[1, 1] - rR * S_prime[0, 1]) / det_S_prime
             Xj = (rR * S_prime[0, 0] - S_prime[1, 0]) / det_S_prime
-            E = Wj*exp(1j*kj_z*x) + Xj*exp(-1j*kj_z*x)
+            E = Wj*exp(1j*kj_z*z) + Xj*exp(-1j*kj_z*z)
         else:  # Time reversal
-            # Time reversal
-            #TODO I think herein lies the problem..
             kj_z = np.conj(kj_z)
-            rR = S[0, 1] / S[1, 1]
-            # # In units of X_0
-            Wj = (S_prime[0, 1] - rR*S_prime[1, 1]) / det_S_prime
-            Xj = (rR*S_prime[1, 0] - S_prime[0, 0]) / det_S_prime
-            E = Wj*exp(1j*kj_z*x) + Xj*exp(-1j*kj_z*x)
+            rR = S[1, 1] / S[0, 1]
+            rR_tr = 1/rR
+            # In units of X_0
+            Wj = (S_prime[0, 1] - rR_tr*S_prime[1, 1]) / det_S_prime
+            Xj = (rR_tr*S_prime[1, 0] - S_prime[0, 0]) / det_S_prime
+            E = Wj*exp(1j*kj_z*z) + Xj*exp(-1j*kj_z*z)
 
         E_square = abs(E[:])**2
-        E_avg = sum(E_square) / (self.x_step*d_list[layer])
-        return {'x': x, 'E': E, 'E_square': E_square, 'E_avg': E_avg}
+        E_avg = sum(E_square) / (self.z_step * d_list[layer])
+        return {'z': z, 'E': E, 'E_square': E_square, 'E_avg': E_avg}
+
+    def structure_E_field(self, time_reversal=False):
+        # x positions to evaluate E field at over entire structure
+        z_pos = np.arange((self.z_step / 2.0), sum(self.d_list), self.z_step)
+        # get x_mat - specifies what layer the corresponding point in x_pos is in
+        comp1 = np.kron(np.ones((self.num_layers, 1)), z_pos)
+        comp2 = np.transpose(np.kron(np.ones((len(z_pos), 1)), self.d_cumsum))
+        z_mat = sum(comp1 > comp2, 0)
+        # Evaluate spontaneous emission rate for each medium inside cladding layers
+        E_square = np.zeros(len(z_pos), dtype=float)
+        for layer in range(1, self.num_layers-1):
+            # Calculate z indices inside structure for the layer
+            z_indices = np.where(z_mat == layer)
+            E_layer = self.layer_E_field(layer=layer, time_reversal=time_reversal)['E_square']
+            E_square[z_indices] = E_layer
+        return {'z': z_pos, 'E_square': E_square}
 
     def spe_layer(self, layer):
         n = self.n_list
 
         resolution = 2 ** 11 + 1
         th_emission, dth = np.linspace(0, pi / 2, resolution, endpoint=False, retstep=True)
-        x = np.arange((self.x_step / 2.0), self.d_list[layer], self.x_step)
+        x = np.arange((self.z_step / 2.0), self.d_list[layer], self.z_step)
         E_square_theta_lower = np.zeros((resolution, len(x)), dtype=float)
         E_square_theta_upper = np.zeros((resolution, len(x)), dtype=float)
         # Params for tqdm progress bar
@@ -217,7 +234,7 @@ class LifetimeTmm:
 
     def spe_structure(self):
         # x positions to evaluate E field at over entire structure
-        x_pos = np.arange((self.x_step / 2.0), sum(self.d_list), self.x_step)
+        x_pos = np.arange((self.z_step / 2.0), sum(self.d_list), self.z_step)
         # get x_mat - specifies what layer the corresponding point in x_pos is in
         comp1 = np.kron(np.ones((self.num_layers, 1)), x_pos)
         comp2 = np.transpose(np.kron(np.ones((len(x_pos), 1)), self.d_cumsum))
@@ -230,22 +247,6 @@ class LifetimeTmm:
             spe_layer = self.spe_layer(layer=layer)['spe']
             spe[x_indices] = spe_layer
         return {'x': x_pos, 'spe': spe}
-
-    def structure_E_field(self, time_reversal=False):
-        # x positions to evaluate E field at over entire structure
-        x_pos = np.arange((self.x_step / 2.0), sum(self.d_list), self.x_step)
-        # get x_mat - specifies what layer the corresponding point in x_pos is in
-        comp1 = np.kron(np.ones((self.num_layers, 1)), x_pos)
-        comp2 = np.transpose(np.kron(np.ones((len(x_pos), 1)), self.d_cumsum))
-        x_mat = sum(comp1 > comp2, 0)
-        # Evaluate spontaneous emission rate for each medium inside cladding layers
-        E_square = np.zeros(len(x_pos), dtype=float)
-        for layer in range(1, self.num_layers-1):
-            # Calculate x indices inside structure for the layer
-            x_indices = np.where(x_mat == layer)
-            E_layer = self.layer_E_field(layer=layer, time_reversal=time_reversal)['E_square']
-            E_square[x_indices] = E_layer
-        return {'x': x_pos, 'E_square': E_square}
 
 
 def mcgehee():
@@ -260,7 +261,7 @@ def mcgehee():
 
     st.set_wavelength(600)
     st.set_polarization('s')
-    st.set_angle(0)
+    st.set_angle(0, units='degrees')
 
     y = st.structure_E_field(time_reversal=True)['E_square']
 
@@ -268,8 +269,8 @@ def mcgehee():
     plt.plot(y)
     dsum = getattr(st, 'd_cumsum')
     plt.axhline(y=1, linestyle='--', color='k')
-    for i, xmat in enumerate(dsum):
-        plt.axvline(x=xmat, linestyle='-', color='r', lw=2)
+    for i, zmat in enumerate(dsum):
+        plt.axvline(x=zmat, linestyle='-', color='r', lw=2)
     plt.xlabel('Position in Device (nm)')
     plt.ylabel('Normalized |E|$^2$Intensity')
     plt.show()
