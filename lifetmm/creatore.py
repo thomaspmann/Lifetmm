@@ -132,26 +132,22 @@ class LifetimeTmm:
     def matrix_2x2_determinant(matrix):
         return matrix[0, 1]*matrix[1, 0] - matrix[0, 0]*matrix[1, 1]
 
-    def layer_E_field(self, layer, time_reversal=False, pr=False):
+    def layer_E_field(self, layer, time_reversal=False):
         self._simulation_test()
-
+        time_reversal=False
         d_list = self.d_list
         n = self.n_list
-        x_step = self.x_step
         lam_vac = self.lam_vac
-        num_layers = self.num_layers
 
         # calculate the transfer matrices
         S = self.calc_s_matrix()
         S_prime, S_dprime = self.calc_s_primed(layer)
 
         # Wavevector components in layer
-        kj = (2*pi*n[layer]) / lam_vac
         qj = self.q(n[layer], n[0], self.th)
-        kj_z = (2 *pi*qj) / lam_vac
-        kj_parallel = kj * sin(self.th)
+        kj_z = (2 * pi * qj) / lam_vac
 
-        x = np.arange((x_step / 2.0), d_list[layer], x_step)
+        x = np.arange((self.x_step / 2.0), d_list[layer], self.x_step)
 
         #  Electric Field Profile
         det_S_prime = self.matrix_2x2_determinant(S_prime)
@@ -163,28 +159,17 @@ class LifetimeTmm:
             E = Wj*exp(1j*kj_z*x) + Xj*exp(-1j*kj_z*x)
         else:  # Time reversal
             # Time reversal
+            #TODO I think herein lies the problem..
             kj_z = np.conj(kj_z)
             rR = S[0, 1] / S[1, 1]
             # # In units of X_0
-            # X_0 = 1 / n[0].real
             Wj = (S_prime[0, 1] - rR*S_prime[1, 1]) / det_S_prime
             Xj = (rR*S_prime[1, 0] - S_prime[0, 0]) / det_S_prime
             E = Wj*exp(1j*kj_z*x) + Xj*exp(-1j*kj_z*x)
 
         E_square = abs(E[:])**2
-        E_avg = sum(E_square) / (x_step*d_list[layer])
-
+        E_avg = sum(E_square) / (self.x_step*d_list[layer])
         return {'x': x, 'E': E, 'E_square': E_square, 'E_avg': E_avg}
-
-    # def dipole_rate(self, E):
-    #     if self.pol == 'p':
-    #         # Horizontal dipoles (parallel to interface)
-    #         E_horizontal = E * kj_z
-    #         # Vertical dipoles (perpendicular to interface)
-    #         E_vertical = E * kj_parallel
-    #     else:  # self.pol == 's':
-    #         E_horizontal = E
-    #         E_vertical = 0
 
     def spe_layer(self, layer):
         n = self.n_list
@@ -203,9 +188,6 @@ class LifetimeTmm:
         for i, th in tqdm(enumerate(th_emission), **kwargs):
             self.set_angle(th)
 
-            # Wavevector components in layer
-            k_j = (2*pi*n[layer]) / self.lam_vac
-
             assert n[0] >= n[-1], 'Refractive index of lower cladding must be larger than the upper cladding'
 
             # Evaluate for outgoing wave in lower cladding
@@ -216,20 +198,20 @@ class LifetimeTmm:
             E_square = abs(E[:]) ** 2
             E_square_theta_lower[i, :] = E_square * sin(th)
 
-            # # Evaluate for outgoing wave in upper cladding
-            # self.flip()
-            # E = self.layer_E_field(layer=self.num_layers-1-layer, time_reversal=True)['E']
-            # # Normalise W.R.T. X_0
-            # X_0 = 1 / self.n_list[0].real
-            # E *= X_0
-            # self.flip()
-            # E = E[::-1]
-            # E_square = abs(E[:]) ** 2
-            # E_square_theta_upper[i, :] += E_square * sin(th)
+            # Evaluate for outgoing wave in upper cladding
+            self.flip()
+            E = self.layer_E_field(layer=self.num_layers-1-layer, time_reversal=True)['E']
+            # Normalise W.R.T. X_0
+            X_0 = 1 / self.n_list[0].real
+            E *= X_0
+            self.flip()
+            E = E[::-1]
+            E_square = abs(E[:]) ** 2
+            E_square_theta_upper[i, :] += E_square * sin(th)
 
         # Evaluate integral
         integral = integrate.romb(E_square_theta_lower, dx=dth, axis=0)
-        # integral += integrate.romb(E_square_theta_upper, dx=dth.real, axis=0)
+        integral += integrate.romb(E_square_theta_upper, dx=dth.real, axis=0)
         spe = integral * n[layer].real**3
         return {'x': x, 'spe': spe}
 
@@ -273,7 +255,7 @@ def mcgehee():
     st.add_layer(35, 1.4621+0.04426j)
     st.add_layer(220, 2.12+0.3166016j)
     st.add_layer(7, 2.095+2.3357j)
-    # st.add_layer(200, 1.20252 + 7.25439j)
+    st.add_layer(200, 1.20252 + 7.25439j)
     st.add_layer(0, 1.20252 + 7.25439j)
 
     st.set_wavelength(600)
@@ -315,6 +297,7 @@ def spe():
     plt.axhline(y=1, linestyle='--', color='k')
     plt.xlabel('Position in layer (nm)')
     plt.ylabel('Purcell Factor')
+    # plt.ylim([0, 10])
     plt.show()
 
 if __name__ == "__main__":
