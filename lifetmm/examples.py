@@ -5,11 +5,10 @@ from lifetmm import *
 from tqdm import *
 from numpy import pi, linspace, inf, array, sum, cos, sin
 from scipy.interpolate import interp1d
-
+import time
 import matplotlib.pyplot as plt
 
-# To run a sample use the following in python console:
-
+# # To run a sample use the following in python console:
 # import lifetmm.examples; lifetmm.examples.sample1()
 
 # "5 * degree" is 5 degrees expressed in radians
@@ -28,11 +27,9 @@ def mcgehee():
     st.add_layer(200, 1.20252 + 7.25439j)
     st.add_layer(0, 1.20252 + 7.25439j)
 
-    # st.show_structure()
-
     st.set_wavelength(600)
     st.set_polarization('s')
-    st.set_angle(0)
+    st.set_angle(0, units='degrees')
 
     y = st.structure_E_field(time_reversal=False)['E_square']
 
@@ -40,86 +37,41 @@ def mcgehee():
     plt.plot(y)
     dsum = getattr(st, 'd_cumsum')
     plt.axhline(y=1, linestyle='--', color='k')
-    for i, xmat in enumerate(dsum):
-        plt.axvline(x=xmat, linestyle='-', color='r', lw=2)
+    for i, zmat in enumerate(dsum):
+        plt.axvline(x=zmat, linestyle='-', color='r', lw=2)
     plt.xlabel('Position in Device (nm)')
     plt.ylabel('Normalized |E|$^2$Intensity')
     plt.show()
 
 
-def mcgehee2():
+def spe():
     st = LifetimeTmm()
-    st.add_layer(0, 1.4504)
-    st.add_layer(110, 1.7704 + 0.01161j)
-    st.add_layer(35, 1.4621 + 0.04426j)
-    st.add_layer(220, 2.12 + 0.3166016j, active=True)
-    st.add_layer(7, 2.095 + 2.3357j)
-    st.add_layer(200, 1.20252 + 7.25439j)
-    st.add_layer(0, 1.20252 + 7.25439j)
 
-    # st.show_structure()
+    st.add_layer(0, 3.48)
+    st.add_layer(2000, 3.48)
+    st.add_layer(200, 1)
+    st.add_layer(2000, 5)
+    st.add_layer(2000, 1)
+    st.add_layer(0, 1)
 
-    st.set_wavelength(600)
+    st.set_wavelength(1550)
     st.set_polarization('s')
-    st.set_angle(0)
 
-    y = st.layer_E_Field()['E_square']
+    result = st.spe_structure()
+    # result = st.spe_rate_structure()
+    y = result['spe']
 
-    plt.figure()
-    plt.plot(y)
-    plt.axhline(y=1, linestyle='--', color='k')
-    plt.xlabel('Position in Device (nm)')
-    plt.ylabel('Normalized |E|$^2$Intensity')
-    plt.show()
-
-
-def purcell_layer():
-    st = LifetimeTmm()
-    Er = 1.5
-    lam = 1540
-
-    st.add_layer(0, Er)
-    st.add_layer(2000, Er, active=True)
-    # st.add_layer(4*lam/(2*pi), Er, active=True)
-    st.add_layer(0, 3)
-
-    st.set_wavelength(lam)
-    st.set_bulk_n(Er)
-
-    y = st.purcell_factor_layer()
+    z = result['z']
 
     plt.figure()
-    plt.plot(y)
+    plt.plot(z, y)
     plt.axhline(y=1, linestyle='--', color='k')
     plt.xlabel('Position in layer (nm)')
     plt.ylabel('Purcell Factor')
-    plt.show()
-
-
-def purcell_z():
-    st = LifetimeTmm()
-    Er = 1.54
-    d_active = 100
-    st.add_layer(0, Er)
-    st.add_layer(500, Er)
-    st.add_layer(d_active, Er, active=True)
-    st.add_layer(500, 300)
-    st.add_layer(0, 300)
-
-    st.set_wavelength(1500)
-    st.set_bulk_n(Er)
-
-    # Evaluate using scipy's integrate function one x at a time
-    # dsum = getattr(st, 'd_cumsum')
-    y = []
-    for x in tqdm(range(d_active)):
-        # print('Evaluating at x = {:.2f}'.format(x))
-        y.append(st.purcell_factor_z(x))
-    plt.figure()
-    plt.plot(y)
+    dsum = getattr(st, 'd_cumsum')
     plt.axhline(y=1, linestyle='--', color='k')
-    plt.xlabel('Position in layer (nm)')
-    plt.ylabel('Purcell Factor')
+    for i, zmat in enumerate(dsum):
+        plt.axvline(x=zmat, linestyle='-', color='r', lw=2)
     plt.show()
 
 
@@ -127,26 +79,29 @@ def test():
     st = LifetimeTmm()
 
     st.add_layer(0, 3.48)
-    st.add_layer(1500, 3.48)
-    st.add_layer(1500, 1)
+    st.add_layer(2000, 3.48)
+    st.add_layer(2000, 1)
     st.add_layer(0, 1)
+    # st.add_layer(0, 3.48)
 
-    st.set_wavelength(1540)
+    st.set_wavelength(1550)
     st.set_polarization('s')
+    st.set_angle(70, units='degrees')
 
-    y = st.structure_E_Field()['E_square']
+    y = st.structure_E_field(time_reversal=True)['E_square']
 
     plt.figure()
     plt.plot(y)
+    dsum = getattr(st, 'd_cumsum')
     plt.axhline(y=1, linestyle='--', color='k')
-    plt.xlabel('Position in layer (nm)')
-    plt.ylabel('Purcell Factor')
+    for i, zmat in enumerate(dsum):
+        plt.axvline(x=zmat, linestyle='-', color='r', lw=2)
+    plt.xlabel('Position in Device (nm)')
+    plt.ylabel('Normalized |E|$^2$Intensity')
     plt.show()
+
 
 if __name__ == "__main__":
     # mcgehee()
-    # mcgehee2()
-    # purcell_z()
-    # purcell_layer()
-    test()
-
+    # test()
+    spe()
