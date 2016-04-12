@@ -49,8 +49,6 @@ def spe():
 
     st.add_layer(0, 3.48)
     st.add_layer(2000, 3.48)
-    st.add_layer(200, 1)
-    st.add_layer(2000, 5)
     st.add_layer(2000, 1)
     st.add_layer(0, 1)
 
@@ -86,12 +84,14 @@ def test():
 
     st.set_wavelength(1550)
     st.set_polarization('s')
-    st.set_angle(70, units='degrees')
-
-    y = st.structure_E_field(time_reversal=True)['E_square']
 
     plt.figure()
-    plt.plot(y)
+    for th in [0, 10, 70]:
+        st.set_angle(th, units='degrees')
+        y = st.structure_E_field(time_reversal=True)['E_square']
+        y /= 3.48**2
+        plt.plot(y, label=th)
+    plt.legend()
     dsum = getattr(st, 'd_cumsum')
     plt.axhline(y=1, linestyle='--', color='k')
     for i, zmat in enumerate(dsum):

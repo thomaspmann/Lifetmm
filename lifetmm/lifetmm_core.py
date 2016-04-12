@@ -3,7 +3,7 @@ import numpy as np
 import scipy.integrate as integrate
 import matplotlib.pyplot as plt
 
-from numpy import pi, exp, sin, cos, sqrt
+from numpy import pi, exp, sin, sqrt
 from tqdm import *
 
 
@@ -240,11 +240,13 @@ class LifetimeTmm:
         comp1 = np.kron(np.ones((self.num_layers, 1)), z_pos)
         comp2 = np.transpose(np.kron(np.ones((len(z_pos), 1)), self.d_cumsum))
         x_mat = sum(comp1 > comp2, 0)
-        # Evaluate spontaneous emission rate for each medium inside cladding layers
+
         spe = np.zeros(len(z_pos), dtype=float)
+
         for layer in range(1, self.num_layers-1):
             # Calculate x indices inside structure for the layer
             x_indices = np.where(x_mat == layer)
+
             spe[x_indices] += self.spe_layer(layer=layer, emission_direction='Lower')['spe']
             spe[x_indices] += self.spe_layer(layer=layer, emission_direction='Upper')['spe']
         return {'z': z_pos, 'spe': spe}
