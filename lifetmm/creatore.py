@@ -2,7 +2,7 @@ import scipy as sp
 import numpy as np
 import scipy.integrate as integrate
 
-from numpy import pi, exp, sin, sqrt, sum
+from numpy import pi, exp, sin, sqrt, sum, inf
 from tqdm import *
 import matplotlib.pyplot as plt
 
@@ -28,9 +28,9 @@ class LifetimeTmm:
         self.lam_vac = lam_vac
 
     def set_polarization(self, pol):
-        if pol not in ['s', 'p']:
+        if pol not in ['s', 'p'] and self.th == 0:
             raise ValueError("Polarisation must be 's' or 'p' when angle of incidence is"
-                             " not 90$\degree$s")
+                             " not 0$\degree$s")
         self.pol = pol
 
     def set_angle(self, th, units='radians'):
@@ -136,92 +136,7 @@ class LifetimeTmm:
     def matrix_2x2_determinant(matrix):
         return matrix[0, 1]*matrix[1, 0] - matrix[0, 0]*matrix[1, 1]
 
-    def calculate_coefficients(self, radiative='lower'):
-        n = self.n_list
-        # calculate the transfer matrices
-        S = self.s_mat()
-
-        X = np.zeros(self.num_layers, dtype=complex)
-        W = np.zeros(self.num_layers, dtype=complex)
-
-        if radiative == 'lower':
-            # Layer coefficients (time reversal BCs)
-            X[0] = 1 / n[0]
-            rR = S[0, 1] / S[1, 1]
-            W[0] = X[0] * rR
-
-            for j in range(1, self.num_layers - 1):
-                X[j] = 1
-
-        return W, X
-
-    def lower_cladding_E_field(self, W0, X0):
-        n = self.n_list
-
-        # Wave vector components in layer
-        qj = self.q(n[0], n[0], self.th)
-        kj_z = (2 * pi * qj) / self.lam_vac
-
-        # z positions to evaluate E at
-        z = np.arange((-self.d_list[0]+self.z_step / 2.0), 0, self.z_step)
-
-        # Evaluate E field
-        E = W0 * exp(-1j * kj_z * z) + X0 * exp(1j * kj_z * z)
-        return {'z': z, 'E': E}
-
-    def upper_cladding_E_field(self, Wmp1, Xmp1):
-        n = self.n_list
-
-        # Wave vector components in layer
-        qj = self.q(n[-1], n[0], self.th)
-        kj_z = (2 * pi * qj) / self.lam_vac
-
-        # Time reversed
-        kj_z = np.conj(kj_z)
-
-        # z positions to evaluate E at
-        z = np.arange((self.z_step / 2.0), self.d_list[-1], self.z_step)
-
-        # Evaluate E field
-        E = Wmp1 * exp(1j * kj_z * z) + Xmp1 * exp(-1j * kj_z * z)
-
-        return {'z': z, 'E': E}
-
-    def layer_E_field(self, layer):
-        # self._simulation_test()
-        d_list = self.d_list
-        d_cumsum = self.d_cumsum
-        n = self.n_list
-
-        # Wave vector components in layer
-        qj = self.q(n[layer], n[0], self.th)
-        kj_z = (2 * pi * qj) / self.lam_vac
-
-        # Time reversed
-        kj_z = np.conj(kj_z)
-
-        # z positions to evaluate E at
-        z = np.arange((self.z_step / 2.0), d_list[layer], self.z_step)
-
-        # calculate the transfer matrices
-        S = self.s_mat()
-        S_prime = self.s_primed_mat(layer)
-        det_S_prime = self.matrix_2x2_determinant(S_prime)
-
-        # Layer coefficients (time reversal BCs)
-        X0 = 1 / n[0]
-        rR = S[0, 1] / S[1, 1]
-        Wj = X[0] * (rR * S_prime[1, 1] - S_prime[0, 1]) / det_S_prime
-        Xj = X[0] * (S_prime[0, 0] - rR * S_prime[1, 0]) / det_S_prime
-
-        # Evaluate E field
-        dj = d_list[layer]
-        zj = d_cumsum[layer]
-        E = Wj * exp(1j * kj_z * (z - zj - dj/2)) + Xj * exp(-1j * kj_z * (z - zj - dj/2))
-
-        return {'z': z, 'E': E}
-
-    def structure_E_field(self):
+    def spe_structure(self):
         # x positions to evaluate E field at over entire structure
         z_pos = np.arange((self.z_step / 2.0), sum(self.d_list), self.z_step)
         # get x_mat - specifies what layer the corresponding point in x_pos is in
@@ -229,48 +144,120 @@ class LifetimeTmm:
         comp2 = np.transpose(np.kron(np.ones((len(z_pos), 1)), self.d_cumsum))
         z_mat = sum(comp1 > comp2, 0)
 
-        E = np.zeros(len(z_pos), dtype=complex)
+        spe = np.zeros(len(z_pos), dtype=float)
+        for layer in range(self.num_layers):
+            print('Evaluating layer %d' % layer)
+            # Calculate x indices inside structure for the layer
+            x_indices = np.where(z_mat == layer)
 
-        # Radiative lower outgoiong modes
-        n = self.n_list
+            # Calculate TE modes
+            self.set_polarization('s')
+            spe[x_indices] = self.spe_layer(layer)['spe']
+
+        spe *= 1/2
+        return {'z': z_pos, 'spe': spe}
+
+    def spe_layer(self, layer):
+        assert self.n_list[0] >= self.n_list[-1], \
+            'Refractive index of lower cladding must be larger than the upper cladding'
+
+        resolution = 2 ** 11 + 1
+        th_emission, dth = np.linspace(0, pi / 2, resolution, endpoint=False, retstep=True)
+
+        z = np.arange((self.z_step / 2.0), self.d_list[layer], self.z_step)
+        E_square_theta = np.zeros((resolution, len(z)), dtype=float)
+
+        # Params for tqdm progress bar
+        kwargs = {
+            'total': resolution,
+            'unit': 'theta modes',
+            'unit_scale': True,
+        }
+
+        for i, th in tqdm(enumerate(th_emission), **kwargs):
+            self.set_angle(th)
+            if self.n_list[0] <= self.n_list[layer]*sin(th) <= self.n_list[-1]:
+                # Partially radiative mode(only in lower)
+                E_square_theta[i, :] = self.E_field_layer(layer=layer, radiative='Lower')['E_square'] * sin(th)
+            else:  # Fully radiative modes
+                E_square_theta[i, :] = self.E_field_layer(layer=layer, radiative='Lower')['E_square'] * sin(th)
+                E_square_theta[i, :] += self.E_field_layer(layer=layer, radiative='Upper')['E_square'] * sin(th)
+
+            # Evaluate spontaneous emission rate (axis=0 integrates over each columns)
+            spe = integrate.romb(E_square_theta, dx=dth, axis=0) * self.n_list[layer]**3
+            # Normalise to vacuum emission rate of a randomly orientated dipole
+            spe *= (3/8)
+
+        return {'z': z, 'spe': spe}
+
+    def E_field_layer(self, layer, radiative='Lower'):
+        # self._simulation_test()
+
+        # Wave vector components in layer
+        qj = self.q(self.n_list[layer], self.n_list[0], self.th)
+        kj_z = (2 * pi * qj) / self.lam_vac
+
+        # z positions to evaluate E at
+        z = np.arange((self.z_step / 2.0), self.d_list[layer], self.z_step)
+
         S = self.s_mat()
+        det_S = self.matrix_2x2_determinant(S)
+        if radiative == 'Lower':
+            X_0 = 1 / self.n_list[0]
+            if layer == 0:  # Evaluate lower cladding
+                W_0 = (S[0, 1] / S[1, 1]) * X_0
+                # Note W_0 and X_0 are defined at cladding-layer boundary
+                z = z[::-1]
+                E = W_0 * exp(1j * kj_z * -z) + X_0 * exp(-1j * kj_z * -z)
+            elif layer == self.num_layers - 1:  # Evaluate upper cladding
+                X_mp1 = (1 / S[1, 1]) * X_0
+                W_mp1 = 0
+                # TODO wrong way round
+                E = W_mp1 * exp(1j * kj_z * z) + X_mp1 * exp(-1j * kj_z * z)
+            else:  # Evaluate internal layer electric field
+                # calculate the total and partial transfer matrices
+                S_prime = self.s_primed_mat(layer)
+                det_S_prime = self.matrix_2x2_determinant(S_prime)
 
-        # # Calculate lower cladding E field
-        z_indices = np.where(z_mat == 0)
-        X0 = 1 / n[0]
-        W0 = (S[0, 1] / S[1, 1]) * X0
-        E[z_indices] = self.lower_cladding_E_field(W0, X0)['E']
+                rR = S[0, 1] / S[1, 1]
+                X_j = X_0 * (S_prime[0, 0] - rR * S_prime[1, 0]) / det_S_prime
+                W_j = X_0 * (rR * S_prime[1, 1] - S_prime[0, 1]) / det_S_prime
+                E = W_j * exp(1j * kj_z * z) + X_j * exp(-1j * kj_z * z)
 
-        # # # Calculate internal E field
-        # for layer in range(1, self.num_layers - 1):
-        #     # Calculate z indices inside structure for the layer
-        #     z_indices = np.where(z_mat == layer)
-        #     E_layer = self.layer_E_field(layer=layer)['E']
-        #     E[z_indices] = E_layer
-
-        # # Calculate upper cladding E field
-        z_indices = np.where(z_mat == self.num_layers - 1)
-        Wmp1 = 0
-        Xmp1 = (1/S[1, 1]) * X0
-        E[z_indices] = self.upper_cladding_E_field(Wmp1, Xmp1)['E']
-
-        # Radiative upper outgoiong modes
-        # # Calculate upper cladding E field
-        # Wmp1 = 1 / n[0]
-        # Xmp1 = -(S[1, 0] / S[1, 1]) * Wmp1
-        # E[z_indices] = self.upper_cladding_E_field(Wmp1, Xmp1)['E']
+        if radiative == 'Upper':
+            W_mp1 = 1 / self.n_list[-1]
+            # Time reversed evanescent field
+            kj_z = np.conj(kj_z)
+            if layer == 0:  # Evaluate lower cladding
+                X_0 = 0
+                W_0 = S[1, 1] * det_S * W_mp1
+                # Note W_0 and X_0 are defined at cladding-layer boundary
+                z = z[::-1]
+                E = W_0 * exp(1j * kj_z * -z) + X_0 * exp(-1j * kj_z * -z)
+            elif layer == self.num_layers - 1:  # Evaluate upper cladding
+                X_mp1 = (- S[1, 0]/S[1, 1]) * W_mp1
+                # TODO wrong way round
+                E = W_mp1 * exp(1j * kj_z * z) + X_mp1 * exp(-1j * kj_z * z)
+            else:  # Evaluate internal layer electric field
+                # calculate the total and partial transfer matrices
+                S_prime = self.s_primed_mat(layer)
+                det_S_prime = self.matrix_2x2_determinant(S_prime)
+                W_0 = det_S * W_mp1 / S[1, 1]
+                X_j = - W_0 * S_prime[1, 0] / det_S_prime
+                W_j = W_0 * S_prime[1, 1] / det_S_prime
+                E = W_j * exp(1j * kj_z * z) + X_j * exp(-1j * kj_z * z)
 
         E_square = abs(E[:]) ** 2
-        return {'z': z_pos, 'E': E, 'E_square': E_square}
+        return {'z': z, 'E': E, 'E_square': E_square}
 
-def spe():
+
+def calculation():
+    # Create structure
     st = LifetimeTmm()
-
-    # st.add_layer(0, 3.48)
     st.add_layer(2000, 3.48)
     st.add_layer(2000, 1)
-    # st.add_layer(0, 1)
 
+    # Set light info
     st.set_wavelength(1550)
     st.set_polarization('s')
 
@@ -290,32 +277,5 @@ def spe():
     plt.show()
 
 
-def test():
-    st = LifetimeTmm()
-    # st.add_layer(0, 3.48)
-    st.add_layer(2000, 3.48)
-    st.add_layer(2000, 1)
-    # st.add_layer(0, 1)
-    st.set_wavelength(1550)
-    st.set_polarization('s')
-
-    plt.figure()
-    for th in [0, 10, 70]:
-        st.set_angle(th, units='degrees')
-        y = st.structure_E_field()['E_square']
-        plt.plot(y, label=th)
-    plt.legend()
-
-    # Plot boundaries
-    dsum = getattr(st, 'd_cumsum')
-    plt.axhline(y=1, linestyle='--', color='k')
-    for i, zmat in enumerate(dsum):
-        plt.axvline(x=zmat, linestyle='-', color='r', lw=2)
-    plt.xlabel('Position in Device (nm)')
-    plt.ylabel('Normalized |E|$^2$Intensity')
-    plt.show()
-
-
 if __name__ == "__main__":
-    # spe()
-    test()
+    calculation()

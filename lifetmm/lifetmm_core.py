@@ -189,7 +189,7 @@ class LifetimeTmm:
 
     def spe_layer(self, layer, emission_direction='Lower'):
 
-        assert self.n_list[0] >= self.n_list[ -1], \
+        assert self.n_list[0] >= self.n_list[-1], \
             'Refractive index of lower cladding must be larger than the upper cladding'
 
         n_layer = self.n_list[layer].real
@@ -235,13 +235,13 @@ class LifetimeTmm:
 
     def spe_structure(self):
         # x positions to evaluate E field at over entire structure
-        z_pos = np.arange((self.z_step / 2.0), sum(self.d_list), self.z_step)
+        x_pos = np.arange((self.z_step / 2.0), sum(self.d_list), self.z_step)
         # get x_mat - specifies what layer the corresponding point in x_pos is in
-        comp1 = np.kron(np.ones((self.num_layers, 1)), z_pos)
-        comp2 = np.transpose(np.kron(np.ones((len(z_pos), 1)), self.d_cumsum))
+        comp1 = np.kron(np.ones((self.num_layers, 1)), x_pos)
+        comp2 = np.transpose(np.kron(np.ones((len(x_pos), 1)), self.d_cumsum))
         x_mat = sum(comp1 > comp2, 0)
 
-        spe = np.zeros(len(z_pos), dtype=float)
+        spe = np.zeros(len(x_pos), dtype=float)
 
         for layer in range(1, self.num_layers-1):
             # Calculate x indices inside structure for the layer
@@ -249,4 +249,4 @@ class LifetimeTmm:
 
             spe[x_indices] += self.spe_layer(layer=layer, emission_direction='Lower')['spe']
             spe[x_indices] += self.spe_layer(layer=layer, emission_direction='Upper')['spe']
-        return {'z': z_pos, 'spe': spe}
+        return {'z': x_pos, 'spe': spe}
