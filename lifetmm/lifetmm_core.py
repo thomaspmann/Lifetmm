@@ -134,7 +134,7 @@ class LifetimeTmm:
 
     @staticmethod
     def matrix_2x2_determinant(matrix):
-        return matrix[0, 1]*matrix[1, 0] - matrix[0, 0]*matrix[1, 1]
+        return matrix[0, 0] * matrix[1, 1] - matrix[0, 1] * matrix[0, 1]
 
     def layer_E_field(self, layer, time_reversal=False):
         self._simulation_test()
