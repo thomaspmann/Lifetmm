@@ -1,12 +1,7 @@
-from __future__ import division, print_function, absolute_import
-
-# from .lifetmm_core import *
+import matplotlib.pyplot as plt
 from lifetmm import *
-from tqdm import *
 from numpy import pi, linspace, inf, array, sum, cos, sin
 from scipy.interpolate import interp1d
-import time
-import matplotlib.pyplot as plt
 
 # # To run a sample use the following in python console:
 # import lifetmm.examples; lifetmm.examples.sample1()
@@ -31,13 +26,12 @@ def mcgehee():
     st.set_polarization('s')
     st.set_angle(0, units='degrees')
 
-    y = st.structure_E_field(time_reversal=False)['E_square']
+    y = st.structure_E_field(radiative='Upper')['E_square']
 
     plt.figure()
     plt.plot(y)
-    dsum = getattr(st, 'd_cumsum')
     plt.axhline(y=1, linestyle='--', color='k')
-    for i, zmat in enumerate(dsum):
+    for zmat in getattr(st, 'd_cumsum'):
         plt.axvline(x=zmat, linestyle='-', color='r', lw=2)
     plt.xlabel('Position in Device (nm)')
     plt.ylabel('Normalized |E|$^2$Intensity')
@@ -45,63 +39,112 @@ def mcgehee():
 
 
 def spe():
+    # Create structure
     st = LifetimeTmm()
+    st.add_layer(1000, 3.48)
+    # st.add_layer(1000, 3.48)
+    # st.add_layer(1000, 1)
+    st.add_layer(1000, 1)
+    # st.add_layer(1000, 3.48)
 
-    st.add_layer(0, 3.48)
-    st.add_layer(2000, 3.48)
-    st.add_layer(2000, 1)
-    st.add_layer(0, 1)
-
+    # Set light info
     st.set_wavelength(1550)
-    st.set_polarization('s')
 
+    # Get results
     result = st.spe_structure()
-    # result = st.spe_rate_structure()
-    y = result['spe']
-
     z = result['z']
+    fp = result['spe']
 
+    # Plot
     plt.figure()
-    plt.plot(z, y)
+    plt.plot(z, fp)
     plt.axhline(y=1, linestyle='--', color='k')
     plt.xlabel('Position in layer (nm)')
     plt.ylabel('Purcell Factor')
-    dsum = getattr(st, 'd_cumsum')
     plt.axhline(y=1, linestyle='--', color='k')
-    for i, zmat in enumerate(dsum):
-        plt.axvline(x=zmat, linestyle='-', color='r', lw=2)
+    # Plot layer boundaries
+    for z_j in getattr(st, 'd_cumsum'):
+        plt.axvline(x=z_j, color='r', lw=2)
     plt.show()
 
 
-def test():
+def test_symmetry():
+    # Create structure
     st = LifetimeTmm()
-
-    st.add_layer(0, 3.48)
     st.add_layer(2000, 3.48)
+    # st.add_layer(2000, 3.48)
     st.add_layer(2000, 1)
-    st.add_layer(0, 1)
-    # st.add_layer(0, 3.48)
+    st.add_layer(2000, 1)
+    st.add_layer(2000, 3.48)
 
+    # Set light info
     st.set_wavelength(1550)
     st.set_polarization('s')
+    st.set_angle(70, units='degrees')
+
+    print('Lower')
+    y_lower = st.structure_E_field(radiative='Lower', time_rev=True)['E_square']
+
+    print('Upper')
+    theta = st.snell(st.n_list[0], st.n_list[-1], st.th)
+    # theta = np.conj(theta)
+    st.th = theta
+    st.flip()
+    y = st.structure_E_field(radiative='Upper', time_rev=True)['E_square']
+    y_upper = y[::-1]
 
     plt.figure()
-    for th in [0, 10, 70]:
-        st.set_angle(th, units='degrees')
-        y = st.structure_E_field(time_reversal=True)['E_square']
-        y /= 3.48**2
-        plt.plot(y, label=th)
-    plt.legend()
-    dsum = getattr(st, 'd_cumsum')
+    plt.plot(y_lower, label='Lower')
+    plt.plot(y_upper, label='Upper', ls='--', color='r')
     plt.axhline(y=1, linestyle='--', color='k')
-    for i, zmat in enumerate(dsum):
+    for zmat in getattr(st, 'd_cumsum'):
         plt.axvline(x=zmat, linestyle='-', color='r', lw=2)
     plt.xlabel('Position in Device (nm)')
     plt.ylabel('Normalized |E|$^2$Intensity')
+    plt.legend()
+    plt.show()
+
+
+def lower_vs_upper():
+    # Create structure
+    st = LifetimeTmm()
+
+    # st.add_layer(200, 3.48)
+    st.add_layer(2000, 3.48)
+    st.add_layer(200, 1)
+    st.add_layer(200, 1)
+    st.add_layer(200, 3.48)
+
+    # Set light info
+    st.set_wavelength(1550)
+    st.set_polarization('s')
+    st.set_angle(80, units='degrees')
+
+    print('Lower')
+    y_lower = st.structure_E_field(radiative='Lower', time_rev=False)['E_square']
+
+    print('Upper')
+    theta = st.snell(st.n_list[0], st.n_list[-1], st.th)
+    # theta = np.conj(theta)
+    print(theta)
+    st.th = theta
+    y_upper = st.structure_E_field(radiative='Upper', time_rev=False)['E_square']
+    # y_upper = 0
+
+    plt.figure()
+    plt.plot(y_lower, label='Lower')
+    plt.plot(y_upper, label='Upper', ls='--', color='r')
+    plt.axhline(y=1, linestyle='--', color='k')
+    for zmat in getattr(st, 'd_cumsum'):
+        plt.axvline(x=zmat, linestyle='-', color='r', lw=2)
+    plt.xlabel('Position in Device (nm)')
+    plt.ylabel('Normalized |E|$^2$Intensity')
+    plt.legend()
     plt.show()
 
 
 if __name__ == "__main__":
     # mcgehee()
-    # test()
-    spe()
+    # spe()
+    # test_symmetry()
+    lower_vs_upper()

@@ -372,7 +372,7 @@ class LifetimeTmm:
                     mI = self.I_mat(n[v], n[v + 1])
                     S_dprime = S_dprime @ mL @ mI
 
-                # Calculate E field
+                # Calculat  e E field
                 qj = self.q(n[layer], n[0], self.th)
                 eps = (2 * pi * qj) / lam_vac
 
