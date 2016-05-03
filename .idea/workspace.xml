@@ -553,7 +553,14 @@
       <option name="project" value="LOCAL" />
       <updated>1462277607981</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="looks like we're getting somewhere. still some quirks and thinking to do. probs use s'' to define upper radiative modes">
+      <created>1462277674716</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1462277674716</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="ToolWindowManager">
