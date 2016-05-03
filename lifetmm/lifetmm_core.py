@@ -65,11 +65,7 @@ class LifetimeTmm:
         return sp.arcsin(np.real_if_close(n_1*sin(th_1) / n_2))
 
     def q(self, j):
-        try:
-            if self.radiative == 'Upper':
-                n0 = self.n_list[-1].real
-        except:  # self.radiative =='Lower'
-            n0 = self.n_list[0].real
+        n0 = self.n_list[0].real
         nj = self.n_list[j]
         return sqrt(nj**2 - (n0*sin(self.th))**2)
 
@@ -191,12 +187,18 @@ class LifetimeTmm:
         self._simulation_test()
 
         # Wave vector components in layer
-        qj = self.q(layer)
+        if radiative == 'Upper':
+            n0 = self.n_list[-1].real
+        else:  # self.radiative =='Lower'
+            n0 = self.n_list[0].real
+        nj = self.n_list[layer]
+        qj = sqrt(nj**2 - (n0*sin(self.th))**2)
+
         k_z = (2 * pi * qj) / self.lam_vac
 
         # z positions to evaluate E at
         z = np.arange((self.z_step / 2.0), self.d_list[layer], self.z_step)
-        if layer == 0 and radiative == 'Lower':
+        if layer == 0:
             # Note E_plus and E_minus are defined at cladding-layer boundary
             z = -z[::-1]
 
@@ -205,12 +207,15 @@ class LifetimeTmm:
             E_plus, E_minus = self.time_fwd_coeff(layer, radiative)
         else:  # reversed time
             E_plus, E_minus = self.time_rev_coeff(layer, radiative)
+            # TODO check - seems incompatible with k_z conjugate
+            z = -z
             # self.n_list[-1] <= self.n_list[layer] * sin(self.th) <= self.n_list[0] \and
-            if layer == self.num_layers - 1 and radiative == 'Lower':
+            if layer == self.num_layers - 1:
                 # Then partially radiative mode (propagating lower and evanescent in upper
                 # print('Partially Radiative')
-                k_z = np.conj(k_z)
-
+                # k_z = np.conj(k_z)
+                pass
+        print(E_plus, E_minus)
         E = E_plus * exp(1j * k_z * z) + E_minus * exp(-1j * k_z * z)
         E_square = abs(E)**2
         E_avg = sum(E_square) / (self.z_step * self.d_list[layer])
@@ -294,10 +299,8 @@ class LifetimeTmm:
             # Calculate TE modes
             self.set_polarization('s')
             ind = np.where(z_mat == layer)
-            self.radiative = 'Lower'
             spe[ind] += self.spe_layer(layer, radiative='Lower')['spe']
-            # self.radiative = 'Upper'
-            # spe[ind] += self.spe_layer(layer, radiative='Upper')['spe']
+            spe[ind] += self.spe_layer(layer, radiative='Upper')['spe']
 
         return {'z': z_pos, 'spe': spe}
 
@@ -336,6 +339,9 @@ class LifetimeTmm:
         ax.set_xlim([0, d_cumsum[-1]])
         ax.set(xlabel=r'x', ylabel=r'A.U.')
         plt.show()
+
+    def get_layer_boundaries(self):
+        return self.d_cumsum
 
     def calc_R_and_T(self):
         S = self.s_mat()
