@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4ac1dfc0-6866-4a32-9e20-f0079340d3fb" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/Lifetmm.iml" afterPath="$PROJECT_DIR$/.idea/Lifetmm.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lifetmm/examples.py" afterPath="$PROJECT_DIR$/lifetmm/examples.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lifetmm/lifetmm_core.py" afterPath="$PROJECT_DIR$/lifetmm/lifetmm_core.py" />
     </list>
     <ignored path="Lifetmm.iws" />
@@ -31,8 +29,8 @@
           <file leaf-file-name="lifetmm_core.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/lifetmm/lifetmm_core.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="328">
-                  <caret line="306" column="0" selection-start-line="306" selection-start-column="0" selection-end-line="306" selection-end-column="0" />
+                <state relative-caret-position="589">
+                  <caret line="310" column="44" selection-start-line="310" selection-start-column="44" selection-end-line="310" selection-end-column="44" />
                   <folding />
                 </state>
               </provider>
@@ -495,7 +493,14 @@
       <option name="project" value="LOCAL" />
       <updated>1462021850191</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="fixed wave vector error for upper radiative antisymmetric structures">
+      <created>1462376282664</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1462376282664</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -537,12 +542,14 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="CHECK_NEW_TODO" value="false" />
     <MESSAGE value="added vrendenberg" />
     <MESSAGE value="tuesday" />
     <MESSAGE value="creatore work done" />
     <MESSAGE value="something wrong with time reversal. FWD time ok." />
     <MESSAGE value="still confused" />
-    <option name="LAST_COMMIT_MESSAGE" value="still confused" />
+    <MESSAGE value="fixed wave vector error for upper radiative antisymmetric structures" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed wave vector error for upper radiative antisymmetric structures" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -942,8 +949,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lifetmm/lifetmm_core.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="328">
-          <caret line="306" column="0" selection-start-line="306" selection-start-column="0" selection-end-line="306" selection-end-column="0" />
+        <state relative-caret-position="589">
+          <caret line="310" column="44" selection-start-line="310" selection-start-column="44" selection-end-line="310" selection-end-column="44" />
           <folding />
         </state>
       </provider>

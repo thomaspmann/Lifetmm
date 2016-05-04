@@ -276,7 +276,12 @@ class LifetimeTmm:
 
         # Evaluate spontaneous emission rate
         # (axis=0 integrates all rows, containing thetas, over each columns, z)
-        spe = integrate.romb(E_square_theta, dx=dth, axis=0) * self.n_list[layer].real ** 3
+        if radiative == 'Lower':
+            n_outgoing = self.n_list[0].real
+        else:  # radiative == 'Upper'
+            n_outgoing = self.n_list[-1].real
+
+        spe = integrate.romb(E_square_theta, dx=dth, axis=0) * n_outgoing ** 3
         # Normalise to vacuum emission rate of a randomly orientated dipole
         spe *= 3/8
         return {'z': z, 'spe': spe}
@@ -303,7 +308,7 @@ class LifetimeTmm:
             self.set_polarization('s')
             ind = np.where(z_mat == layer)
             spe[ind] += self.spe_layer(layer, radiative='Lower')['spe']
-            # spe[ind] += self.spe_layer(layer, radiative='Upper')['spe']
+            spe[ind] += self.spe_layer(layer, radiative='Upper')['spe']
 
         return {'z': z_pos, 'spe': spe}
 
