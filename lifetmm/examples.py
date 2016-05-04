@@ -26,7 +26,7 @@ def mcgehee():
     st.set_polarization('s')
     st.set_angle(0, units='degrees')
 
-    y = st.structure_E_field(radiative='Upper')['E_square']
+    y = st.structure_E_field(radiative='Lower', time_rev='False')['E_square']
 
     plt.figure()
     plt.plot(y)
@@ -41,11 +41,11 @@ def mcgehee():
 def spe():
     # Create structure
     st = LifetimeTmm()
-    st.add_layer(1000, 3.48)
+    st.add_layer(1550, 3.48)
     # st.add_layer(1000, 3.48)
     # st.add_layer(1000, 1)
-    st.add_layer(1000, 1)
-    # st.add_layer(1000, 3.48)
+    st.add_layer(1550, 1)
+    # st.add_layer(1550, 3.48)
 
     # Set light info
     st.set_wavelength(1550)
@@ -65,6 +65,7 @@ def spe():
     # Plot layer boundaries
     for z in st.get_layer_boundaries():
         plt.axvline(x=z, color='r', lw=2)
+    # plt.ylim([0, 4])
     plt.show()
 
 
@@ -109,47 +110,45 @@ def test_symmetry():
 def lower_vs_upper():
     # Create structure
     st = LifetimeTmm()
-
-    # st.add_layer(200, 3.48)
-    st.add_layer(1000, 3.48)
-    # st.add_layer(100, 1)
-    # st.add_layer(200, 4)
-    # st.add_layer(100, 2)
-    st.add_layer(1000, 1)
-    # st.add_layer(200, 1)
-    # st.add_layer(2000, 3.48)
+    # st.add_layer(1550, 1)
+    st.add_layer(1550, 3.48)
+    st.add_layer(1550, 1)
+    # st.add_layer(1550, 3.48)
 
     # Set light info
     st.set_wavelength(1550)
     st.set_polarization('s')
-    st.set_angle(60, units='degrees')
+    theta = 50
+    st.set_angle(theta, units='degrees')
 
     print('Lower')
     y_lower = st.structure_E_field(radiative='Lower', time_rev=False)['E_square']
-    y_lower = st.structure_E_field(radiative='Lower', time_rev=True)['E_square']
+    # y_lower = st.structure_E_field(radiative='Lower', time_rev=True)['E_square']
     print('Upper')
     # theta = st.snell(st.n_list[0], st.n_list[-1], st.th)
     # theta = np.conj(theta)
     # print(theta)
     # st.th = theta
+    # y_upper = 0
     y_upper = st.structure_E_field(radiative='Upper', time_rev=False)['E_square']
-    y_upper = st.structure_E_field(radiative='Upper', time_rev=True)['E_square']
+    # y_upper = st.structure_E_field(radiative='Upper', time_rev=True)['E_square']
 
     plt.figure()
     plt.plot(y_lower, label='Lower')
-    plt.plot(y_upper, label='Upper', ls='--', color='r')
+    plt.plot(y_upper, label='Upper', color='g')
     plt.axhline(y=1, linestyle='--', color='k')
     for z in st.get_layer_boundaries():
         plt.axvline(x=z, color='r', lw=2)
     plt.axvline(x=z, color='r', lw=2)
     plt.xlabel('Position in Device (nm)')
     plt.ylabel('Normalized |E|$^2$Intensity')
+    plt.title('Angle of incidence {} degrees'.format(theta))
     plt.legend()
     plt.show()
 
 
 if __name__ == "__main__":
     # mcgehee()
-    # spe()
     # test_symmetry()
-    lower_vs_upper()
+    # lower_vs_upper()
+    spe()

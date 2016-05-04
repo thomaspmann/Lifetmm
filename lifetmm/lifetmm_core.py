@@ -16,6 +16,7 @@ class LifetimeTmm:
         self.num_layers = 0
         self.pol = 'u'
         self.th = 0
+        self.radiative = 'Lower'
 
     def add_layer(self, d, n):
         self.d_list = np.append(self.d_list, d)
@@ -65,7 +66,11 @@ class LifetimeTmm:
         return sp.arcsin(np.real_if_close(n_1*sin(th_1) / n_2))
 
     def q(self, j):
-        n0 = self.n_list[0].real
+        if self.radiative == 'Lower':
+            n0 = self.n_list[0].real
+        else:  # self.radiative =='Upper'
+            n0 = self.n_list[-1].real
+
         nj = self.n_list[j]
         return sqrt(nj**2 - (n0*sin(self.th))**2)
 
@@ -185,15 +190,10 @@ class LifetimeTmm:
 
     def layer_E_field(self, layer, time_rev=False, radiative='Lower'):
         self._simulation_test()
+        self.radiative = radiative
 
         # Wave vector components in layer
-        if radiative == 'Upper':
-            n0 = self.n_list[-1].real
-        else:  # self.radiative =='Lower'
-            n0 = self.n_list[0].real
-        nj = self.n_list[layer]
-        qj = sqrt(nj**2 - (n0*sin(self.th))**2)
-
+        qj = self.q(layer)
         k_z = (2 * pi * qj) / self.lam_vac
 
         # z positions to evaluate E at
@@ -205,20 +205,24 @@ class LifetimeTmm:
         # E field in terms of E_0^+ (or E_0^- for time reversal)
         if not time_rev:
             E_plus, E_minus = self.time_fwd_coeff(layer, radiative)
+            # TODO alternate time reversal?
+            # z = -z
+            # k_z = np.conj(k_z)
         else:  # reversed time
             E_plus, E_minus = self.time_rev_coeff(layer, radiative)
             # TODO check - seems incompatible with k_z conjugate
-            z = -z
+            # z = -z
             # self.n_list[-1] <= self.n_list[layer] * sin(self.th) <= self.n_list[0] \and
-            if layer == self.num_layers - 1:
-                # Then partially radiative mode (propagating lower and evanescent in upper
-                # print('Partially Radiative')
-                # k_z = np.conj(k_z)
-                pass
-        print(E_plus, E_minus)
+            # if layer == self.num_layers - 1:
+            # k_z = np.conj(k_z)
+
         E = E_plus * exp(1j * k_z * z) + E_minus * exp(-1j * k_z * z)
         E_square = abs(E)**2
-        E_avg = sum(E_square) / (self.z_step * self.d_list[layer])
+
+        if self.d_list[layer] != 0:
+            E_avg = sum(E_square) / (self.z_step * self.d_list[layer])
+        else:
+            E_avg = 0
         return {'z': z, 'E': E, 'E_square': E_square, 'E_avg': E_avg}
 
     def structure_E_field(self, time_rev=False, radiative='Lower'):
@@ -240,9 +244,8 @@ class LifetimeTmm:
         return {'z': z_pos, 'E': E, 'E_square': E_square}
 
     def spe_layer(self, layer, radiative='Lower'):
-
-        assert self.n_list[0] >= self.n_list[-1], \
-            'Refractive index of lower cladding must be larger than the upper cladding'
+        # assert self.n_list[0] >= self.n_list[-1], \
+        #     'Refractive index of lower cladding must be larger than the upper cladding'
 
         # z positions in layer to evaluate
         z = np.arange((self.z_step / 2.0), self.d_list[layer], self.z_step)
@@ -262,7 +265,7 @@ class LifetimeTmm:
             self.set_angle(theta)
 
             # Calculate E field within layer
-            E = self.layer_E_field(layer=layer, time_rev=True, radiative=radiative)['E']
+            E = self.layer_E_field(layer=layer, time_rev=False, radiative=radiative)['E']
             # Normalise for outgoing wave medium refractive index
             if radiative == 'Lower':
                 E /= self.n_list[0].real
@@ -300,7 +303,7 @@ class LifetimeTmm:
             self.set_polarization('s')
             ind = np.where(z_mat == layer)
             spe[ind] += self.spe_layer(layer, radiative='Lower')['spe']
-            spe[ind] += self.spe_layer(layer, radiative='Upper')['spe']
+            # spe[ind] += self.spe_layer(layer, radiative='Upper')['spe']
 
         return {'z': z_pos, 'spe': spe}
 
