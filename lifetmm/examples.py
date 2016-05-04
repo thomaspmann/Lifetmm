@@ -42,8 +42,8 @@ def spe():
     # Create structure
     st = LifetimeTmm()
     st.add_layer(1550, 3.48)
-    # st.add_layer(1000, 3.48)
     # st.add_layer(1000, 1)
+    # st.add_layer(1000, 2)
     st.add_layer(1550, 1)
     # st.add_layer(1550, 3.48)
 
