@@ -1,7 +1,7 @@
 import numpy as np
 import scipy as sp
 import scipy.integrate as integrate
-from numpy import pi, exp, sin, sqrt, sum
+from numpy import pi, exp, sin, cos, sqrt, sum
 from numpy.linalg import det
 from tqdm import *
 
@@ -110,6 +110,18 @@ class LifetimeTmm:
             S_dprime = S_dprime @ mL @ mI
         return S_dprime
 
+    def wave_vector(self, layer):
+        if self.radiative == 'Lower':
+            n0 = self.n_list[0].real
+        else:  # self.radiative =='Upper'
+            n0 = self.n_list[-1].real
+
+        k = 2 * pi * n0 / self.lam_vac
+        k_11 = k * sin(self.th)
+        qj = self.q(layer)
+        k_z = (2 * pi * qj) / self.lam_vac
+        return k, k_z, k_11
+
     def time_fwd_coeff(self, layer):
         # Evaluate fwd and bkwd coefficients in units of incoming wave amplitude
         S = self.s_mat()
@@ -173,8 +185,7 @@ class LifetimeTmm:
         self._simulation_test()
 
         # Wave vector components in layer
-        qj = self.q(layer)
-        k_z = (2 * pi * qj) / self.lam_vac
+        k, k_z, k_11 = self.wave_vector(layer)
 
         # z positions to evaluate E at
         z = np.arange((self.z_step / 2.0), self.d_list[layer], self.z_step)
@@ -190,6 +201,10 @@ class LifetimeTmm:
             z = -z
             if layer == self.num_layers - 1 and self.n_list[-1] <= self.n_list[layer] * sin(self.th) <= self.n_list[0]:
                 k_z = np.conj(k_z)
+
+        # TODO: TM Mode check - put into time_rev_coefficients
+        if self.pol in ['p', 'TE'] and self.dipole == 'Horizontal':
+            E_plus = - E_plus
 
         E = E_plus * exp(1j * k_z * z) + E_minus * exp(-1j * k_z * z)
         E_square = abs(E)**2
@@ -228,7 +243,7 @@ class LifetimeTmm:
         # z positions in layer to evaluate
         z = np.arange((self.z_step / 2.0), self.d_list[layer], self.z_step)
 
-        resolution = 2 ** 11 + 1
+        resolution = 2 ** 8 + 1
         theta_input, dth = np.linspace(0, pi / 2, num=resolution, endpoint=False, retstep=True)
         E_square_theta = np.zeros((len(theta_input), len(z)), dtype=float)
 
@@ -244,25 +259,38 @@ class LifetimeTmm:
 
             # Calculate E field within layer
             E = self.layer_E_field(layer)['E']
-            # Normalise for outgoing wave medium refractive index
-            if self.radiative == 'Lower':
-                E /= self.n_list[0].real
-            else:  # radiative == 'Upper'
-                E /= self.n_list[-1].real
+
+            # Normalise for outgoing wave medium refractive index - only TE
+            if self.pol in ['s', 'TE']:
+                if self.radiative == 'Lower':
+                    E /= self.n_list[0].real
+                else:  # radiative == 'Upper'
+                    E /= self.n_list[-1].real
+
+            # Wave vector components in layer
+            k, k_z, k_11 = self.wave_vector(layer)
+
+            # # TODO: TM Mode check
+            # if self.pol in ['p', 'TE']:
+            #     if self.dipole == 'Vertical':
+            #         E *= k_11
+            #     else:  # self.dipole == 'Horizontal'
+            #         E *= k_z
 
             E_square_theta[i, :] += abs(E)**2 * sin(theta)
 
         # Evaluate spontaneous emission rate
         # (axis=0 integrates all rows, containing thetas, over each columns, z)
+        spe = integrate.romb(E_square_theta, dx=dth, axis=0)
+
         if self.radiative == 'Lower':
-            n_outgoing = self.n_list[0].real
+            spe *= self.n_list[0].real ** 3
         else:  # radiative == 'Upper'
-            n_outgoing = self.n_list[-1].real
+            spe *= self.n_list[-1].real ** 3
 
-        spe = integrate.romb(E_square_theta, dx=dth, axis=0) * n_outgoing ** 3
-
-        if self.pol == 'p':
-            spe /= self.n_list[layer].real**2
+        # TODO: TM Mode check
+        # if self.pol in ['p', 'TE']:
+        #     spe /= self.n_list[layer].real ** 4
 
         # Normalise to vacuum emission rate of a randomly orientated dipole
         spe *= 3/8
@@ -280,8 +308,10 @@ class LifetimeTmm:
 
         spe_TE_Lower = np.zeros(len(z_pos), dtype=float)
         spe_TE_Upper = np.zeros(len(z_pos), dtype=float)
-        spe_TM_Lower = np.zeros(len(z_pos), dtype=float)
-        spe_TM_Upper = np.zeros(len(z_pos), dtype=float)
+        spe_TM_Lower_h = np.zeros(len(z_pos), dtype=float)
+        spe_TM_Upper_h = np.zeros(len(z_pos), dtype=float)
+        spe_TM_Lower_v = np.zeros(len(z_pos), dtype=float)
+        spe_TM_Upper_v = np.zeros(len(z_pos), dtype=float)
         for layer in range(self.num_layers):
             if layer == 0:
                 print('Evaluating lower cladding...')
@@ -300,12 +330,25 @@ class LifetimeTmm:
             spe_TE_Upper[ind] += self.spe_layer(layer)['spe']
 
             # Calculate TM modes
-            # self.set_polarization('p')
-            # spe_TM_Lower[ind] += self.spe_layer(layer, radiative='Lower')['spe']
-            # spe_TM_Upper[ind] += self.spe_layer(layer, radiative='Upper')['spe']
+            self.set_polarization('p')
 
-        spe = spe_TE_Lower + spe_TE_Upper + spe_TM_Lower + spe_TM_Upper
-        return {'z': z_pos, 'spe': spe}
+            self.dipole = 'Horizontal'
+            self.radiative = 'Lower'
+            spe_TM_Lower_h[ind] += self.spe_layer(layer)['spe']
+            self.radiative = 'Upper'
+            spe_TM_Upper_h[ind] += self.spe_layer(layer)['spe']
+
+            self.dipole = 'Vertical'
+            self.radiative = 'Lower'
+            spe_TM_Lower_v[ind] += self.spe_layer(layer)['spe']
+            self.radiative = 'Upper'
+            spe_TM_Upper_v[ind] += self.spe_layer(layer)['spe']
+
+        spe_TE = spe_TE_Upper + spe_TE_Lower
+        spe_TM_h = spe_TM_Upper_h + spe_TM_Lower_h
+        spe_TM_v = spe_TM_Upper_v + spe_TM_Lower_v
+        spe = spe_TE_Lower + spe_TE_Upper + spe_TM_Upper_h + spe_TM_Upper_h + spe_TM_Upper_v + spe_TM_Upper_v
+        return {'z': z_pos, 'spe': spe, 'spe_TE': spe_TE, 'spe_TM_h': spe_TM_h, 'spe_TM_v': spe_TM_v}
 
     def show_structure(self):
         """ Brings up a plot showing the structure."""

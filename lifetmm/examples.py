@@ -26,7 +26,7 @@ def mcgehee():
     st.set_polarization('s')
     st.set_angle(0, units='degrees')
 
-    y = st.structure_E_field(radiative='Lower', time_rev='False')['E_square']
+    y = st.structure_E_field()['E_square']
 
     plt.figure()
     plt.plot(y)
@@ -41,6 +41,7 @@ def mcgehee():
 def spe():
     # Create structure
     st = LifetimeTmm()
+    # st.add_layer(1550, 1)
     st.add_layer(1550, 3.48)
     # st.add_layer(1000, 1)
     # st.add_layer(1000, 2)
@@ -53,19 +54,33 @@ def spe():
     # Get results
     result = st.spe_structure()
     z = result['z']
-    fp = result['spe']
+    spe_TE = result['spe_TE']
+    spe_TM_h = result['spe_TM_h']
+    spe_TM_v = result['spe_TM_v']
 
-    # Plot
-    plt.figure()
-    plt.plot(z, fp)
-    plt.axhline(y=1, linestyle='--', color='k')
-    plt.xlabel('Position in layer (nm)')
-    plt.ylabel('Purcell Factor')
-    plt.axhline(y=1, linestyle='--', color='k')
+    # Plot s
+    fig = plt.figure()
+    ax1 = fig.add_subplot(311)
+    ax1.plot(z, spe_TE, label='TE')
+    ax2 = fig.add_subplot(312)
+    ax2.plot(z, spe_TM_h, label='TM')
+    ax3 = fig.add_subplot(313)
+    ax3.plot(z, spe_TM_v, label='TM')
+
+    ax1.set_title('Spontaneous Emission Rate')
+    ax1.set_ylabel('Purcell Factor')
+    ax3.set_xlabel('Position in layer (nm)')
+
+    ax1.axhline(y=1, linestyle='--', color='k')
+    # ax2.axhline(y=1, linestyle='--', color='k')
     # Plot layer boundaries
     for z in st.get_layer_boundaries():
-        plt.axvline(x=z, color='r', lw=2)
-    # plt.ylim([0, 4])
+        ax1.axvline(z, color='r', lw=2)
+        ax2.axvline(z, color='r', lw=2)
+        ax3.axvline(z, color='r', lw=2)
+    ax1.legend(title='Horizontal Dipoles')
+    ax2.legend(title='Horizontal Dipoles')
+    ax3.legend(title='Vertical Dipoles')
     plt.show()
 
 
