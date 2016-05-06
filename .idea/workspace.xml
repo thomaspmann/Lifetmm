@@ -30,8 +30,8 @@
           <file leaf-file-name="lifetmm_core.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/lifetmm/lifetmm_core.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-567">
-                  <caret line="268" column="0" selection-start-line="268" selection-start-column="0" selection-end-line="268" selection-end-column="0" />
+                <state relative-caret-position="436">
+                  <caret line="201" column="77" selection-start-line="201" selection-start-column="77" selection-end-line="201" selection-end-column="77" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                   </folding>
@@ -46,21 +46,11 @@
           <file leaf-file-name="examples.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/lifetmm/examples.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="419">
-                  <caret line="69" column="42" selection-start-line="69" selection-start-column="42" selection-end-line="69" selection-end-column="42" />
+                <state relative-caret-position="96">
+                  <caret line="47" column="25" selection-start-line="47" selection-start-column="25" selection-end-line="47" selection-end-column="25" />
                   <folding>
-                    <element signature="e#2379#3393#0" expanded="false" />
+                    <element signature="e#2401#3415#0" expanded="false" />
                   </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="creatore.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/lifetmm/creatore.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="2958">
-                  <caret line="181" column="29" selection-start-line="181" selection-start-column="29" selection-end-line="181" selection-end-column="29" />
-                  <folding />
                 </state>
               </provider>
             </entry>
@@ -517,19 +507,26 @@
       <option name="project" value="LOCAL" />
       <updated>1462384044898</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="TM modes need working on. TE seems ok.">
+      <created>1462466090541</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1462466090541</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.09114858" sideWeight="0.49356914" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32359308" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32792208" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.26298702" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32792208" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26298702" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32900432" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.12961012" sideWeight="0.50643086" order="0" side_tool="true" content_ui="tabs" />
@@ -567,7 +564,8 @@
     <MESSAGE value="still confused" />
     <MESSAGE value="fixed wave vector error for upper radiative antisymmetric structures" />
     <MESSAGE value="YUSSSSSSS - working" />
-    <option name="LAST_COMMIT_MESSAGE" value="YUSSSSSSS - working" />
+    <MESSAGE value="TM modes need working on. TE seems ok." />
+    <option name="LAST_COMMIT_MESSAGE" value="TM modes need working on. TE seems ok." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -944,7 +942,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lifetmm/creatore.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2958">
+        <state relative-caret-position="619">
           <caret line="181" column="29" selection-start-line="181" selection-start-column="29" selection-end-line="181" selection-end-column="29" />
           <folding />
         </state>
@@ -952,18 +950,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lifetmm/examples.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="419">
-          <caret line="69" column="42" selection-start-line="69" selection-start-column="42" selection-end-line="69" selection-end-column="42" />
+        <state relative-caret-position="96">
+          <caret line="47" column="25" selection-start-line="47" selection-start-column="25" selection-end-line="47" selection-end-column="25" />
           <folding>
-            <element signature="e#2379#3393#0" expanded="false" />
+            <element signature="e#2401#3415#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lifetmm/lifetmm_core.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-567">
-          <caret line="268" column="0" selection-start-line="268" selection-start-column="0" selection-end-line="268" selection-end-column="0" />
+        <state relative-caret-position="436">
+          <caret line="201" column="77" selection-start-line="201" selection-start-column="77" selection-end-line="201" selection-end-column="77" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>

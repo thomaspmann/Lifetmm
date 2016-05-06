@@ -44,7 +44,7 @@ def spe():
     # st.add_layer(1550, 1)
     st.add_layer(1550, 3.48)
     # st.add_layer(1000, 1)
-    # st.add_layer(1000, 2)
+    # st.add_layer(1000, 8)
     st.add_layer(1550, 1)
     # st.add_layer(1550, 3.48)
 
@@ -81,6 +81,7 @@ def spe():
     ax1.legend(title='Horizontal Dipoles')
     ax2.legend(title='Horizontal Dipoles')
     ax3.legend(title='Vertical Dipoles')
+    plt.ylim([0,100])
     plt.show()
 
 

@@ -199,7 +199,7 @@ class LifetimeTmm:
         else:  # reversed time BSs
             E_plus, E_minus = self.time_rev_coeff(layer)
             z = -z
-            if layer == self.num_layers - 1 and self.n_list[-1] <= self.n_list[layer] * sin(self.th) <= self.n_list[0]:
+            if layer == self.num_layers-1 and self.n_list[-1] <= self.n_list[layer] * sin(self.th) <= self.n_list[0]:
                 k_z = np.conj(k_z)
 
         # TODO: TM Mode check - put into time_rev_coefficients
@@ -235,7 +235,7 @@ class LifetimeTmm:
 
     def spe_layer(self, layer):
         # spe rate must be calculated backward in time (see paper)
-        self.time_rev = False
+        self.time_rev = True
 
         assert self.n_list[0] >= self.n_list[-1], \
             'Refractive index of lower cladding must be larger than the upper cladding'
@@ -314,11 +314,11 @@ class LifetimeTmm:
         spe_TM_Upper_v = np.zeros(len(z_pos), dtype=float)
         for layer in range(self.num_layers):
             if layer == 0:
-                print('Evaluating lower cladding...')
+                print('\nEvaluating lower cladding...')
             elif layer == self.num_layers - 1:
-                print('Evaluating upper cladding...')
+                print('\nEvaluating upper cladding...')
             else:
-                print('Evaluating internal layer: %d...' % layer)
+                print('\nEvaluating internal layer: %d...' % layer)
 
             ind = np.where(z_mat == layer)
 
