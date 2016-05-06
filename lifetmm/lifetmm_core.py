@@ -199,7 +199,8 @@ class LifetimeTmm:
         else:  # reversed time BSs
             E_plus, E_minus = self.time_rev_coeff(layer)
             z = -z
-            if layer == self.num_layers-1 and self.n_list[-1] <= self.n_list[layer] * sin(self.th) <= self.n_list[0]:
+            if self.n_list[-1] <= self.n_list[layer] * sin(self.th) <= self.n_list[0] and layer != 0:
+                # TODO Why do i not need to do this always? Seems to mess up with inner layers.
                 k_z = np.conj(k_z)
 
         # TODO: TM Mode check - put into time_rev_coefficients
@@ -276,6 +277,23 @@ class LifetimeTmm:
             #         E *= k_11
             #     else:  # self.dipole == 'Horizontal'
             #         E *= k_z
+
+            if self.radiative == 'Upper' and self.n_list[-1] <= self.n_list[layer] * sin(self.th) <= self.n_list[0]:
+                # Can't have partially radiative state in the upper cladding (n0 > nmp1)
+                E = 0
+
+            # # Select certain radiative states
+            # if self.radiative == 'Lower':
+            #     if self.n_list[-1] <= self.n_list[layer] * sin(self.th) <= self.n_list[0]:
+            #         # partially radiative state
+            #         E = 0
+            #         pass
+            #     else:
+            #         # E = 0
+            #         pass
+            # elif self.radiative == 'Upper':
+            #     E = 0
+
 
             E_square_theta[i, :] += abs(E)**2 * sin(theta)
 

@@ -44,7 +44,7 @@ def spe():
     # st.add_layer(1550, 1)
     st.add_layer(1550, 3.48)
     # st.add_layer(1000, 1)
-    # st.add_layer(1000, 8)
+    st.add_layer(1000, 2)
     st.add_layer(1550, 1)
     # st.add_layer(1550, 3.48)
 
@@ -136,9 +136,10 @@ def lower_vs_upper():
     st.set_polarization('s')
     theta = 50
     st.set_angle(theta, units='degrees')
-
+    st.time_rev = True
     print('Lower')
-    y_lower = st.structure_E_field(radiative='Lower', time_rev=False)['E_square']
+    st.radiative = 'Lower'
+    y_lower = st.structure_E_field()['E_square']
     # y_lower = st.structure_E_field(radiative='Lower', time_rev=True)['E_square']
     print('Upper')
     # theta = st.snell(st.n_list[0], st.n_list[-1], st.th)
@@ -146,7 +147,8 @@ def lower_vs_upper():
     # print(theta)
     # st.th = theta
     # y_upper = 0
-    y_upper = st.structure_E_field(radiative='Upper', time_rev=False)['E_square']
+    st.radiative = 'Upper'
+    y_upper = st.structure_E_field()['E_square']
     # y_upper = st.structure_E_field(radiative='Upper', time_rev=True)['E_square']
 
     plt.figure()
