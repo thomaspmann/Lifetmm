@@ -196,10 +196,16 @@ class LifetimeTmm:
         # E field in terms of E_0^+ (or E_0^- for time reversal)
         if not self.time_rev:
             E_plus, E_minus = self.time_fwd_coeff(layer)
-        else:  # reversed time BSs
+        else:  # reversed time
+            # Method 1 - Use time reversed BCs
             E_plus, E_minus = self.time_rev_coeff(layer)
+
+            # # Method 2
+            # E_minus, E_plus = self.time_fwd_coeff(layer)
+
+            # Flip back to forward time
             z = -z
-            if self.n_list[-1] <= self.n_list[layer] * sin(self.th) <= self.n_list[0] and layer != 0:
+            if self.n_list[-1] <= self.n_list[layer] * sin(self.th) <= self.n_list[0]:
                 # TODO Why do i not need to do this always? Seems to mess up with inner layers.
                 k_z = np.conj(k_z)
 
@@ -267,33 +273,27 @@ class LifetimeTmm:
                     E /= self.n_list[0].real
                 else:  # radiative == 'Upper'
                     E /= self.n_list[-1].real
-
-            # Wave vector components in layer
-            k, k_z, k_11 = self.wave_vector(layer)
-
-            # # TODO: TM Mode check
-            # if self.pol in ['p', 'TE']:
-            #     if self.dipole == 'Vertical':
-            #         E *= k_11
-            #     else:  # self.dipole == 'Horizontal'
-            #         E *= k_z
-
-            if self.radiative == 'Upper' and self.n_list[-1] <= self.n_list[layer] * sin(self.th) <= self.n_list[0]:
-                # Can't have partially radiative state in the upper cladding (n0 > nmp1)
-                E = 0
+            elif self.pol in ['p', 'TM']:
+                # Wave vector components in layer
+                k, k_z, k_11 = self.wave_vector(layer)
+                if self.dipole == 'Vertical':
+                    k_11 = sin(self.th)
+                    E *= k_11
+                else:  # self.dipole == 'Horizontal'
+                    k_z = cos(self.th)
+                    E *= k_z
 
             # # Select certain radiative states
             # if self.radiative == 'Lower':
-            #     if self.n_list[-1] <= self.n_list[layer] * sin(self.th) <= self.n_list[0]:
+            #     if self.n_list[-1] <= self.n_list[0] * sin(self.th):
             #         # partially radiative state
-            #         E = 0
+            #         # E = 0
             #         pass
             #     else:
-            #         # E = 0
+            #         E = 0
             #         pass
             # elif self.radiative == 'Upper':
             #     E = 0
-
 
             E_square_theta[i, :] += abs(E)**2 * sin(theta)
 
@@ -306,12 +306,16 @@ class LifetimeTmm:
         else:  # radiative == 'Upper'
             spe *= self.n_list[-1].real ** 3
 
-        # TODO: TM Mode check
-        # if self.pol in ['p', 'TE']:
-        #     spe /= self.n_list[layer].real ** 4
-
         # Normalise to vacuum emission rate of a randomly orientated dipole
-        spe *= 3/8
+        if self.pol in ['s', 'TE']:
+            spe *= 3/8
+        elif self.pol in ['p', 'TM']:
+            if self.dipole == 'Horizontal':
+                spe /= self.n_list[layer].real ** 2
+                spe *= 3/8
+            else:  # self.dipole == 'Vertical'
+                spe *= self.n_list[layer].real
+                spe *= 3/4
         return {'z': z, 'spe': spe}
 
     def spe_structure(self):

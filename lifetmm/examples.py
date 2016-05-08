@@ -44,7 +44,7 @@ def spe():
     # st.add_layer(1550, 1)
     st.add_layer(1550, 3.48)
     # st.add_layer(1000, 1)
-    st.add_layer(1000, 2)
+    # st.add_layer(1000, 2)
     st.add_layer(1550, 1)
     # st.add_layer(1550, 3.48)
 
@@ -81,7 +81,6 @@ def spe():
     ax1.legend(title='Horizontal Dipoles')
     ax2.legend(title='Horizontal Dipoles')
     ax3.legend(title='Vertical Dipoles')
-    plt.ylim([0,100])
     plt.show()
 
 
@@ -128,13 +127,14 @@ def lower_vs_upper():
     st = LifetimeTmm()
     # st.add_layer(1550, 1)
     st.add_layer(1550, 3.48)
-    st.add_layer(1550, 1)
-    # st.add_layer(1550, 3.48)
+    st.add_layer(155, 1)
+    st.add_layer(155, 2)
+    st.add_layer(1550, 3.48)
 
     # Set light info
     st.set_wavelength(1550)
     st.set_polarization('s')
-    theta = 50
+    theta = 30
     st.set_angle(theta, units='degrees')
     st.time_rev = True
     print('Lower')
@@ -164,9 +164,41 @@ def lower_vs_upper():
     plt.legend()
     plt.show()
 
+def test():
+    # Create structure
+    st = LifetimeTmm()
+    # st.add_layer(1550, 1)
+    st.add_layer(1550, 3.48)
+    st.add_layer(1550, 2.5)
+    st.add_layer(1550, 3.48)
+
+    # Set light info
+    st.set_wavelength(1550)
+    st.set_polarization('s')
+    theta = 40
+    st.set_angle(theta, units='degrees')
+    st.time_rev = True
+    print('Lower')
+    st.radiative = 'Lower'
+    y_lower = st.structure_E_field()['E_square']
+
+    plt.figure()
+    plt.plot(y_lower, label='Lower')
+    plt.axhline(y=1, linestyle='--', color='k')
+    for z in st.get_layer_boundaries():
+        plt.axvline(x=z, color='r', lw=2)
+    plt.axvline(x=z, color='r', lw=2)
+    plt.xlabel('Position in Device (nm)')
+    plt.ylabel('Normalized |E|$^2$Intensity')
+    plt.title('Angle of incidence {} degrees'.format(theta))
+    plt.legend()
+    plt.show()
+
 
 if __name__ == "__main__":
     # mcgehee()
     # test_symmetry()
     # lower_vs_upper()
     spe()
+    # test()
+
