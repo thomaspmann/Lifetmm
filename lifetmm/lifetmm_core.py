@@ -111,10 +111,11 @@ class LifetimeTmm:
         return S_dprime
 
     def wave_vector(self, layer):
-        if self.radiative == 'Lower':
-            n0 = self.n_list[0].real
-        else:  # self.radiative =='Upper'
-            n0 = self.n_list[-1].real
+        # if self.radiative == 'Lower':
+        #     n0 = self.n_list[0].real
+        # else:  # self.radiative =='Upper'
+        #     n0 = self.n_list[-1].real
+        n0 = self.n_list[layer]
 
         k = 2 * pi * n0 / self.lam_vac
         k_11 = k * sin(self.th)
@@ -204,7 +205,8 @@ class LifetimeTmm:
 
         # TODO: TM Mode check - put into time_rev_coefficients
         if self.pol in ['p', 'TE'] and self.dipole == 'Horizontal':
-            E_plus = - E_plus
+            # E_plus = - E_plus
+            E_minus = - E_minus
 
         E = E_plus * exp(1j * k_z * z) + E_minus * exp(-1j * k_z * z)
         E_square = abs(E)**2
@@ -234,8 +236,8 @@ class LifetimeTmm:
         return {'z': z_pos, 'E': E, 'E_square': E_square}
 
     def spe_layer(self, layer):
-        # spe rate must be calculated backward in time (see paper)
-        self.time_rev = True
+        # spe rate should be calculated backward in time (see paper)... or does it?
+        self.time_rev = False
 
         assert self.n_list[0] >= self.n_list[-1], \
             'Refractive index of lower cladding must be larger than the upper cladding'
@@ -270,12 +272,12 @@ class LifetimeTmm:
             # Wave vector components in layer
             k, k_z, k_11 = self.wave_vector(layer)
 
-            # # TODO: TM Mode check
-            # if self.pol in ['p', 'TE']:
-            #     if self.dipole == 'Vertical':
-            #         E *= k_11
-            #     else:  # self.dipole == 'Horizontal'
-            #         E *= k_z
+            # TODO: TM Mode check
+            if self.pol in ['p', 'TE']:
+                if self.dipole == 'Vertical':
+                    E *= k_11
+                else:  # self.dipole == 'Horizontal'
+                    E *= k_z
 
             E_square_theta[i, :] += abs(E)**2 * sin(theta)
 
@@ -288,12 +290,12 @@ class LifetimeTmm:
         else:  # radiative == 'Upper'
             spe *= self.n_list[-1].real ** 3
 
-        # TODO: TM Mode check
-        # if self.pol in ['p', 'TE']:
-        #     spe /= self.n_list[layer].real ** 4
-
         # Normalise to vacuum emission rate of a randomly orientated dipole
         spe *= 3/8
+        # TODO: TM Mode check
+        if self.pol in ['p', 'TE']:
+            spe *= ((self.lam_vac*1E-9)**2) / (4 * pi**2 * self.n_list[layer].real ** 4)
+
         return {'z': z, 'spe': spe}
 
     def spe_structure(self):
