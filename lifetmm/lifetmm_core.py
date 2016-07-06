@@ -6,7 +6,7 @@ from numpy.linalg import det
 from tqdm import *
 
 
-class LifetimeTmm:
+class LifetimeTmm(TransferMatrix):
     def __init__(self):
         self.d_list = np.array([], dtype=float)
         self.n_list = np.array([], dtype=complex)
