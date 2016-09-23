@@ -1,6 +1,7 @@
 import numpy as np
 import scipy as sp
 from numpy import pi, sqrt, sin, exp
+from numpy.linalg import det
 
 
 class TransferMatrix:
@@ -14,7 +15,6 @@ class TransferMatrix:
         self.pol = 'u'
         self.th = 0
         self.radiative = 'Lower'
-        self.time_rev = False
 
     def add_layer(self, d, n):
         self.d_list = np.append(self.d_list, d)
@@ -56,7 +56,20 @@ class TransferMatrix:
         else:  # self.radiative =='Upper'
             n0 = self.n_list[-1].real
         nj = self.n_list[j]
-        return sqrt(nj ** 2 - (n0 * sin(self.th)) ** 2)
+        return sqrt(nj**2 - (n0*sin(self.th))**2)
+
+    def wave_vector(self, layer):
+        # if self.radiative == 'Lower':
+        #     n0 = self.n_list[0].real
+        # else:  # self.radiative =='Upper'
+        #     n0 = self.n_list[-1].real
+        n0 = self.n_list[layer]
+
+        k = 2 * pi * n0 / self.lam_vac
+        k_11 = k * sin(self.th)
+        qj = self.q(layer)
+        k_z = (2 * pi * qj) / self.lam_vac
+        return k, k_z, k_11
 
     def I_mat(self, j, k):
         """ Returns the interference matrix between layers j and k."""
@@ -107,6 +120,33 @@ class TransferMatrix:
             S_dprime = S_dprime @ mL @ mI
         return S_dprime
 
+    def amplitude_E(self, layer):
+        # Evaluate fwd and bkwd coefficients in units of incoming wave amplitude
+        S = self.s_mat()
+        if self.radiative == 'Lower':
+            rR = S[1, 0] / S[0, 0]
+            if layer == 0:  # Evaluate lower cladding
+                E_plus = 1
+                E_minus = rR
+            elif layer == self.num_layers - 1:  # Evaluate upper cladding
+                E_plus = 1 / S[0, 0]
+                E_minus = 0
+            else:  # Evaluate internal layer electric field
+                S_prime = self.s_primed_mat(layer)
+                E_plus = (S_prime[1, 1] - rR * S_prime[0, 1]) / det(S_prime)
+                E_minus = (rR * S_prime[0, 0] - S_prime[1, 0]) / det(S_prime)
+        else:  # self.radiative == 'Upper':
+            if layer == 0:  # Evaluate lower cladding
+                E_plus = 0
+                E_minus = det(S)/S[0, 0]
+            elif layer == self.num_layers - 1:  # Evaluate upper cladding
+                E_plus = - S[0, 1] / S[0, 0]
+                E_minus = 1
+            else:  # Evaluate internal layer electric field
+                S_prime = self.s_primed_mat(layer)
+                E_plus = -(S_prime[0, 1]/det(S_prime)) * (det(S)/S[0, 0])
+                E_minus = (S_prime[0, 0]/det(S_prime)) * (det(S)/S[0, 0])
+        return E_plus, E_minus
 
     def layer_E_field(self, layer):
         self._simulation_test()
@@ -120,19 +160,8 @@ class TransferMatrix:
             # Note E_plus and E_minus are defined at cladding-layer boundary
             z = -z[::-1]
 
-        # E field in terms of E_0^+ (or E_0^- for time reversal)
-        if not self.time_rev:
-            E_plus, E_minus = self.time_fwd_coeff(layer)
-        else:  # reversed time BSs
-            E_plus, E_minus = self.time_rev_coeff(layer)
-            z = -z
-            if layer == self.num_layers-1 and self.n_list[-1] <= self.n_list[layer] * sin(self.th) <= self.n_list[0]:
-                k_z = np.conj(k_z)
-
-        # TODO: TM Mode check - put into time_rev_coefficients
-        if self.pol in ['p', 'TE'] and self.dipole == 'Horizontal':
-            # E_plus = - E_plus
-            E_minus = - E_minus
+        # E field in terms of E_0^+
+        E_plus, E_minus = self.amplitude_E(layer)
 
         E = E_plus * exp(1j * k_z * z) + E_minus * exp(-1j * k_z * z)
         E_square = abs(E)**2
@@ -140,7 +169,7 @@ class TransferMatrix:
         if self.d_list[layer] != 0:
             E_avg = sum(E_square) / (self.z_step * self.d_list[layer])
         else:
-            E_avg = 0
+            E_avg = np.nan
         return {'z': z, 'E': E, 'E_square': E_square, 'E_avg': E_avg}
 
     def structure_E_field(self):
@@ -150,9 +179,8 @@ class TransferMatrix:
         comp1 = np.kron(np.ones((self.num_layers, 1)), z_pos)
         comp2 = np.transpose(np.kron(np.ones((len(z_pos), 1)), self.d_cumsum))
         z_mat = sum(comp1 > comp2, 0)
-
+        # Initialise E array
         E = np.zeros(len(z_pos), dtype=complex)
-        # for layer in range(1, self.num_layers-1):
         for layer in range(self.num_layers):
             # Calculate z indices inside structure for the layer
             z_indices = np.where(z_mat == layer)

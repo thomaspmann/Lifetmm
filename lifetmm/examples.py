@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from lifetmm import *
 from numpy import pi, linspace, inf, array, sum, cos, sin
 from scipy.interpolate import interp1d
+from lifetmm.Methods.LDOS import *
 
 # # To run a sample use the following in python console:
 # import lifetmm.examples; lifetmm.examples.sample1()
@@ -22,14 +23,14 @@ def mcgehee():
     st.add_layer(200, 1.20252 + 7.25439j)
     st.add_layer(0, 1.20252 + 7.25439j)
 
+    plt.figure()
     st.set_wavelength(600)
     st.set_polarization('s')
     st.set_angle(0, units='degrees')
 
     y = st.structure_E_field()['E_square']
-
-    plt.figure()
     plt.plot(y)
+
     plt.axhline(y=1, linestyle='--', color='k')
     for z in st.get_layer_boundaries():
         plt.axvline(x=z, color='r', lw=2)
@@ -163,6 +164,7 @@ def lower_vs_upper():
     plt.title('Angle of incidence {} degrees'.format(theta))
     plt.legend()
     plt.show()
+
 
 def test():
     # Create structure

@@ -1,9 +1,8 @@
 import numpy as np
 import scipy.integrate as integrate
 
-from tqdm import *
+# from tqdm import *
 from numpy import pi, sin, sum
-from numpy.linalg import det
 from lifetmm.Methods.TransferMatrix import TransferMatrix
 
 
@@ -12,82 +11,7 @@ class LifetimeTmm(TransferMatrix):
     #     super().__init__()
     #     self.time_rev = False
 
-    def wave_vector(self, layer):
-        # if self.radiative == 'Lower':
-        #     n0 = self.n_list[0].real
-        # else:  # self.radiative =='Upper'
-        #     n0 = self.n_list[-1].real
-        n0 = self.n_list[layer]
-
-        k = 2 * pi * n0 / self.lam_vac
-        k_11 = k * sin(self.th)
-        qj = self.q(layer)
-        k_z = (2 * pi * qj) / self.lam_vac
-        return k, k_z, k_11
-
-    def time_fwd_coeff(self, layer):
-        # Evaluate fwd and bkwd coefficients in units of incoming wave amplitude
-        S = self.s_mat()
-        if self.radiative == 'Lower':
-            rR = S[1, 0] / S[0, 0]
-            if layer == 0:  # Evaluate lower cladding
-                E_plus = 1
-                E_minus = rR
-            elif layer == self.num_layers - 1:  # Evaluate upper cladding
-                E_plus = 1 / S[0, 0]
-                E_minus = 0
-            else:  # Evaluate internal layer electric field
-                S_prime = self.s_primed_mat(layer)
-                E_plus = (S_prime[1, 1] - rR * S_prime[0, 1]) / det(S_prime)
-                E_minus = (rR * S_prime[0, 0] - S_prime[1, 0]) / det(S_prime)
-        else:  # self.radiative == 'Upper':
-            if layer == 0:  # Evaluate lower cladding
-                E_plus = 0
-                E_minus = det(S)/S[0, 0]
-            elif layer == self.num_layers - 1:  # Evaluate upper cladding
-                E_plus = - S[0, 1] / S[0, 0]
-                E_minus = 1
-            else:  # Evaluate internal layer electric field
-                S_prime = self.s_primed_mat(layer)
-                E_plus = -(S_prime[0, 1]/det(S_prime)) * (det(S)/S[0, 0])
-                E_minus = (S_prime[0, 0]/det(S_prime)) * (det(S)/S[0, 0])
-        return E_plus, E_minus
-
-    def time_rev_coeff(self, layer):
-        # Evaluate fwd and bkwd coefficients in units of outgoing wave amplitude
-        S = self.s_mat()
-        if self.radiative == 'Lower':
-            if layer == 0:  # Evaluate lower cladding
-                E_plus = S[0, 1] / S[1, 1]
-                E_minus = 1
-            elif layer == self.num_layers - 1:  # Evaluate upper cladding
-                E_plus = 0
-                E_minus = 1 / S[1, 1]
-            else:  # Evaluate internal layer electric field
-                # calculate the total and partial transfer matrices
-                S_prime = self.s_primed_mat(layer)
-                rR = S[0, 1] / S[1, 1]
-                E_plus = (rR * S_prime[1, 1] - S_prime[0, 1]) / det(S_prime)
-                E_minus = (S_prime[0, 0] - rR * S_prime[1, 0]) / det(S_prime)
-        else:  # self.radiative == 'Upper':
-            if layer == 0:  # Evaluate lower cladding
-                E_plus = det(S) / S[1, 1]
-                E_minus = 0
-            elif layer == self.num_layers - 1:  # Evaluate upper cladding
-                E_plus = 1
-                E_minus = - S[1, 0] / S[1, 1]
-            else:  # Evaluate internal layer electric field
-                # calculate the total and partial transfer matrices
-                S_prime = self.s_primed_mat(layer)
-                E_plus_0 = det(S) / S[1, 1]
-                E_plus = E_plus_0 * S_prime[1, 1] / det(S_prime)
-                E_minus = - E_plus_0 * S_prime[1, 0] / det(S_prime)
-        return E_plus, E_minus
-
     def spe_layer(self, layer):
-        # spe rate should be calculated backward in time (see paper)... or does it?
-        self.time_rev = False
-
         assert self.n_list[0] >= self.n_list[-1], \
             'Refractive index of lower cladding must be larger than the upper cladding'
 
@@ -105,7 +29,8 @@ class LifetimeTmm(TransferMatrix):
             'unit_scale': True,
         }
 
-        for i, theta in tqdm(enumerate(theta_input), **kwargs):
+        # for i, theta in tqdm(enumerate(theta_input), **kwargs):
+        for i, theta in enumerate(theta_input):
             self.set_angle(theta)
 
             # Calculate E field within layer
@@ -118,15 +43,14 @@ class LifetimeTmm(TransferMatrix):
                 else:  # radiative == 'Upper'
                     E /= self.n_list[-1].real
 
-            # Wave vector components in layer
-            k, k_z, k_11 = self.wave_vector(layer)
-
             # TODO: TM Mode check
-            if self.pol in ['p', 'TE']:
-                if self.dipole == 'Vertical':
-                    E *= k_11
-                else:  # self.dipole == 'Horizontal'
-                    E *= k_z
+            # # Wave vector components in layer
+            # k, k_z, k_11 = self.wave_vector(layer)
+            # if self.pol in ['p', 'TE']:
+            #     if self.dipole == 'Vertical':
+            #         E *= k_11
+            #     else:  # self.dipole == 'Horizontal'
+            #         E *= k_z
 
             E_square_theta[i, :] += abs(E)**2 * sin(theta)
 
@@ -134,6 +58,7 @@ class LifetimeTmm(TransferMatrix):
         # (axis=0 integrates all rows, containing thetas, over each columns, z)
         spe = integrate.romb(E_square_theta, dx=dth, axis=0)
 
+        # Outgoing E mode refractive index weighting (3)
         if self.radiative == 'Lower':
             spe *= self.n_list[0].real ** 3
         else:  # radiative == 'Upper'
@@ -142,9 +67,8 @@ class LifetimeTmm(TransferMatrix):
         # Normalise to vacuum emission rate of a randomly orientated dipole
         spe *= 3/8
         # TODO: TM Mode check
-        if self.pol in ['p', 'TE']:
-            spe *= ((self.lam_vac*1E-9)**2) / (4 * pi**2 * self.n_list[layer].real ** 4)
-
+        # if self.pol in ['p', 'TE']:
+        #     spe *= ((self.lam_vac*1E-9)**2) / (4 * pi**2 * self.n_list[layer].real ** 4)
         return {'z': z, 'spe': spe}
 
     def spe_structure(self):
@@ -177,7 +101,7 @@ class LifetimeTmm(TransferMatrix):
             self.set_polarization('s')
             self.radiative = 'Lower'
             spe_TE_Lower[ind] += self.spe_layer(layer)['spe']
-            self.radiative = 'Upper'
+            # self.radiative = 'Upper'
             spe_TE_Upper[ind] += self.spe_layer(layer)['spe']
 
             # Calculate TM modes
