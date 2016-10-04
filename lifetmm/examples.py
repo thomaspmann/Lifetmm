@@ -42,10 +42,9 @@ def mcgehee():
 def spe():
     # Create structure
     st = LifetimeTmm()
-    # st.add_layer(1550, 1)
+    st.add_layer(1550, 1)
     st.add_layer(1550, 3.48)
     # st.add_layer(1000, 1)
-    # st.add_layer(1000, 2)
     st.add_layer(1550, 1)
     # st.add_layer(1550, 3.48)
 
@@ -56,33 +55,36 @@ def spe():
     result = st.spe_structure()
     z = result['z']
     spe_TE = result['spe_TE']
-    spe_TM_h = result['spe_TM_h']
-    spe_TM_v = result['spe_TM_v']
+    spe_TM_p = result['spe_TM_p']
+    spe_TM_s = result['spe_TM_s']
 
-    # Plot s
+    # Plot spe rates
     fig = plt.figure()
-    ax1 = fig.add_subplot(311)
+    ax1 = fig.add_subplot(211)
     ax1.plot(z, spe_TE, label='TE')
-    ax2 = fig.add_subplot(312)
-    ax2.plot(z, spe_TM_h, label='TM')
-    ax3 = fig.add_subplot(313)
-    ax3.plot(z, spe_TM_v, label='TM')
+    ax1.plot(z, spe_TM_p, label='TM')
+    ax1.plot(z, spe_TE+spe_TM_p, 'k', label='TE + TM')
+    ax2 = fig.add_subplot(212)
+    ax2.plot(z, spe_TM_s, label='TM')
 
-    ax1.set_title('Spontaneous Emission Rate')
-    ax1.set_ylabel('Purcell Factor')
-    ax3.set_xlabel('Position in layer (nm)')
+    ax1.set_title('Spontaneous Emission Rate. LHS n=3.48, RHS n=1.')
+    ax1.set_ylabel('$\Gamma / \Gamma_0$')
+    ax2.set_ylabel('$\Gamma /\Gamma_0$')
+    ax2.set_xlabel('Position in layer (nm)')
 
     ax1.axhline(y=1, linestyle='--', color='k')
-    # ax2.axhline(y=1, linestyle='--', color='k')
+    ax2.axhline(y=1, linestyle='--', color='k')
     # Plot layer boundaries
     for z in st.get_layer_boundaries():
         ax1.axvline(z, color='r', lw=2)
         ax2.axvline(z, color='r', lw=2)
-        ax3.axvline(z, color='r', lw=2)
     ax1.legend(title='Horizontal Dipoles')
-    ax2.legend(title='Horizontal Dipoles')
-    ax3.legend(title='Vertical Dipoles')
+    ax2.legend(title='Vertical Dipoles')
+    # ax1.set_xlim(0, 1550 * 2)
+    # ax2.set_xlim(0, 1550 * 2)
+    # plt.savefig('SPE_n_3.38_to_1.png', dpi=300)
     plt.show()
+
 
 
 def test_symmetry():
