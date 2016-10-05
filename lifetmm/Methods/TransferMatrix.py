@@ -67,21 +67,28 @@ class TransferMatrix:
             raise ValueError('Units of angle not recognised. Please enter \'radians\' or \'degrees\'.')
 
     def set_z_step(self, step):
+        """ Set the resolution in z of the simulation.
+        """
         if type(step) != int:
             raise ValueError('z_step must be an integer. Reduce SI unit'
                              'inputs for thicknesses and wavelengths for greater resolution ')
         self.z_step = step
 
-    def wave_vector(self, layer):
-        """ The wave vector magnitude and it's components perpendicular and parallel
-        to the interface inside the layer.
+    def calc_k0(self):
+        """ Calculate the free space wave vector
         """
-        # Free space wave vector
         if self.radiative == 'Lower':
             n0 = self.n_list[0].real
         else:  # self.radiative =='Upper'
             n0 = self.n_list[-1].real
         k0 = 2 * pi * n0 / self.lam_vac
+        return k0
+
+    def wave_vector(self, layer):
+        """ The wave vector magnitude and it's components perpendicular and parallel
+        to the interface inside the layer.
+        """
+        k0 = self.calc_k0()
 
         # Layer wave vector and components
         n = self.n_list[layer].real
@@ -267,6 +274,18 @@ class TransferMatrix:
         """ Return layer boundary zs assuming that the lower cladding boundary is at z=0.
         """
         return self.d_cumsum
+
+    def get_structure_thickness(self):
+        """ Return the structure thickness.
+        """
+        return self.d_cumsum[-1]
+
+    def z_to_lambda(self, z):
+        """ Convert z positions to units of wavelength from the centre.
+        """
+        z -= self.get_structure_thickness()/2
+        z /= self.lam_vac
+        return z
 
     def calc_R_and_T(self):
         """ Return the reflection and transmission coefficients of the structure.

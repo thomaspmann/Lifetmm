@@ -3,7 +3,7 @@ from lifetmm import *
 from numpy import pi, linspace, inf, array, sum, cos, sin
 from scipy.interpolate import interp1d
 # from lifetmm.Methods.TransferMatrix import *
-from lifetmm.Methods.LDOS import *
+from lifetmm.Methods.SpontaneousEmissionRate import *
 
 # # To run a sample use the following in python console:
 # import lifetmm.examples; lifetmm.examples.sample1()
@@ -43,11 +43,12 @@ def mcgehee():
 def spe():
     # Create structure
     st = LifetimeTmm()
-    st.add_layer(1550, 1)
+    # st.add_layer(1550, 1)
     st.add_layer(1550, 3.48)
     # st.add_layer(1000, 1)
-    st.add_layer(1550, 1)
-    # st.add_layer(1550, 3.48)
+    # TODO: if the 1 layer gets thicker we get instabilities in the upper radiative modes (numerical)
+    st.add_layer(1000, 1)
+    st.add_layer(1550, 3.48)
 
     # Set light info
     st.set_wavelength(1550)
@@ -83,11 +84,11 @@ def spe():
     ax2.legend(title='Vertical Dipoles')
     # ax1.set_xlim(0, 1550 * 2)
     # ax2.set_xlim(0, 1550 * 2)
-    # plt.savefig('SPE_n_3.38_to_1.png', dpi=300)
+    # plt.savefig('./Images/SPE_n_3.38_to_1.png', dpi=300)
     plt.show()
 
 
 if __name__ == "__main__":
-    mcgehee()
+    # mcgehee()
     spe()
 

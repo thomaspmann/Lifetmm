@@ -1,5 +1,6 @@
 import numpy as np
 import scipy as sp
+import time
 import scipy.integrate as integrate
 from tqdm import *
 from numpy import pi, sin, sum, exp
@@ -8,8 +9,8 @@ from lifetmm.Methods.TransferMatrix import TransferMatrix
 
 class LifetimeTmm(TransferMatrix):
     def spe_layer(self, layer):
-        assert self.n_list[0] >= self.n_list[-1], \
-            'Refractive index of lower cladding must be larger than the upper cladding'
+        # assert self.n_list[0] >= self.n_list[-1], \
+        #     'Refractive index of lower cladding must be larger than the upper cladding'
 
         # z positions to evaluate E at
         z = np.arange((self.z_step / 2.0), self.d_list[layer], self.z_step)
@@ -17,18 +18,19 @@ class LifetimeTmm(TransferMatrix):
             # Note E_plus and E_minus are defined at cladding-layer boundary
             z = -z[::-1]
 
-        resolution = 2 ** 8 + 1
+        # Angles of emission to simulate over.
+        # Note: don't include pi/2 as then transmission and reflection do not make sense.
+        resolution = 2 ** 8 + 1  # Must have this form for the integration later. Can change the power.
         theta_input, dth = np.linspace(0, pi / 2, num=resolution, endpoint=False, retstep=True)
+        # Arrays to store the square of the E fields for
+        # each angle of emission (rows) at each z coordinate (columns) before being integrated.
         E_TE_square_theta = np.zeros((len(theta_input), len(z)), dtype=float)
         E_TM_p_square_theta = np.zeros((len(theta_input), len(z)), dtype=float)
         E_TM_s_square_theta = np.zeros((len(theta_input), len(z)), dtype=float)
 
         # Params for tqdm progress bar
-        kwargs = {
-            'total': resolution,
-            'unit': ' theta',
-            'unit_scale': True,
-        }
+        kwargs = {'total': resolution, 'unit': ' theta', 'unit_scale': True}
+        # Evaluate all E field components for TE and TM modes looping over the emission angles.
         for i, theta in tqdm(enumerate(theta_input), **kwargs):
             # Set the angle to be evaluated
             self.set_angle(theta)
@@ -36,28 +38,33 @@ class LifetimeTmm(TransferMatrix):
             # Wave vector components in layer (q, k_11 are angle dependent)
             k, q, k_11 = self.wave_vector(layer)
 
+            # TODO: Check that the mode is radiative - otherwise do not calculate
+            k0 = self.calc_k0()
+            if k_11**2 >= k0**2:
+                print('ARGH')
+
             # !* TE modes *!
-            # Calculate E field within layer
             self.set_polarization('TE')
+            # Calculate E field within layer
             self.set_field('E')
-            # E field coefficients in terms of E_0^+
+            # E field coefficients in terms of incoming amplitude
             E_plus, E_minus = self.amplitude_coefficients(layer)
             E_TE = E_plus * exp(1j * q * z) + E_minus * exp(-1j * q * z)
-            # Orthonormality: Normalise outgoing TE wave to medium refractive index
+            # Orthonormality condition: Normalise outgoing TE wave to medium refractive index.
             if self.radiative == 'Lower':
                 E_TE /= self.n_list[0].real
             else:  # radiative == 'Upper'
                 E_TE /= self.n_list[-1].real
 
             # !* TM modes *!
-            # Calculate H field within layer
             self.set_polarization('TM')
+            # Calculate H field within layer
             self.set_field('H')
-            # E field coefficients in terms of E_0^+
+            # H field coefficients in terms of incoming amplitude
             H_plus, H_minus = self.amplitude_coefficients(layer)
-            # Calculate the electric field component perpendicular to the interface
+            # Calculate the electric field component perpendicular (s) to the interface
             E_TM_s = k_11*(H_plus * exp(1j * q * z) + H_minus * exp(-1j * q * z))
-            # Calculate the electric field component parallel to the interface
+            # Calculate the electric field component parallel (p) to the interface
             E_TM_p = q*(H_plus * exp(1j * q * z) - H_minus * exp(-1j * q * z))
 
             # Take the squares of all E field components and add weighting
@@ -98,19 +105,22 @@ class LifetimeTmm(TransferMatrix):
         comp2 = np.transpose(np.kron(np.ones((len(z_pos), 1)), self.d_cumsum))
         z_mat = sum(comp1 > comp2, 0)
 
-        spe_TE_Lower = np.zeros(len(z_pos), dtype=float)
-        spe_TE_Upper = np.zeros(len(z_pos), dtype=float)
-        spe_TM_p_Upper = np.zeros(len(z_pos), dtype=float)
-        spe_TM_p_Lower = np.zeros(len(z_pos), dtype=float)
-        spe_TM_s_Upper = np.zeros(len(z_pos), dtype=float)
-        spe_TM_s_Lower = np.zeros(len(z_pos), dtype=float)
+        print('Evaluating lower and upper radiative modes for each layer:')
+        spe_TE_lower = np.zeros(len(z_pos), dtype=float)
+        spe_TE_upper = np.zeros(len(z_pos), dtype=float)
+        spe_TM_p_upper = np.zeros(len(z_pos), dtype=float)
+        spe_TM_p_lower = np.zeros(len(z_pos), dtype=float)
+        spe_TM_s_upper = np.zeros(len(z_pos), dtype=float)
+        spe_TM_s_lower = np.zeros(len(z_pos), dtype=float)
         for layer in range(self.num_layers):
+            # Print simulation information to command line
             if layer == 0:
-                print('Evaluating lower cladding...')
+                print('\tLayer -> lower cladding...')
             elif layer == self.num_layers - 1:
-                print('\nEvaluating upper cladding...')
+                print('\tLayer -> upper cladding...')
             else:
-                print('\nEvaluating internal layer: %d...' % layer)
+                print('\tLayer -> internal {0:d} / {0:d}...'.format(layer, self.num_layers-2))
+            time.sleep(0.2)  # Fixes progress bar occuring before text
 
             # Find indices corresponding to the layer we are evaluating
             ind = np.where(z_mat == layer)
@@ -118,18 +128,28 @@ class LifetimeTmm(TransferMatrix):
             # Calculate lower radiative modes
             self.radiative = 'Lower'
             spe = self.spe_layer(layer)
-            spe_TE_Lower[ind] += spe['spe_TE']
-            spe_TM_s_Lower[ind] += spe['spe_TM_s']
-            spe_TM_p_Lower[ind] += spe['spe_TM_p']
+            spe_TE_lower[ind] += spe['spe_TE']
+            spe_TM_s_lower[ind] += spe['spe_TM_s']
+            spe_TM_p_lower[ind] += spe['spe_TM_p']
             # Calculate upper radiative modes
             self.radiative = 'Upper'
             spe = self.spe_layer(layer)
-            spe_TE_Upper[ind] += spe['spe_TE']
-            spe_TM_s_Upper[ind] += spe['spe_TM_s']
-            spe_TM_p_Upper[ind] += spe['spe_TM_p']
+            spe_TE_upper[ind] += spe['spe_TE']
+            spe_TM_s_upper[ind] += spe['spe_TM_s']
+            spe_TM_p_upper[ind] += spe['spe_TM_p']
 
-        spe_TE = spe_TE_Upper + spe_TE_Lower
-        spe_TM_s = spe_TM_s_Upper + spe_TM_s_Lower
-        spe_TM_p = spe_TM_p_Upper + spe_TM_p_Lower
+        # Total spontaneous emission rate for particular dipole orientation coupling to a particular mode
+        spe_TE = spe_TE_upper + spe_TE_lower
+        spe_TM_s = spe_TM_s_upper + spe_TM_s_lower
+        spe_TM_p = spe_TM_p_upper + spe_TM_p_lower
 
-        return {'z': z_pos, 'spe_TE': spe_TE, 'spe_TM_s': spe_TM_s, 'spe_TM_p': spe_TM_p}
+        return {'z': z_pos,
+                'spe_TE': spe_TE,
+                'spe_TM_s': spe_TM_s,
+                'spe_TM_p': spe_TM_p,
+                'spe_TE_upper': spe_TE_upper,
+                'spe_TE_lower': spe_TE_lower,
+                'spe_TM_s_upper': spe_TM_s_upper,
+                'spe_TM_s_lower': spe_TM_s_lower,
+                'spe_TM_p_upper': spe_TM_p_upper,
+                'spe_TM_p_lower': spe_TM_p_lower}
