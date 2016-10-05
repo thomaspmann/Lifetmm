@@ -15,6 +15,7 @@ class TransferMatrix:
         self.pol = 'u'
         self.th = 0
         self.radiative = 'Lower'
+        self.field = 'E'
 
     def add_layer(self, d, n):
         self.d_list = np.append(self.d_list, d)
@@ -50,6 +51,24 @@ class TransferMatrix:
         else:
             raise ValueError('Units of angle not recognised. Please enter \'radians\' or \'degrees\'.')
 
+    def wave_vector(self, layer):
+        # Free space wave vector
+        if self.radiative == 'Lower':
+            n0 = self.n_list[0].real
+        else:  # self.radiative =='Upper'
+            n0 = self.n_list[-1].real
+        k0 = 2 * pi * n0 / self.lam_vac
+
+        # Layer wave vector and components
+        n = self.n_list[layer].real
+        k = 2 * pi * n / self.lam_vac
+        k_11 = k0 * sin(self.th)  # Note th needs to be in same layer as k0
+        q = sp.sqrt(k**2 - k_11**2)
+        # TODO: why is this required for mcGhee simulation but the above for spe???
+        # Think its to do with when n is complex the above breaks down as k is defined with n.real
+        # q = (2 * pi * self.q(layer)) / self.lam_vac  # (equivalent to above)?
+        return k, q, k_11
+
     def q(self, j):
         if self.radiative == 'Lower':
             n0 = self.n_list[0].real
@@ -57,19 +76,6 @@ class TransferMatrix:
             n0 = self.n_list[-1].real
         nj = self.n_list[j]
         return sqrt(nj**2 - (n0*sin(self.th))**2)
-
-    def wave_vector(self, layer):
-        # if self.radiative == 'Lower':
-        #     n0 = self.n_list[0].real
-        # else:  # self.radiative =='Upper'
-        #     n0 = self.n_list[-1].real
-        n0 = self.n_list[layer]
-
-        k = 2 * pi * n0 / self.lam_vac
-        k_11 = k * sin(self.th)
-        qj = self.q(layer)
-        k_z = (2 * pi * qj) / self.lam_vac
-        return k, k_z, k_11
 
     def I_mat(self, j, k):
         """ Returns the interference matrix between layers j and k."""
@@ -83,6 +89,9 @@ class TransferMatrix:
         else:  # self.pol in ['s', 'TE', 'u']:
             r = (qj - qk) / (qj + qk)
             t = (2 * qj) / (qj + qk)
+        if self.field == 'H':
+            # Convert t_E to t_H
+            t *= nk / nj
         assert t != 0, ValueError('Transmission is zero, cannot evaluate I_mat.')
         return (1 / t) * np.array([[1, r], [r, 1]], dtype=complex)
 
@@ -152,7 +161,7 @@ class TransferMatrix:
         self._simulation_test()
 
         # Wave vector components in layer
-        k, k_z, k_11 = self.wave_vector(layer)
+        k, q, k_11 = self.wave_vector(layer)
 
         # z positions to evaluate E at
         z = np.arange((self.z_step / 2.0), self.d_list[layer], self.z_step)
@@ -163,7 +172,7 @@ class TransferMatrix:
         # E field in terms of E_0^+
         E_plus, E_minus = self.amplitude_E(layer)
 
-        E = E_plus * exp(1j * k_z * z) + E_minus * exp(-1j * k_z * z)
+        E = E_plus * exp(1j * q * z) + E_minus * exp(-1j * q * z)
         E_square = abs(E)**2
 
         if self.d_list[layer] != 0:

@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from lifetmm import *
 from numpy import pi, linspace, inf, array, sum, cos, sin
 from scipy.interpolate import interp1d
+# from lifetmm.Methods.TransferMatrix import *
 from lifetmm.Methods.LDOS import *
 
 # # To run a sample use the following in python console:
@@ -14,7 +15,7 @@ mmTOnm = 1E6
 
 
 def mcgehee():
-    st = LifetimeTmm()
+    st = TransferMatrix()
     st.add_layer(0, 1.4504)
     st.add_layer(110, 1.7704+0.01161j)
     st.add_layer(35, 1.4621+0.04426j)
@@ -200,7 +201,7 @@ def test():
 
 
 if __name__ == "__main__":
-    # mcgehee()
+    mcgehee()
     # test_symmetry()
     # lower_vs_upper()
     spe()
