@@ -2,8 +2,7 @@ import numpy as np
 import scipy as sp
 import scipy.integrate as integrate
 from tqdm import *
-from numpy import pi, sin, sum, sqrt, exp
-from numpy.linalg import det
+from numpy import pi, sin, sum, exp
 from lifetmm.Methods.TransferMatrix import TransferMatrix
 
 
@@ -40,9 +39,9 @@ class LifetimeTmm(TransferMatrix):
             # !* TE modes *!
             # Calculate E field within layer
             self.set_polarization('TE')
-            self.field = 'E'
+            self.set_field('E')
             # E field coefficients in terms of E_0^+
-            E_plus, E_minus = self.amplitude_E(layer)
+            E_plus, E_minus = self.amplitude_coefficients(layer)
             E_TE = E_plus * exp(1j * q * z) + E_minus * exp(-1j * q * z)
             # Orthonormality: Normalise outgoing TE wave to medium refractive index
             if self.radiative == 'Lower':
@@ -53,9 +52,9 @@ class LifetimeTmm(TransferMatrix):
             # !* TM modes *!
             # Calculate H field within layer
             self.set_polarization('TM')
-            self.field = 'H'
+            self.set_field('H')
             # E field coefficients in terms of E_0^+
-            H_plus, H_minus = self.amplitude_E(layer)
+            H_plus, H_minus = self.amplitude_coefficients(layer)
             # Calculate the electric field component perpendicular to the interface
             E_TM_s = k_11*(H_plus * exp(1j * q * z) + H_minus * exp(-1j * q * z))
             # Calculate the electric field component parallel to the interface

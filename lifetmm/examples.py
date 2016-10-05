@@ -29,7 +29,7 @@ def mcgehee():
     st.set_polarization('s')
     st.set_angle(0, units='degrees')
 
-    y = st.structure_E_field()['E_square']
+    y = st.structure_field()['A_squared']
     plt.plot(y)
 
     plt.axhline(y=1, linestyle='--', color='k')
@@ -87,123 +87,7 @@ def spe():
     plt.show()
 
 
-
-def test_symmetry():
-    # Create structure
-    st = LifetimeTmm()
-    st.add_layer(1000, 3.48)
-    # st.add_layer(2000, 3.48)
-    st.add_layer(1000, 1)
-    # st.add_layer(100, 1)
-    # st.add_layer(1000, 3.48)
-
-    # Set light info
-    st.set_wavelength(1550)
-    st.set_polarization('s')
-    st.set_angle(70, units='degrees')
-
-    print('Lower')
-    y_lower = st.structure_E_field(radiative='Lower', time_rev=True)['E_square']
-
-    print('Upper')
-    theta = st.snell(st.n_list[0], st.n_list[-1], st.th)
-    # theta = np.conj(theta)
-    st.th = theta
-    st.flip()
-    y = st.structure_E_field(radiative='Upper', time_rev=True)['E_square']
-    y_upper = y[::-1]
-    st.flip()
-
-    plt.figure()
-    plt.plot(y_lower, label='Lower')
-    plt.plot(y_upper, label='Upper', ls='--', color='r')
-    plt.axhline(y=1, linestyle='--', color='k')
-    for z in st.get_layer_boundaries():
-        plt.axvline(x=z, color='r', lw=2)
-    plt.xlabel('Position in Device (nm)')
-    plt.ylabel('Normalized |E|$^2$Intensity')
-    plt.legend()
-    plt.show()
-
-
-def lower_vs_upper():
-    # Create structure
-    st = LifetimeTmm()
-    # st.add_layer(1550, 1)
-    st.add_layer(1550, 3.48)
-    st.add_layer(155, 1)
-    st.add_layer(155, 2)
-    st.add_layer(1550, 3.48)
-
-    # Set light info
-    st.set_wavelength(1550)
-    st.set_polarization('s')
-    theta = 30
-    st.set_angle(theta, units='degrees')
-    st.time_rev = True
-    print('Lower')
-    st.radiative = 'Lower'
-    y_lower = st.structure_E_field()['E_square']
-    # y_lower = st.structure_E_field(radiative='Lower', time_rev=True)['E_square']
-    print('Upper')
-    # theta = st.snell(st.n_list[0], st.n_list[-1], st.th)
-    # theta = np.conj(theta)
-    # print(theta)
-    # st.th = theta
-    # y_upper = 0
-    st.radiative = 'Upper'
-    y_upper = st.structure_E_field()['E_square']
-    # y_upper = st.structure_E_field(radiative='Upper', time_rev=True)['E_square']
-
-    plt.figure()
-    plt.plot(y_lower, label='Lower')
-    plt.plot(y_upper, label='Upper', color='g')
-    plt.axhline(y=1, linestyle='--', color='k')
-    for z in st.get_layer_boundaries():
-        plt.axvline(x=z, color='r', lw=2)
-    plt.axvline(x=z, color='r', lw=2)
-    plt.xlabel('Position in Device (nm)')
-    plt.ylabel('Normalized |E|$^2$Intensity')
-    plt.title('Angle of incidence {} degrees'.format(theta))
-    plt.legend()
-    plt.show()
-
-
-def test():
-    # Create structure
-    st = LifetimeTmm()
-    # st.add_layer(1550, 1)
-    st.add_layer(1550, 3.48)
-    st.add_layer(1550, 2.5)
-    st.add_layer(1550, 3.48)
-
-    # Set light info
-    st.set_wavelength(1550)
-    st.set_polarization('s')
-    theta = 40
-    st.set_angle(theta, units='degrees')
-    st.time_rev = True
-    print('Lower')
-    st.radiative = 'Lower'
-    y_lower = st.structure_E_field()['E_square']
-
-    plt.figure()
-    plt.plot(y_lower, label='Lower')
-    plt.axhline(y=1, linestyle='--', color='k')
-    for z in st.get_layer_boundaries():
-        plt.axvline(x=z, color='r', lw=2)
-    plt.axvline(x=z, color='r', lw=2)
-    plt.xlabel('Position in Device (nm)')
-    plt.ylabel('Normalized |E|$^2$Intensity')
-    plt.title('Angle of incidence {} degrees'.format(theta))
-    plt.legend()
-    plt.show()
-
-
 if __name__ == "__main__":
     mcgehee()
-    # test_symmetry()
-    # lower_vs_upper()
     spe()
-    # test()
 
