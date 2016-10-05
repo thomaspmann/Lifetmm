@@ -43,15 +43,15 @@ def mcgehee():
 def spe():
     # Create structure
     st = LifetimeTmm()
-    # st.add_layer(1550, 1)
-    st.add_layer(1550, 3.48)
-    # st.add_layer(1000, 1)
-    # TODO: if the 1 layer gets thicker we get instabilities in the upper radiative modes (numerical)
-    st.add_layer(1000, 1)
-    st.add_layer(1550, 3.48)
 
-    # Set light info
-    st.set_wavelength(1550)
+    # Set vacuum wavelength
+    lam0 = 1550
+    st.set_wavelength(lam0)
+
+    # Add layers
+    st.add_layer(lam0, 3.48)
+    st.add_layer(lam0, 1)
+    st.add_layer(lam0, 3.48)
 
     # Get results
     result = st.spe_structure()
@@ -82,9 +82,6 @@ def spe():
         ax2.axvline(z, color='r', lw=2)
     ax1.legend(title='Horizontal Dipoles')
     ax2.legend(title='Vertical Dipoles')
-    # ax1.set_xlim(0, 1550 * 2)
-    # ax2.set_xlim(0, 1550 * 2)
-    # plt.savefig('./Images/SPE_n_3.38_to_1.png', dpi=300)
     plt.show()
 
 

@@ -62,13 +62,10 @@ def fig6():
     lam0 = 1550
     st.set_wavelength(lam0)
 
+    # Add layers
     st.add_layer(2.5*lam0, 1)
     st.add_layer(lam0, 3.48)
     st.add_layer(2.5*lam0, 1)
-
-    # Set vacuum wavelength
-    lam0 = 1550
-    st.set_wavelength(lam0)
 
     # Calculate spontaneous emission over whole structure
     result = st.spe_structure()

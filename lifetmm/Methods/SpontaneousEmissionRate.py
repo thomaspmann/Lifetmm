@@ -131,12 +131,23 @@ class LifetimeTmm(TransferMatrix):
             spe_TE_lower[ind] += spe['spe_TE']
             spe_TM_s_lower[ind] += spe['spe_TM_s']
             spe_TM_p_lower[ind] += spe['spe_TM_p']
+
             # Calculate upper radiative modes
-            self.radiative = 'Upper'
+            # TODO: Inherently unstable when propagating decaying modes backwards
+            # through the layer as is the case for the upper radiative matrix definitions.
+            # Easier to just flip structure for now - check ok for waveguide modes.
+            # self.radiative = 'Upper'
+            self.flip()
             spe = self.spe_layer(layer)
             spe_TE_upper[ind] += spe['spe_TE']
             spe_TM_s_upper[ind] += spe['spe_TM_s']
             spe_TM_p_upper[ind] += spe['spe_TM_p']
+            self.flip()
+
+        # Flip back to normal
+        spe_TE_upper = spe_TE_upper[::-1]
+        spe_TM_s_upper = spe_TM_s_upper[::-1]
+        spe_TM_p_upper = spe_TM_p_upper[::-1]
 
         # Total spontaneous emission rate for particular dipole orientation coupling to a particular mode
         spe_TE = spe_TE_upper + spe_TE_lower
