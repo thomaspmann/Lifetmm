@@ -66,6 +66,11 @@ class LifetimeTmm(TransferMatrix):
             # Calculate the electric field component parallel (p) to the interface
             E_TM_p = q*(H_plus * exp(1j * q * z) - H_minus * exp(-1j * q * z))
 
+            # Check that results seem reasonable
+            assert max(E_TE) < 100, ValueError('TMM Unstable.')
+            assert max(E_TM_p) < 100, ValueError('TMM Unstable.')
+            assert max(E_TM_s) < 100, ValueError('TMM Unstable.')
+
             # Take the squares of all E field components and add weighting
             E_TE_square_theta[i, :] += abs(E_TE) ** 2 * sin(theta)
             E_TM_s_square_theta[i, :] += abs(E_TM_s) ** 2 * sin(theta)

@@ -28,8 +28,8 @@
           <file leaf-file-name="SpontaneousEmissionRate.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/lifetmm/Methods/SpontaneousEmissionRate.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="217">
-                  <caret line="76" column="65" selection-start-line="76" selection-start-column="65" selection-end-line="76" selection-end-column="65" />
+                <state relative-caret-position="112">
+                  <caret line="68" column="48" selection-start-line="68" selection-start-column="48" selection-end-line="68" selection-end-column="48" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                   </folding>
@@ -643,7 +643,14 @@
       <option name="project" value="LOCAL" />
       <updated>1475745748613</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="have found the instability and commented in the coed">
+      <created>1475746014610</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1475746014610</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -733,12 +740,6 @@
           </properties>
           <option name="timeStamp" value="50" />
         </breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <condition expression="max(E_TM_p) &gt; 100" language="Python" />
-          <url>file://$PROJECT_DIR$/lifetmm/Methods/SpontaneousEmissionRate.py</url>
-          <line>69</line>
-          <option name="timeStamp" value="154" />
-        </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
@@ -991,8 +992,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lifetmm/Methods/SpontaneousEmissionRate.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="217">
-          <caret line="76" column="65" selection-start-line="76" selection-start-column="65" selection-end-line="76" selection-end-column="65" />
+        <state relative-caret-position="112">
+          <caret line="68" column="48" selection-start-line="68" selection-start-column="48" selection-end-line="68" selection-end-column="48" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
