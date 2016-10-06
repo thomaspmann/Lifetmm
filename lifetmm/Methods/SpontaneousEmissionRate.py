@@ -119,7 +119,7 @@ class LifetimeTmm(TransferMatrix):
             elif layer == self.num_layers - 1:
                 print('\tLayer -> upper cladding...')
             else:
-                print('\tLayer -> internal {0:d} / {0:d}...'.format(layer, self.num_layers-2))
+                print('\tLayer -> internal {0:d} / {1:d}...'.format(layer, self.num_layers-2))
             time.sleep(0.2)  # Fixes progress bar occuring before text
 
             # Find indices corresponding to the layer we are evaluating

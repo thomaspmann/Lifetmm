@@ -49,9 +49,11 @@ def spe():
     st.set_wavelength(lam0)
 
     # Add layers
+    # st.add_layer(lam0, 1)
     st.add_layer(lam0, 3.48)
     st.add_layer(lam0, 1)
     st.add_layer(lam0, 3.48)
+    # st.add_layer(lam0, 1)
 
     # Get results
     result = st.spe_structure()
