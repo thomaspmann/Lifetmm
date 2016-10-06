@@ -58,9 +58,10 @@ def spe():
     # Get results
     result = st.spe_structure()
     z = result['z']
-    spe_TE = result['spe_TE']
-    spe_TM_p = result['spe_TM_p']
-    spe_TM_s = result['spe_TM_s']
+    spe_rates = result['spe_rates']
+    spe_TE = spe_rates['spe_TE']
+    spe_TM_p = spe_rates['spe_TM_p']
+    spe_TM_s = spe_rates['spe_TM_s']
 
     # Plot spe rates
     fig = plt.figure()

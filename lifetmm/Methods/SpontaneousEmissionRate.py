@@ -1,5 +1,4 @@
 import numpy as np
-import scipy as sp
 import time
 import scipy.integrate as integrate
 from tqdm import *
@@ -8,7 +7,14 @@ from lifetmm.Methods.TransferMatrix import TransferMatrix
 
 
 class LifetimeTmm(TransferMatrix):
-    def spe_layer(self, layer):
+    def spe_layer(self, layer, radiative='Lower'):
+        """ Evaluate the spontaneous emission rates for dipoles in a layer radiating into 'Lower' or 'Upper' modes.
+        Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
+        """
+        if radiative == 'Upper':
+            self.flip()
+            layer = self.num_layers - layer - 1
+
         # Free space wave vector magnitude
         k0 = self.k0()
 
@@ -82,17 +88,22 @@ class LifetimeTmm(TransferMatrix):
             spe *= self.n_list[0].real ** 3
 
         # Normalise emission rates to vacuum emission rate of a randomly orientated dipole
-        # Wave vector in layer
-        k, q, k_11 = self.wave_vector(layer)
         spe_TE *= 3/8
         nj = self.n_list[layer].real
         spe_TM_p *= 3/(8*(nj*k)**2)
         spe_TM_s *= 3/(4*(nj*k)**2)
 
+        # Flip structure back to original orientation
+        if radiative == 'Upper':
+            self.flip()
+            spe_TE = spe_TE[::-1]
+            spe_TM_p = spe_TM_p[::-1]
+            spe_TM_s = spe_TM_s[::-1]
+
         return {'z': z, 'spe_TE': spe_TE, 'spe_TM_s': spe_TM_s, 'spe_TM_p': spe_TM_p}
 
     def spe_structure(self):
-        """ Return the spontaneous emission rate vs z of the structure for each dipole orientation.
+        """ Evaluate the spontaneous emission rate vs z of the structure for each dipole orientation.
             Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
         """
         # z positions to evaluate E field at over entire structure
@@ -103,13 +114,17 @@ class LifetimeTmm(TransferMatrix):
         comp2 = np.transpose(np.kron(np.ones((len(z_pos), 1)), self.d_cumsum))
         z_mat = sum(comp1 > comp2, 0)
 
+        # Initialise dictionary to store the results
+        keys = ['spe_TE_lower',
+                'spe_TE_upper',
+                'spe_TM_p_upper',
+                'spe_TM_p_lower',
+                'spe_TM_s_upper',
+                'spe_TM_s_lower']
+        spe_rates = {key: np.zeros(len(z_pos), dtype=float) for key in keys}
+
+        # Calculate emission rates for each layer
         print('Evaluating lower and upper radiative modes for each layer:')
-        spe_TE_lower = np.zeros(len(z_pos), dtype=float)
-        spe_TE_upper = np.zeros(len(z_pos), dtype=float)
-        spe_TM_p_upper = np.zeros(len(z_pos), dtype=float)
-        spe_TM_p_lower = np.zeros(len(z_pos), dtype=float)
-        spe_TM_s_upper = np.zeros(len(z_pos), dtype=float)
-        spe_TM_s_lower = np.zeros(len(z_pos), dtype=float)
         for layer in range(self.num_layers):
             # Print simulation information to command line
             if layer == 0:
@@ -118,46 +133,27 @@ class LifetimeTmm(TransferMatrix):
                 print('\tLayer -> upper cladding...')
             else:
                 print('\tLayer -> internal {0:d} / {1:d}...'.format(layer, self.num_layers-2))
-            time.sleep(0.2)  # Fixes progress bar occuring before text
+            time.sleep(0.2)  # Fixes progress bar occurring before text
 
             # Find indices corresponding to the layer we are evaluating
             ind = np.where(z_mat == layer)
 
             # Calculate lower radiative modes
-            spe = self.spe_layer(layer)
-            spe_TE_lower[ind] += spe['spe_TE']
-            spe_TM_s_lower[ind] += spe['spe_TM_s']
-            spe_TM_p_lower[ind] += spe['spe_TM_p']
+            spe = self.spe_layer(layer, radiative='Lower')
+            spe_rates['spe_TE_lower'][ind] += spe['spe_TE']
+            spe_rates['spe_TM_s_lower'][ind] += spe['spe_TM_s']
+            spe_rates['spe_TM_p_lower'][ind] += spe['spe_TM_p']
 
             # Calculate upper radiative modes
-            # TODO: radiative='Upper' is unstable when propagating decaying modes backwards
-            # as we are effectively propagating an exponentially growing field forward.
-            # H_minus * exp(-1j * q * z) becomes massive for imaginary q at large z and large H_minus.
-            # Easier to just flip structure for.
-            self.flip()
-            spe = self.spe_layer(layer)
-            spe_TE_upper[ind] += spe['spe_TE']
-            spe_TM_s_upper[ind] += spe['spe_TM_s']
-            spe_TM_p_upper[ind] += spe['spe_TM_p']
-            self.flip()
-
-        # Flip upper radiative results back to normal orientation
-        spe_TE_upper = spe_TE_upper[::-1]
-        spe_TM_s_upper = spe_TM_s_upper[::-1]
-        spe_TM_p_upper = spe_TM_p_upper[::-1]
+            spe = self.spe_layer(layer, radiative='Upper')
+            spe_rates['spe_TE_upper'][ind] += spe['spe_TE']
+            spe_rates['spe_TM_s_upper'][ind] += spe['spe_TM_s']
+            spe_rates['spe_TM_p_upper'][ind] += spe['spe_TM_p']
 
         # Total spontaneous emission rate for particular dipole orientation coupling to a particular mode
-        spe_TE = spe_TE_upper + spe_TE_lower
-        spe_TM_s = spe_TM_s_upper + spe_TM_s_lower
-        spe_TM_p = spe_TM_p_upper + spe_TM_p_lower
+        spe_rates['spe_TE'] = spe_rates['spe_TE_lower'] + spe_rates['spe_TE_upper']
+        spe_rates['spe_TM_s'] = spe_rates['spe_TM_s_lower'] + spe_rates['spe_TM_s_upper']
+        spe_rates['spe_TM_p'] = spe_rates['spe_TM_p_lower'] + spe_rates['spe_TM_p_upper']
 
         return {'z': z_pos,
-                'spe_TE': spe_TE,
-                'spe_TM_s': spe_TM_s,
-                'spe_TM_p': spe_TM_p,
-                'spe_TE_upper': spe_TE_upper,
-                'spe_TE_lower': spe_TE_lower,
-                'spe_TM_s_upper': spe_TM_s_upper,
-                'spe_TM_s_lower': spe_TM_s_lower,
-                'spe_TM_p_upper': spe_TM_p_upper,
-                'spe_TM_p_lower': spe_TM_p_lower}
+                'spe_rates': spe_rates}
