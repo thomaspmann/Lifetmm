@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="4ac1dfc0-6866-4a32-9e20-f0079340d3fb" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lifetmm/Methods/SpontaneousEmissionRate.py" afterPath="$PROJECT_DIR$/lifetmm/Methods/SpontaneousEmissionRate.py" />
     </list>
     <ignored path="Lifetmm.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -27,8 +28,8 @@
           <file leaf-file-name="SpontaneousEmissionRate.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/lifetmm/Methods/SpontaneousEmissionRate.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="250">
-                  <caret line="146" column="29" selection-start-line="146" selection-start-column="29" selection-end-line="146" selection-end-column="29" />
+                <state relative-caret-position="217">
+                  <caret line="76" column="65" selection-start-line="76" selection-start-column="65" selection-end-line="76" selection-end-column="65" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                   </folding>
@@ -40,7 +41,7 @@
       </split-first>
       <split-second>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="test.py" pinned="false" current-in-tab="true">
+          <file leaf-file-name="test.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/lifetmm/Examples/test.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="202">
@@ -55,7 +56,7 @@
           <file leaf-file-name="creatore.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/lifetmm/Examples/creatore.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="855">
+                <state relative-caret-position="870">
                   <caret line="58" column="18" selection-start-line="58" selection-start-column="18" selection-end-line="58" selection-end-column="18" />
                   <folding>
                     <element signature="e#188#219#0" expanded="true" />
@@ -64,11 +65,11 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="TransferMatrix.py" pinned="false" current-in-tab="false">
+          <file leaf-file-name="TransferMatrix.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/lifetmm/Methods/TransferMatrix.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1845">
-                  <caret line="126" column="24" selection-start-line="126" selection-start-column="24" selection-end-line="126" selection-end-column="24" />
+                <state relative-caret-position="300">
+                  <caret line="140" column="13" selection-start-line="140" selection-start-column="13" selection-end-line="140" selection-end-column="13" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                   </folding>
@@ -114,11 +115,11 @@
         <option value="$PROJECT_DIR$/lifetmm/__init__.py" />
         <option value="$PROJECT_DIR$/lifetmm/examples.py" />
         <option value="$PROJECT_DIR$/lifetmm/Methods/LDOS.py" />
-        <option value="$PROJECT_DIR$/lifetmm/Methods/TransferMatrix.py" />
         <option value="$PROJECT_DIR$/lifetmm/Examples/creatore.py" />
         <option value="$PROJECT_DIR$/lifetmm/Examples/test.py" />
-        <option value="$PROJECT_DIR$/lifetmm/Methods/SpontaneousEmissionRate.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
+        <option value="$PROJECT_DIR$/lifetmm/Methods/TransferMatrix.py" />
+        <option value="$PROJECT_DIR$/lifetmm/Methods/SpontaneousEmissionRate.py" />
       </list>
     </option>
   </component>
@@ -182,6 +183,9 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="ProjectPane">
+        <subPane />
+      </pane>
       <pane id="Scope">
         <subPane subId="Project Files">
           <PATH>
@@ -225,9 +229,6 @@
             </PATH_ELEMENT>
           </PATH>
         </subPane>
-      </pane>
-      <pane id="ProjectPane">
-        <subPane />
       </pane>
       <pane id="Scratches" />
     </panes>
@@ -635,21 +636,30 @@
       <option name="project" value="LOCAL" />
       <updated>1475743642454</updated>
     </task>
-    <option name="localTasksCounter" value="28" />
+    <task id="LOCAL-00028" summary="have found the instability and commented in the coed">
+      <created>1475745748613</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1475745748613</updated>
+    </task>
+    <option name="localTasksCounter" value="29" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1280" height="800" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.17553614" sideWeight="0.49356914" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.15409055" sideWeight="0.49356914" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.23160173" sideWeight="0.50632244" order="0" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.269863" sideWeight="0.49367756" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.269863" sideWeight="0.49367756" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3226141" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2739726" sideWeight="0.4926238" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2528978" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32900432" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.12961012" sideWeight="0.50643086" order="0" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.41095892" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32892805" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
@@ -657,12 +667,10 @@
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2739726" sideWeight="0.4926238" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32676348" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.34958506" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -712,7 +720,8 @@
     <MESSAGE value="improved function documentation" />
     <MESSAGE value="fixed numerical instability for upper radiative modes by flipping structure. still unstable if layer gets too thick - would probably need to convert to scattering matricies to fix this... Can also remove upper radiative matrix formulation from transfer matrix method?" />
     <MESSAGE value="remove workspace.xml from tracked files&#10;" />
-    <option name="LAST_COMMIT_MESSAGE" value="remove workspace.xml from tracked files&#10;" />
+    <MESSAGE value="have found the instability and commented in the coed" />
+    <option name="LAST_COMMIT_MESSAGE" value="have found the instability and commented in the coed" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -724,6 +733,12 @@
           </properties>
           <option name="timeStamp" value="50" />
         </breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <condition expression="max(E_TM_p) &gt; 100" language="Python" />
+          <url>file://$PROJECT_DIR$/lifetmm/Methods/SpontaneousEmissionRate.py</url>
+          <line>69</line>
+          <option name="timeStamp" value="154" />
+        </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
@@ -736,7 +751,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="151" />
+      <option name="time" value="155" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
@@ -936,19 +951,9 @@
     <entry file="file://$PROJECT_DIR$/lifetmm/spectPL.py" />
     <entry file="file://$PROJECT_DIR$/lifetmm/test.py" />
     <entry file="file://$PROJECT_DIR$/lifetmm/tester.py" />
-    <entry file="file://$PROJECT_DIR$/lifetmm/Methods/TransferMatrix.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1845">
-          <caret line="126" column="24" selection-start-line="126" selection-start-column="24" selection-end-line="126" selection-end-column="24" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lifetmm/Examples/creatore.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="855">
+        <state relative-caret-position="870">
           <caret line="58" column="18" selection-start-line="58" selection-start-column="18" selection-end-line="58" selection-end-column="18" />
           <folding>
             <element signature="e#188#219#0" expanded="true" />
@@ -974,10 +979,20 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/lifetmm/Methods/TransferMatrix.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="300">
+          <caret line="140" column="13" selection-start-line="140" selection-start-column="13" selection-end-line="140" selection-end-column="13" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/lifetmm/Methods/SpontaneousEmissionRate.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="250">
-          <caret line="146" column="29" selection-start-line="146" selection-start-column="29" selection-end-line="146" selection-end-column="29" />
+        <state relative-caret-position="217">
+          <caret line="76" column="65" selection-start-line="76" selection-start-column="65" selection-end-line="76" selection-end-column="65" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>

@@ -134,7 +134,7 @@ class LifetimeTmm(TransferMatrix):
             # Calculate upper radiative modes
             # TODO: radiative='Upper' is unstable when propagating decaying modes backwards
             # as we are effectively propagating an exponentially growing field forward.
-            # H_minus * exp(-1j * q * z) becomes massive for imaginary q at large z.
+            # H_minus * exp(-1j * q * z) becomes massive for imaginary q at large z and large H_minus.
             # Easier to just flip structure for.
             # self.radiative = 'Upper'
             self.flip()
