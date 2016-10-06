@@ -8,9 +8,9 @@ from lifetmm.Methods.TransferMatrix import TransferMatrix
 
 
 class LifetimeTmm(TransferMatrix):
-    def spe_layer(self, layer, radiative='Lower'):
-        # assert self.n_list[0] >= self.n_list[-1], \
-        #     'Refractive index of lower cladding must be larger than the upper cladding'
+    def spe_layer(self, layer):
+        # Free space wave vector magnitude
+        k0 = self.k0()
 
         # z positions to evaluate E at
         z = np.arange((self.z_step / 2.0), self.d_list[layer], self.z_step)
@@ -38,8 +38,7 @@ class LifetimeTmm(TransferMatrix):
             # Wave vector components in layer (q, k_11 are angle dependent)
             k, q, k_11 = self.wave_vector(layer)
 
-            # TODO: Check that the mode is radiative - otherwise do not calculate
-            k0 = self.k0()
+            # Check that the mode exists and is leaky
             assert k_11**2 < k0**2, ValueError('k_11 can not be larger than k0!')
 
             # !* TE modes *!
@@ -50,10 +49,7 @@ class LifetimeTmm(TransferMatrix):
             E_plus, E_minus = self.amplitude_coefficients(layer)
             E_TE = E_plus * exp(1j * q * z) + E_minus * exp(-1j * q * z)
             # Orthonormality condition: Normalise outgoing TE wave to medium refractive index.
-            if radiative == 'Lower':
-                E_TE /= self.n_list[0].real
-            elif radiative == 'Upper':
-                E_TE /= self.n_list[-1].real
+            E_TE /= self.n_list[0].real
 
             # !* TM modes *!
             self.set_polarization('TM')
@@ -82,12 +78,8 @@ class LifetimeTmm(TransferMatrix):
         spe_TM_s = integrate.romb(E_TM_s_square_theta, dx=dth, axis=0)
 
         # Outgoing E mode refractive index weighting (just after summation over j=0,M+1)
-        if radiative == 'Lower':
-            for spe in [spe_TE, spe_TM_p, spe_TM_s]:
-                spe *= self.n_list[0].real ** 3
-        elif radiative == 'Upper':
-            for spe in [spe_TE, spe_TM_p, spe_TM_s]:
-                spe *= self.n_list[-1].real ** 3
+        for spe in [spe_TE, spe_TM_p, spe_TM_s]:
+            spe *= self.n_list[0].real ** 3
 
         # Normalise emission rates to vacuum emission rate of a randomly orientated dipole
         # Wave vector in layer
@@ -100,7 +92,9 @@ class LifetimeTmm(TransferMatrix):
         return {'z': z, 'spe_TE': spe_TE, 'spe_TM_s': spe_TM_s, 'spe_TM_p': spe_TM_p}
 
     def spe_structure(self):
-        """ Return the spontaneous emission rate vs z of the structure for each dipole orientation. """
+        """ Return the spontaneous emission rate vs z of the structure for each dipole orientation.
+            Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
+        """
         # z positions to evaluate E field at over entire structure
         z_pos = np.arange((self.z_step / 2.0), self.d_cumsum[-1], self.z_step)
 
@@ -130,7 +124,7 @@ class LifetimeTmm(TransferMatrix):
             ind = np.where(z_mat == layer)
 
             # Calculate lower radiative modes
-            spe = self.spe_layer(layer, radiative='Lower')
+            spe = self.spe_layer(layer)
             spe_TE_lower[ind] += spe['spe_TE']
             spe_TM_s_lower[ind] += spe['spe_TM_s']
             spe_TM_p_lower[ind] += spe['spe_TM_p']
@@ -141,7 +135,7 @@ class LifetimeTmm(TransferMatrix):
             # H_minus * exp(-1j * q * z) becomes massive for imaginary q at large z and large H_minus.
             # Easier to just flip structure for.
             self.flip()
-            spe = self.spe_layer(layer, radiative='Upper')
+            spe = self.spe_layer(layer)
             spe_TE_upper[ind] += spe['spe_TE']
             spe_TM_s_upper[ind] += spe['spe_TM_s']
             spe_TM_p_upper[ind] += spe['spe_TM_p']

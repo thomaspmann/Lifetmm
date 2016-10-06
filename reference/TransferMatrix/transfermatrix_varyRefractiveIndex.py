@@ -146,7 +146,7 @@ def I_mat(n1, n2):
     r = (n1 - n2) / (n1 + n2)
     t = (2 * n1) / (n1 + n2)
     ret = np.array([[1, r], [r, 1]], dtype=complex)
-    ret = ret / t
+    ret /= t
     return ret
 
 
