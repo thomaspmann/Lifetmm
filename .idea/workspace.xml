@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="4ac1dfc0-6866-4a32-9e20-f0079340d3fb" name="Default" comment="fixed numerical instability for upper radiative modes by flipping structure. still unstable if layer gets too thick - would probably need to convert to scattering matricies to fix this... Can also remove upper radiative matrix formulation from transfer matrix method?">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
+    <list default="true" id="4ac1dfc0-6866-4a32-9e20-f0079340d3fb" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Lifetmm.iws" />
@@ -629,12 +628,19 @@
       <option name="project" value="LOCAL" />
       <updated>1475743052487</updated>
     </task>
-    <option name="localTasksCounter" value="27" />
+    <task id="LOCAL-00027" summary="remove workspace.xml from tracked files&#10;">
+      <created>1475743642454</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1475743642454</updated>
+    </task>
+    <option name="localTasksCounter" value="28" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1280" height="800" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.17553614" sideWeight="0.49356914" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
@@ -705,7 +711,8 @@
     <MESSAGE value="Have moved the transfer method from LDOS back into its own file. Now there is an option to set the field as either E or H, which affects the interference matrix" />
     <MESSAGE value="improved function documentation" />
     <MESSAGE value="fixed numerical instability for upper radiative modes by flipping structure. still unstable if layer gets too thick - would probably need to convert to scattering matricies to fix this... Can also remove upper radiative matrix formulation from transfer matrix method?" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed numerical instability for upper radiative modes by flipping structure. still unstable if layer gets too thick - would probably need to convert to scattering matricies to fix this... Can also remove upper radiative matrix formulation from transfer matrix method?" />
+    <MESSAGE value="remove workspace.xml from tracked files&#10;" />
+    <option name="LAST_COMMIT_MESSAGE" value="remove workspace.xml from tracked files&#10;" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
