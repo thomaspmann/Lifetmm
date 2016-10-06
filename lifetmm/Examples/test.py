@@ -88,6 +88,6 @@ def spe():
 
 
 if __name__ == "__main__":
-    # mcgehee()
+    mcgehee()
     spe()
 

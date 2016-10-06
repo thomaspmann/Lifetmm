@@ -14,7 +14,6 @@ class TransferMatrix:
         self.num_layers = 0
         self.pol = 'u'
         self.th = 0
-        self.radiative = 'Lower'
         self.field = 'E'
 
     def add_layer(self, d, n):
@@ -74,21 +73,17 @@ class TransferMatrix:
                              'inputs for thicknesses and wavelengths for greater resolution ')
         self.z_step = step
 
-    def calc_k0(self):
+    def k0(self):
         """ Calculate the free space wave vector
         """
-        if self.radiative == 'Lower':
-            n0 = self.n_list[0].real
-        else:  # self.radiative =='Upper'
-            n0 = self.n_list[-1].real
-        k0 = 2 * pi * n0 / self.lam_vac
-        return k0
+        n0 = self.n_list[0].real
+        return 2 * pi * n0 / self.lam_vac
 
     def wave_vector(self, layer):
         """ The wave vector magnitude and it's components perpendicular and parallel
         to the interface inside the layer.
         """
-        k0 = self.calc_k0()
+        k0 = self.k0()
 
         # Layer wave vector and components
         n = self.n_list[layer].real
@@ -100,10 +95,7 @@ class TransferMatrix:
         return k, q, k_11
 
     def q(self, j):
-        if self.radiative == 'Lower':
-            n0 = self.n_list[0].real
-        elif self.radiative == 'Upper':
-            n0 = self.n_list[-1].real
+        n0 = self.n_list[0].real
         nj = self.n_list[j]
         return sqrt(nj**2 - (n0*sin(self.th))**2)
 
@@ -173,29 +165,17 @@ class TransferMatrix:
          Coefficients are in units of the fwd incoming wave amplitude.
         """
         S = self.S_mat()
-        if self.radiative == 'Lower':
-            rR = S[1, 0] / S[0, 0]
-            if layer == 0:  # Evaluate lower cladding
-                A_plus = 1
-                A_minus = rR
-            elif layer == self.num_layers - 1:  # Evaluate upper cladding
-                A_plus = 1 / S[0, 0]
-                A_minus = 0
-            else:  # Evaluate internal layer electric field
-                S_prime = self.S_primed_mat(layer)
-                A_plus = (S_prime[1, 1] - rR * S_prime[0, 1]) / det(S_prime)
-                A_minus = (rR * S_prime[0, 0] - S_prime[1, 0]) / det(S_prime)
-        else:  # self.radiative == 'Upper':
-            if layer == 0:  # Evaluate lower cladding
-                A_plus = 0
-                A_minus = det(S)/S[0, 0]
-            elif layer == self.num_layers - 1:  # Evaluate upper cladding
-                A_plus = - S[0, 1] / S[0, 0]
-                A_minus = 1
-            else:  # Evaluate internal layer electric field
-                S_prime = self.S_primed_mat(layer)
-                A_plus = -(S_prime[0, 1]/det(S_prime)) * (det(S)/S[0, 0])
-                A_minus = (S_prime[0, 0]/det(S_prime)) * (det(S)/S[0, 0])
+        rR = S[1, 0] / S[0, 0]
+        if layer == 0:  # Evaluate lower cladding
+            A_plus = 1
+            A_minus = rR
+        elif layer == self.num_layers - 1:  # Evaluate upper cladding
+            A_plus = 1 / S[0, 0]
+            A_minus = 0
+        else:  # Evaluate internal layer electric field
+            S_prime = self.S_primed_mat(layer)
+            A_plus = (S_prime[1, 1] - rR * S_prime[0, 1]) / det(S_prime)
+            A_minus = (rR * S_prime[0, 0] - S_prime[1, 0]) / det(S_prime)
         return A_plus, A_minus
 
     def layer_field(self, layer):
