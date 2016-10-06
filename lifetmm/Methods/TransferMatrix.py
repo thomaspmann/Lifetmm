@@ -134,6 +134,8 @@ class TransferMatrix:
         qj = self.q(j)
         dj = self.d_list[j]
         eps = (2*pi*qj) / self.lam_vac
+        assert -1j*eps*dj < 25, \
+            ValueError('L_matrix is unstable for such a large thickness with an exponentially growing mode.')
         return np.array([[exp(-1j*eps*dj), 0], [0, exp(1j*eps*dj)]], dtype=complex)
 
     def S_mat(self):

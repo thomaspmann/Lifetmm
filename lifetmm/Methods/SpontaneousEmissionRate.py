@@ -40,8 +40,7 @@ class LifetimeTmm(TransferMatrix):
 
             # TODO: Check that the mode is radiative - otherwise do not calculate
             k0 = self.calc_k0()
-            if k_11**2 >= k0**2:
-                print('ARGH')
+            assert k_11**2 < k0**2, ValueError('k_11 can not be larger than k0!')
 
             # !* TE modes *!
             self.set_polarization('TE')
@@ -133,9 +132,10 @@ class LifetimeTmm(TransferMatrix):
             spe_TM_p_lower[ind] += spe['spe_TM_p']
 
             # Calculate upper radiative modes
-            # TODO: Inherently unstable when propagating decaying modes backwards
-            # through the layer as is the case for the upper radiative matrix definitions.
-            # Easier to just flip structure for now - check ok for waveguide modes.
+            # TODO: radiative='Upper' is unstable when propagating decaying modes backwards
+            # as we are effectively propagating an exponentially growing field forward.
+            # H_minus * exp(-1j * q * z) becomes massive for imaginary q at large z.
+            # Easier to just flip structure for.
             # self.radiative = 'Upper'
             self.flip()
             spe = self.spe_layer(layer)
