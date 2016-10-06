@@ -149,7 +149,7 @@ class LifetimeTmm(TransferMatrix):
             spe_TM_p_upper[ind] += spe['spe_TM_p']
             self.flip()
 
-        # Flip back to normal
+        # Flip upper radiative results back to normal orientation
         spe_TE_upper = spe_TE_upper[::-1]
         spe_TM_s_upper = spe_TM_s_upper[::-1]
         spe_TM_p_upper = spe_TM_p_upper[::-1]
