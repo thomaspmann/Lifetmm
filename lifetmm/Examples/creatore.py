@@ -43,7 +43,7 @@ def fig3():
     ax2.plot(z, spe_TM_s, label='TM')
 
     # Plot layer boundaries
-    for z in st.get_layer_boundaries():
+    for z in st.get_layer_boundaries()[:-1]:
         ax1.axvline(st.z_to_lambda(z), color='r', lw=2)
         ax2.axvline(st.z_to_lambda(z), color='r', lw=2)
 
@@ -53,7 +53,7 @@ def fig3():
     ax2.set_xlabel('z/$\lambda$')
     ax1.legend(title='Horizontal Dipoles')
     ax2.legend(title='Vertical Dipoles')
-    # plt.savefig('./Images/SPE_n_3.38_to_1.png', dpi=300)
+    plt.savefig('../Images/SPE_n_3.38_to_1.png', dpi=300)
     plt.show()
 
 
@@ -90,17 +90,19 @@ def fig3p5():
     ax2.plot(z, spe_TM_s, label='TM')
 
     # Plot layer boundaries
-    for z in st.get_layer_boundaries():
+    for z in st.get_layer_boundaries()[:-1]:
         ax1.axvline(st.z_to_lambda(z), color='r', lw=2)
         ax2.axvline(st.z_to_lambda(z), color='r', lw=2)
 
+    ax1.set_ylim(0, 4)
+    ax2.set_ylim(0, 6)
     ax1.set_title('Spontaneous Emission Rate. LHS n=3.48, RHS n=1.')
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax2.set_ylabel('$\Gamma /\Gamma_0$')
     ax2.set_xlabel('z/$\lambda$')
     ax1.legend(title='Horizontal Dipoles')
     ax2.legend(title='Vertical Dipoles')
-    # plt.savefig('./Images/SPE_n_3.38_to_1.png', dpi=300)
+    # plt.savefig('../Images/SPE_n_3.38_to_1.png', dpi=300)
     plt.show()
 
 
@@ -140,18 +142,19 @@ def fig6():
     ax2.plot(z, spe_TM_s, label='TM')
 
     # Plot layer boundaries
-    for z in st.get_layer_boundaries():
+    for z in st.get_layer_boundaries()[:-1]:
         ax1.axvline(st.z_to_lambda(z), color='r', lw=2)
         ax2.axvline(st.z_to_lambda(z), color='r', lw=2)
 
     ax1.set_ylim(0, 1.4)
     ax2.set_ylim(0, 1.4)
-    ax1.set_title('Spontaneous Emission Rate. LHS n=3.48, RHS n=1.')
+    ax1.set_title('Spontaneous Emission Rate. Silicon (n=3.48) with air cladding (n=1.)')
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax2.set_ylabel('$\Gamma /\Gamma_0$')
     ax2.set_xlabel('z/$\lambda$')
     ax1.legend(title='Horizontal Dipoles', loc='lower right', fontsize='medium')
     ax2.legend(title='Vertical Dipoles', loc='lower right', fontsize='medium')
+    plt.savefig('../Images/SPE_silicon_layer_air_cladding.png', dpi=300)
     plt.show()
 
 
@@ -191,19 +194,20 @@ def figx():
     ax2.plot(z, spe_TM_s, label='TM')
 
     # Plot layer boundaries
-    for z in st.get_layer_boundaries():
+    for z in st.get_layer_boundaries()[:-1]:
         ax1.axvline(st.z_to_lambda(z), color='r', lw=2)
         ax2.axvline(st.z_to_lambda(z), color='r', lw=2)
 
-    ax1.set_title('Spontaneous Emission Rate. LHS n=3.48, RHS n=1.')
+    ax1.set_title('Spontaneous Emission Rate. Air (n=1) with silicon cladding (n=3.48).')
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax2.set_ylabel('$\Gamma /\Gamma_0$')
     ax2.set_xlabel('z/$\lambda$')
     ax1.legend(title='Horizontal Dipoles', loc='lower right', fontsize='medium')
     ax2.legend(title='Vertical Dipoles', loc='lower right', fontsize='medium')
+    plt.savefig('../Images/SPE_air_layer_silicon_cladding.png', dpi=300)
     plt.show()
 
 if __name__ == "__main__":
-    fig3()
-    fig6()
-    figx()
+    fig3p5()
+    # fig6()
+    # figx()

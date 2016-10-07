@@ -33,10 +33,11 @@ def mcgehee():
     plt.plot(y)
 
     plt.axhline(y=1, linestyle='--', color='k')
-    for z in st.get_layer_boundaries():
+    for z in st.get_layer_boundaries()[:-1]:
         plt.axvline(x=z, color='r', lw=2)
     plt.xlabel('Position in Device (nm)')
     plt.ylabel('Normalized |E|$^2$Intensity')
+    plt.savefig('../Images/McGehee_structure.png', dpi=300)
     plt.show()
 
 
@@ -80,7 +81,7 @@ def spe():
     ax1.axhline(y=1, linestyle='--', color='k')
     ax2.axhline(y=1, linestyle='--', color='k')
     # Plot layer boundaries
-    for z in st.get_layer_boundaries():
+    for z in st.get_layer_boundaries()[:-1]:
         ax1.axvline(z, color='r', lw=2)
         ax2.axvline(z, color='r', lw=2)
     ax1.legend(title='Horizontal Dipoles')

@@ -11,6 +11,10 @@ class LifetimeTmm(TransferMatrix):
         """ Evaluate the spontaneous emission rates for dipoles in a layer radiating into 'Lower' or 'Upper' modes.
         Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
         """
+        assert self.n_list[0] > self.n_list[-1], \
+            ValueError('Lower cladding refractive index must be higher than the upper cladding. '
+                       'Consider flipping the structure.')
+
         if radiative == 'Upper':
             self.flip()
             layer = self.num_layers - layer - 1
@@ -21,7 +25,8 @@ class LifetimeTmm(TransferMatrix):
         # z positions to evaluate E at
         z = np.arange((self.z_step / 2.0), self.d_list[layer], self.z_step)
         if layer == 0:
-            # Note E_plus and E_minus are defined at cladding-layer boundary
+            # A_plus and A_minus are defined at first cladding-layer boundary.
+            # Therefore must propagate waves backwards in the first cladding.
             z = -z[::-1]
 
         # Angles of emission to simulate over.
@@ -100,7 +105,24 @@ class LifetimeTmm(TransferMatrix):
             spe_TM_p = spe_TM_p[::-1]
             spe_TM_s = spe_TM_s[::-1]
 
-        return {'z': z, 'spe_TE': spe_TE, 'spe_TM_s': spe_TM_s, 'spe_TM_p': spe_TM_p}
+        # TODO: work in progress for splitting partially and fully radiative modes
+        # Wave vector components in upper cladding
+        k, q, k_11 = self.wave_vector(self.num_layers-1)
+        if np.iscomplex(q) and radiative == 'Lower':
+            spe_TE = np.zeros(len(spe_TE))
+            spe_TM_p = np.zeros(len(spe_TM_p))
+            spe_TM_s = np.zeros(len(spe_TM_s))
+
+        # spe_TE_partial = np.zeros(len(spe_TE))
+        # if np.iscomplex(q):
+        #     spe_TE_partial = spe_TE
+        #     spe_TE_partial = np.zeros(len(spe_TE))
+
+        return {'z': z,
+                'spe_TE': spe_TE,
+                'spe_TM_s': spe_TM_s,
+                'spe_TM_p': spe_TM_p
+                }
 
     def spe_structure(self):
         """ Evaluate the spontaneous emission rate vs z of the structure for each dipole orientation.
