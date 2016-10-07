@@ -157,7 +157,10 @@ class LifetimeTmm(TransferMatrix):
         z_mat = sum(comp1 > comp2, 0)
 
         # Structure to hold field spe(z) components of each mode for each dipole orientation over structure
-        spe = np.zeros(len(z_pos), dtype=[('TE_total', 'float64'),
+        spe = np.zeros(len(z_pos), dtype=[('total', 'float64'),
+                                          ('total_lower', 'float64'),
+                                          ('total_upper', 'float64'),
+                                          ('TE_total', 'float64'),
                                           ('TM_p_total', 'float64'),
                                           ('TM_s_total', 'float64'),
                                           ('TE_lower', 'float64'),
@@ -211,6 +214,11 @@ class LifetimeTmm(TransferMatrix):
         spe['TE_lower'] = spe['TE_lower_full'] + spe['TE_lower_partial']
         spe['TM_p_lower'] = spe['TM_p_lower_full'] + spe['TM_p_lower_partial']
         spe['TM_s_lower'] = spe['TM_s_lower_full'] + spe['TM_s_lower_partial']
+
+        # Totals
+        spe['total_lower'] = spe['TE_lower'] + spe['TM_p_lower'] + spe['TM_s_lower']
+        spe['total_upper'] = spe['TE_upper'] + spe['TM_p_upper'] + spe['TM_s_upper']
+        spe['tota'] = spe['total_lower'] + spe['total_upper']
 
         # Total spontaneous emission rate for particular dipole orientation coupling to a particular mode
         spe['TE_total'] = spe['TE_lower'] + spe['TE_upper']
