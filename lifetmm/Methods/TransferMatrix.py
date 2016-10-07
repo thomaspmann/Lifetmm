@@ -89,7 +89,7 @@ class TransferMatrix:
         n = self.n_list[layer].real
         k = 2 * pi * n / self.lam_vac
         k_11 = k0 * sin(self.th)  # Note th needs to be in same layer as k0
-        q = sp.sqrt(k**2 - k_11**2)
+        # q = sp.sqrt(k**2 - k_11**2)
         # TODO: above breaks when n is complex the above breaks down as k is defined with n.real
         q = (2 * pi * self.q(layer)) / self.lam_vac
         return k, q, k_11

@@ -3,7 +3,6 @@ Script to recreate the plots in the paper
 
     'Quantum theory of spontaneous emission in multilayer dielectric structures'
     by Celestino Creatore and Lucio Claudio Andreani.
-
 """
 
 import matplotlib.pyplot as plt
@@ -25,10 +24,7 @@ def fig3():
     # Calculate spontaneous emission over whole structure
     result = st.spe_structure()
     z = result['z']
-    spe_rates = result['spe_rates']
-    spe_TE = spe_rates['spe_TE']
-    spe_TM_p = spe_rates['spe_TM_p']
-    spe_TM_s = spe_rates['spe_TM_s']
+    spe = result['spe']
 
     # Convert z into z/lam0 and center
     z = st.z_to_lambda(z)
@@ -36,11 +32,11 @@ def fig3():
     # Plot spontaneous emission rates
     fig = plt.figure()
     ax1 = fig.add_subplot(211)
-    ax1.plot(z, spe_TE, label='TE')
-    ax1.plot(z, spe_TM_p, label='TM')
-    ax1.plot(z, spe_TE+spe_TM_p, 'k', label='TE + TM')
+    ax1.plot(z, spe['TE'], label='TE')
+    ax1.plot(z, spe['TM_p'], label='TM')
+    ax1.plot(z, spe['TE']+spe['TM_p'], 'k', label='TE + TM')
     ax2 = fig.add_subplot(212)
-    ax2.plot(z, spe_TM_s, label='TM')
+    ax2.plot(z, spe['TM_s'], label='TM')
 
     # Plot layer boundaries
     for z in st.get_layer_boundaries()[:-1]:
@@ -124,10 +120,7 @@ def fig6():
     # Calculate spontaneous emission over whole structure
     result = st.spe_structure()
     z = result['z']
-    spe_rates = result['spe_rates']
-    spe_TE = spe_rates['spe_TE']
-    spe_TM_p = spe_rates['spe_TM_p']
-    spe_TM_s = spe_rates['spe_TM_s']
+    spe = result['spe']
 
     # Convert z into z/lam0 and center
     z = st.z_to_lambda(z)
@@ -135,11 +128,11 @@ def fig6():
     # Plot spontaneous emission rates
     fig = plt.figure()
     ax1 = fig.add_subplot(211)
-    ax1.plot(z, spe_TE, label='TE')
-    ax1.plot(z, spe_TM_p, label='TM')
-    ax1.plot(z, spe_TE+spe_TM_p, 'k', label='TE + TM')
+    ax1.plot(z, spe['TE'], label='TE')
+    ax1.plot(z, spe['TM_p'], label='TM')
+    ax1.plot(z, spe['TE']+spe['TM_p'], 'k', label='TE + TM')
     ax2 = fig.add_subplot(212)
-    ax2.plot(z, spe_TM_s, label='TM')
+    ax2.plot(z, spe['TM_s'], label='TM')
 
     # Plot layer boundaries
     for z in st.get_layer_boundaries()[:-1]:
@@ -176,10 +169,7 @@ def figx():
     # Calculate spontaneous emission over whole structure
     result = st.spe_structure()
     z = result['z']
-    spe_rates = result['spe_rates']
-    spe_TE = spe_rates['spe_TE']
-    spe_TM_p = spe_rates['spe_TM_p']
-    spe_TM_s = spe_rates['spe_TM_s']
+    spe = result['spe']
 
     # Convert z into z/lam0 and center
     z = st.z_to_lambda(z)
@@ -187,11 +177,11 @@ def figx():
     # Plot spontaneous emission rates
     fig = plt.figure()
     ax1 = fig.add_subplot(211)
-    ax1.plot(z, spe_TE, label='TE')
-    ax1.plot(z, spe_TM_p, label='TM')
-    ax1.plot(z, spe_TE+spe_TM_p, 'k', label='TE + TM')
+    ax1.plot(z, spe['TE'], label='TE')
+    ax1.plot(z, spe['TM_p'], label='TM')
+    ax1.plot(z, spe['TE']+spe['TM_p'], 'k', label='TE + TM')
     ax2 = fig.add_subplot(212)
-    ax2.plot(z, spe_TM_s, label='TM')
+    ax2.plot(z, spe['TM_s'], label='TM')
 
     # Plot layer boundaries
     for z in st.get_layer_boundaries()[:-1]:
@@ -208,6 +198,6 @@ def figx():
     plt.show()
 
 if __name__ == "__main__":
-    fig3p5()
-    # fig6()
+    fig3()
+    fig6()
     # figx()
