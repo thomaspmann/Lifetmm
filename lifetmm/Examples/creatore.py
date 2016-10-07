@@ -21,6 +21,9 @@ def fig3():
     lam0 = 1550
     st.set_wavelength(lam0)
 
+    # Feedback to user the structure being simulated
+    st.verbose()
+
     # Calculate spontaneous emission over whole structure
     result = st.spe_structure()
     z = result['z']
@@ -30,75 +33,42 @@ def fig3():
     z = st.z_to_lambda(z)
 
     # Plot spontaneous emission rates
-    fig = plt.figure()
-    ax1 = fig.add_subplot(211)
-    ax1.plot(z, spe['TE'], label='TE')
-    ax1.plot(z, spe['TM_p'], label='TM')
-    ax1.plot(z, spe['TE']+spe['TM_p'], 'k', label='TE + TM')
-    ax2 = fig.add_subplot(212)
-    ax2.plot(z, spe['TM_s'], label='TM')
+    f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row', figsize=(22, 10))
+    ax1.plot(z, spe['TE_total'], label='TE')
+    ax1.plot(z, spe['TM_p_total'], label='TM')
+    ax1.plot(z, spe['TE_total']+spe['TM_p_total'], label='TE + TM')
 
-    # Plot layer boundaries
+    ax2.plot(z, spe['TE_lower_full'] + spe['TM_p_lower_full'], label='Fully radiative lower outgoing')
+    ax2.plot(z, spe['TE_lower_partial'] + spe['TM_p_lower_partial'], label='Partially radiative lower outgoing')
+    ax2.plot(z, spe['TE_upper'] + spe['TM_p_upper'], label='Fully radiative upper outgoing')
+
+    ax3.plot(z, spe['TM_s_total'], label='TM')
+
+    ax4.plot(z, spe['TM_s_lower_full'], label='Fully radiative lower outgoing')
+    ax4.plot(z, spe['TM_s_lower_partial'], label='Partially radiative lower outgoing')
+    ax4.plot(z, spe['TM_s_upper'], label='Fully radiative upper outgoing')
+
+    # Plot internal layer boundaries
     for z in st.get_layer_boundaries()[:-1]:
-        ax1.axvline(st.z_to_lambda(z), color='r', lw=2)
-        ax2.axvline(st.z_to_lambda(z), color='r', lw=2)
-
-    ax1.set_title('Spontaneous Emission Rate. LHS n=3.48, RHS n=1.')
-    ax1.set_ylabel('$\Gamma / \Gamma_0$')
-    ax2.set_ylabel('$\Gamma /\Gamma_0$')
-    ax2.set_xlabel('z/$\lambda$')
-    ax1.legend(title='Horizontal Dipoles')
-    ax2.legend(title='Vertical Dipoles')
-    plt.savefig('../Images/SPE_n_3.38_to_1.png', dpi=300)
-    plt.show()
-
-
-def fig3p5():
-    """ Silicon to air semi-infinite half spaces.
-    """
-    # Create structure
-    st = LifetimeTmm()
-    st.add_layer(1550, 3.48)
-    st.add_layer(1550, 1)
-
-    # Set vacuum wavelength
-    lam0 = 1550
-    st.set_wavelength(lam0)
-
-    # Calculate spontaneous emission over whole structure
-    result = st.spe_structure()
-    z = result['z']
-    spe_rates = result['spe_rates']
-    spe_TE_lower = spe_rates['spe_TE_lower']
-    spe_TM_p_lower = spe_rates['spe_TM_p']
-    spe_TM_s = spe_rates['spe_TM_s']
-
-    # Convert z into z/lam0 and center
-    z = st.z_to_lambda(z)
-
-    # Plot spontaneous emission rates
-    fig = plt.figure()
-    ax1 = fig.add_subplot(211)
-    ax1.plot(z, spe_TE_lower, label='TE')
-    ax1.plot(z, spe_TM_p_lower, label='TM')
-    ax1.plot(z, spe_TE_lower+spe_TM_p_lower, 'k', label='TE + TM')
-    ax2 = fig.add_subplot(212)
-    ax2.plot(z, spe_TM_s, label='TM')
-
-    # Plot layer boundaries
-    for z in st.get_layer_boundaries()[:-1]:
-        ax1.axvline(st.z_to_lambda(z), color='r', lw=2)
-        ax2.axvline(st.z_to_lambda(z), color='r', lw=2)
+        ax1.axvline(st.z_to_lambda(z), color='k', lw=2)
+        ax2.axvline(st.z_to_lambda(z), color='k', lw=2)
+        ax3.axvline(st.z_to_lambda(z), color='k', lw=2)
+        ax4.axvline(st.z_to_lambda(z), color='k', lw=2)
 
     ax1.set_ylim(0, 4)
-    ax2.set_ylim(0, 6)
+    ax3.set_ylim(0, 6)
     ax1.set_title('Spontaneous Emission Rate. LHS n=3.48, RHS n=1.')
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
-    ax2.set_ylabel('$\Gamma /\Gamma_0$')
-    ax2.set_xlabel('z/$\lambda$')
-    ax1.legend(title='Horizontal Dipoles')
-    ax2.legend(title='Vertical Dipoles')
-    # plt.savefig('../Images/SPE_n_3.38_to_1.png', dpi=300)
+    ax3.set_ylabel('$\Gamma /\Gamma_0$')
+    ax3.set_xlabel('z/$\lambda$')
+    ax4.set_xlabel('z/$\lambda$')
+    size = 12
+    ax1.legend(title='Horizontal Dipoles', prop={'size': size})
+    ax2.legend(title='Horizontal Dipoles', prop={'size': size})
+    ax3.legend(title='Vertical Dipoles', prop={'size': size})
+    ax4.legend(title='Vertical Dipoles', prop={'size': size})
+    plt.tight_layout()
+    plt.savefig('../Images/SPE_n_3.38_to_1.png', dpi=300)
     plt.show()
 
 
@@ -199,5 +169,5 @@ def figx():
 
 if __name__ == "__main__":
     fig3()
-    fig6()
+    # fig6()
     # figx()

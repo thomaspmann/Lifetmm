@@ -293,6 +293,17 @@ class TransferMatrix:
         self.n_list = self.n_list[::-1]
         self.d_cumsum = np.cumsum(self.d_list)
 
+    def verbose(self):
+        """ Command line verbose feedback of the structure.
+        """
+        print('Simulation info.\n')
+
+        print('Multi-layered Structure:')
+        print('d\t\tn')
+        for n, d in zip(self.n_list, self.d_list):
+            print('{0:g}\t{1:g}'.format(d, n))
+        print('\nFree space wavelength: {:g}\n'.format(self.lam_vac))
+
     @staticmethod
     def snell(n_1, n_2, th_1):
         """ Return angle theta in layer 2 with refractive index n_2, assuming
