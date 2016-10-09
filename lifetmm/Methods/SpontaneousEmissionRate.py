@@ -7,7 +7,7 @@ from lifetmm.Methods.TransferMatrix import TransferMatrix
 
 
 class LifetimeTmm(TransferMatrix):
-    def spe_layer(self, layer, radiative='Lower', partial=False, th_num=8):
+    def spe_layer(self, layer, emission='Lower', radiative='Full', th_num=8):
         """ Evaluate the spontaneous emission rates for dipoles in a layer radiating into 'Lower' or 'Upper' modes.
         Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
         """
@@ -17,9 +17,16 @@ class LifetimeTmm(TransferMatrix):
             ValueError('Lower cladding refractive index must be higher than the upper cladding. '
                        'Consider flipping the structure.')
 
+        # Other option checks
+        assert 'Full' or 'Partial' or 'Both' in emission, \
+            ValueError('Emission option must be either "Upper" or "Lower".')
+        assert 'Lower' or 'Upper' in radiative, \
+            ValueError('Radiative option must be either "Partial", "Full" or "Both".')
+        assert isinstance(th_num, int), ValueError('th_num must be an integer.')
+
         # Flip the structure and solve using lower radiative equations for upper radiative modes.
         # Results are flipped back at the end of this function to give the correct orientation again.
-        if radiative == 'Upper':
+        if emission == 'Upper':
             self.flip()
             layer = self.num_layers - layer - 1
 
@@ -39,23 +46,32 @@ class LifetimeTmm(TransferMatrix):
         res = 2 ** th_num + 1
         theta_input, dth = np.linspace(0, pi / 2, num=res, endpoint=False, retstep=True)
 
-        # Arrays to store the square of the E fields for
-        # Structure of arrays to hold field components of each mode
-        E2_z_th = np.zeros((len(theta_input), len(z)), dtype=[('TE', 'float64'),
-                                                              ('TM_p', 'float64'),
-                                                              ('TM_s', 'float64')
-                                                              ])
-
         # Structure to hold field E(z) components of each mode for each dipole orientation for a theta
         E = np.zeros(len(z), dtype=[('TE', 'complex128'),
                                     ('TM_p', 'complex128'),
                                     ('TM_s', 'complex128')
                                     ])
 
-        # Structure to hold field E(z) components of each mode for each dipole orientation for a theta
+        # Arrays to store the square of the E fields for
+        # Structure of arrays to hold field components of each mode
+        E2_z_th = np.zeros((len(theta_input), len(z)), dtype=[('TE_radiative', 'float64'),
+                                                              ('TM_p_radiative', 'float64'),
+                                                              ('TM_s_radiative', 'float64'),
+                                                              ('TE_partial', 'float64'),
+                                                              ('TM_p_partial', 'float64'),
+                                                              ('TM_s_partial', 'float64')
+                                                              ])
+
+        # Structure to hold field SPE(z) components of each mode for each dipole orientation for a theta
         spe = np.zeros(len(z), dtype=[('TE', 'float64'),
                                       ('TM_p', 'float64'),
-                                      ('TM_s', 'float64')
+                                      ('TM_s', 'float64'),
+                                      ('TE_radiative', 'float64'),
+                                      ('TM_p_radiative', 'float64'),
+                                      ('TM_s_radiative', 'float64'),
+                                      ('TE_partial', 'float64'),
+                                      ('TM_p_partial', 'float64'),
+                                      ('TM_s_partial', 'float64')
                                       ])
 
         # Params for tqdm progress bar
@@ -105,44 +121,43 @@ class LifetimeTmm(TransferMatrix):
             k_clad, q_clad, k_11 = self.wave_vector(self.num_layers - 1)
 
             # Split solutions into partial and fully radiative modes
-            if partial:
-                if np.iscomplex(q_clad) and radiative == 'Lower':
-                    for key in list(E2_z_th.dtype.names):
-                        E2_z_th[key][i, :] += E[key].real
-            elif not partial:
-                if not np.iscomplex(q_clad) and radiative == 'Lower':
-                    for key in list(E2_z_th.dtype.names):
-                        E2_z_th[key][i, :] += E[key].real
-                elif radiative == 'Upper':
-                    for key in list(E2_z_th.dtype.names):
-                        E2_z_th[key][i, :] += E[key].real
+            if np.iscomplex(q_clad):
+                E2_z_th['TE_partial'][i, :] += E['TE'].real
+                E2_z_th['TM_p_partial'][i, :] += E['TM_p'].real
+                E2_z_th['TM_s_partial'][i, :] += E['TM_s'].real
+            else:
+                E2_z_th['TE_radiative'][i, :] += E['TE'].real
+                E2_z_th['TM_p_radiative'][i, :] += E['TM_p'].real
+                E2_z_th['TM_s_radiative'][i, :] += E['TM_s'].real
 
-        # Evaluate spontaneous emission rate for each z (columns) over all thetas (rows)
-        for key in list(spe.dtype.names):
+        for key in list(E2_z_th.dtype.names):
+            # Evaluate spontaneous emission rate for each z (columns) over all thetas (rows)
             spe[key] = integrate.romb(E2_z_th[key], dx=dth, axis=0)
-
-        # Outgoing mode refractive index weighting (between summation over j=0,M+1 and integral -> eps_j** 3/2)
-        for key in list(spe.dtype.names):
+            # Outgoing mode refractive index weighting (between summation over j=0,M+1 and integral -> eps_j** 3/2)
             spe[key] *= self.n_list[0].real ** 3
 
         # Normalise emission rates to vacuum emission rate of a randomly orientated dipole
-        for key in ['TE']:
-            spe[key] *= 3/8
         nj = self.n_list[layer].real
-        for key in ['TM_p']:
-            spe[key] *= 3/(8*(nj*k)**2)
-        for key in ['TM_s']:
-            spe[key] *= 3/(4*(nj*k)**2)
+        for key in list(E2_z_th.dtype.names):
+            if 'TE' in key:
+                spe[key] *= 3/8
+            elif 'TM_p' in key:
+                spe[key] *= 3 / (8 * (nj * k) ** 2)
+            elif 'TM_s' in key:
+                spe[key] *= 3 / (4 * (nj * k) ** 2)
 
-        # Flip structure back to original orientation
-        if radiative == 'Upper':
+        # Total emission rates
+        spe['TE'] = spe['TE_radiative'] + spe['TE_partial']
+        spe['TM_p'] = spe['TM_p_radiative'] + spe['TM_p_partial']
+        spe['TM_s'] = spe['TM_s_radiative'] + spe['TM_s_partial']
+
+        # Flip structure and results back to original orientation
+        if emission == 'Upper':
             self.flip()
             for key in list(spe.dtype.names):
                 spe[key] = spe[key][::-1]
 
-        return {'z': z,
-                'spe': spe
-                }
+        return {'z': z, 'spe': spe}
 
     def spe_structure(self):
         """ Evaluate the spontaneous emission rate vs z of the structure for each dipole orientation.
@@ -166,9 +181,9 @@ class LifetimeTmm(TransferMatrix):
                                           ('TE_lower', 'float64'),
                                           ('TM_p_lower', 'float64'),
                                           ('TM_s_lower', 'float64'),
-                                          ('TE_lower_full', 'float64'),
-                                          ('TM_p_lower_full', 'float64'),
-                                          ('TM_s_lower_full', 'float64'),
+                                          ('TE_lower_radiative', 'float64'),
+                                          ('TM_p_lower_radiative', 'float64'),
+                                          ('TM_s_lower_radiative', 'float64'),
                                           ('TE_lower_partial', 'float64'),
                                           ('TM_p_lower_partial', 'float64'),
                                           ('TM_s_lower_partial', 'float64'),
@@ -193,32 +208,29 @@ class LifetimeTmm(TransferMatrix):
             ind = np.where(z_mat == layer)
 
             # Calculate lower radiative modes
-            spe_layer = self.spe_layer(layer, radiative='Lower')['spe']
-            spe['TE_lower_full'][ind] += spe_layer['TE']
-            spe['TM_s_lower_full'][ind] += spe_layer['TM_s']
-            spe['TM_p_lower_full'][ind] += spe_layer['TM_p']
+            spe_layer = self.spe_layer(layer, emission='Lower')['spe']
+            spe['TE_lower_radiative'][ind] += spe_layer['TE_radiative']
+            spe['TM_s_lower_radiative'][ind] += spe_layer['TM_s_radiative']
+            spe['TM_p_lower_radiative'][ind] += spe_layer['TM_p_radiative']
+            spe['TE_lower_partial'][ind] += spe_layer['TE_partial']
+            spe['TM_s_lower_partial'][ind] += spe_layer['TM_s_partial']
+            spe['TM_p_lower_partial'][ind] += spe_layer['TM_p_partial']
 
-            # Calculate
-            spe_layer = self.spe_layer(layer, radiative='Lower', partial=True)['spe']
-            spe['TE_lower_partial'][ind] += spe_layer['TE']
-            spe['TM_s_lower_partial'][ind] += spe_layer['TM_s']
-            spe['TM_p_lower_partial'][ind] += spe_layer['TM_p']
-
-            # Calculate upper radiative modes
-            spe_layer = self.spe_layer(layer, radiative='Upper')['spe']
+            # Calculate upper radiative modes (always radiative
+            spe_layer = self.spe_layer(layer, emission='Upper')['spe']
             spe['TE_upper'][ind] += spe_layer['TE']
             spe['TM_s_upper'][ind] += spe_layer['TM_s']
             spe['TM_p_upper'][ind] += spe_layer['TM_p']
 
         # Total lower emission rates (partial and fully radiative modes)
-        spe['TE_lower'] = spe['TE_lower_full'] + spe['TE_lower_partial']
-        spe['TM_p_lower'] = spe['TM_p_lower_full'] + spe['TM_p_lower_partial']
-        spe['TM_s_lower'] = spe['TM_s_lower_full'] + spe['TM_s_lower_partial']
+        spe['TE_lower'] = spe['TE_lower_radiative'] + spe['TE_lower_partial']
+        spe['TM_p_lower'] = spe['TM_p_lower_radiative'] + spe['TM_p_lower_partial']
+        spe['TM_s_lower'] = spe['TM_s_lower_radiative'] + spe['TM_s_lower_partial']
 
         # Totals
         spe['total_lower'] = spe['TE_lower'] + spe['TM_p_lower'] + spe['TM_s_lower']
         spe['total_upper'] = spe['TE_upper'] + spe['TM_p_upper'] + spe['TM_s_upper']
-        spe['tota'] = spe['total_lower'] + spe['total_upper']
+        spe['total'] = spe['total_lower'] + spe['total_upper']
 
         # Total spontaneous emission rate for particular dipole orientation coupling to a particular mode
         spe['TE_total'] = spe['TE_lower'] + spe['TE_upper']

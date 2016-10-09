@@ -33,18 +33,18 @@ def fig3():
     z = st.z_to_lambda(z)
 
     # Plot spontaneous emission rates
-    f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row', figsize=(22, 10))
+    f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row', figsize=(15, 7))
     ax1.plot(z, spe['TE_total'], label='TE')
     ax1.plot(z, spe['TM_p_total'], label='TM')
     ax1.plot(z, spe['TE_total']+spe['TM_p_total'], label='TE + TM')
 
-    ax2.plot(z, spe['TE_lower_full'] + spe['TM_p_lower_full'], label='Fully radiative lower outgoing')
+    ax2.plot(z, spe['TE_lower_radiative'] + spe['TM_p_lower_radiative'], label='Fully radiative lower outgoing')
     ax2.plot(z, spe['TE_lower_partial'] + spe['TM_p_lower_partial'], label='Partially radiative lower outgoing')
     ax2.plot(z, spe['TE_upper'] + spe['TM_p_upper'], label='Fully radiative upper outgoing')
 
     ax3.plot(z, spe['TM_s_total'], label='TM')
 
-    ax4.plot(z, spe['TM_s_lower_full'], label='Fully radiative lower outgoing')
+    ax4.plot(z, spe['TM_s_lower_radiative'], label='Fully radiative lower outgoing')
     ax4.plot(z, spe['TM_s_lower_partial'], label='Partially radiative lower outgoing')
     ax4.plot(z, spe['TM_s_upper'], label='Fully radiative upper outgoing')
 
@@ -68,7 +68,7 @@ def fig3():
     ax3.legend(title='Vertical Dipoles', prop={'size': size})
     ax4.legend(title='Vertical Dipoles', prop={'size': size})
     plt.tight_layout()
-    plt.savefig('../Images/SPE_n_3.38_to_1.png', dpi=300)
+    # plt.savefig('../Images/SPE_n_3.38_to_1.png', dpi=300)
     plt.show()
 
 

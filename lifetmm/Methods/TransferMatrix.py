@@ -181,7 +181,6 @@ class TransferMatrix:
     def layer_field(self, layer):
         """ Evaluate the field (E or H) as a function of z (depth) inside the layer.
         """
-
         # Wave vector components in layer
         k, q, k_11 = self.wave_vector(layer)
 
