@@ -38,13 +38,13 @@ def fig3():
     ax1.plot(z, spe['TM_p_total'], label='TM')
     ax1.plot(z, spe['TE_total']+spe['TM_p_total'], label='TE + TM')
 
-    ax2.plot(z, spe['TE_lower_radiative'] + spe['TM_p_lower_radiative'], label='Fully radiative lower outgoing')
+    ax2.plot(z, spe['TE_lower_full'] + spe['TM_p_lower_full'], label='Fully radiative lower outgoing')
     ax2.plot(z, spe['TE_lower_partial'] + spe['TM_p_lower_partial'], label='Partially radiative lower outgoing')
     ax2.plot(z, spe['TE_upper'] + spe['TM_p_upper'], label='Fully radiative upper outgoing')
 
     ax3.plot(z, spe['TM_s_total'], label='TM')
 
-    ax4.plot(z, spe['TM_s_lower_radiative'], label='Fully radiative lower outgoing')
+    ax4.plot(z, spe['TM_s_lower_full'], label='Fully radiative lower outgoing')
     ax4.plot(z, spe['TM_s_lower_partial'], label='Partially radiative lower outgoing')
     ax4.plot(z, spe['TM_s_upper'], label='Fully radiative upper outgoing')
 
