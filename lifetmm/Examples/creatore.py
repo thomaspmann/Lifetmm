@@ -22,7 +22,7 @@ def fig3():
     st.set_wavelength(lam0)
 
     # Feedback to user the structure being simulated
-    st.verbose()
+    st.info()
 
     # Calculate spontaneous emission over whole structure
     result = st.spe_structure()
@@ -33,7 +33,7 @@ def fig3():
     z = st.z_to_lambda(z)
 
     # Plot spontaneous emission rates
-    f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row', figsize=(15, 7))
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row', figsize=(15, 7))
     ax1.plot(z, spe['TE_total'], label='TE')
     ax1.plot(z, spe['TM_p_total'], label='TM')
     ax1.plot(z, spe['TE_total']+spe['TM_p_total'], label='TE + TM')
@@ -67,8 +67,8 @@ def fig3():
     ax2.legend(title='Horizontal Dipoles', prop={'size': size})
     ax3.legend(title='Vertical Dipoles', prop={'size': size})
     ax4.legend(title='Vertical Dipoles', prop={'size': size})
-    plt.tight_layout()
-    # plt.savefig('../Images/SPE_n_3.38_to_1.png', dpi=300)
+    fig.tight_layout()
+    # plt.savefig('../Images/spe_vs_n.png', dpi=300)
     plt.show()
 
 

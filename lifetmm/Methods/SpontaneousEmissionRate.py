@@ -7,21 +7,19 @@ from lifetmm.Methods.TransferMatrix import TransferMatrix
 
 
 class LifetimeTmm(TransferMatrix):
-    def spe_layer(self, layer, emission='Lower', radiative='Full', th_num=8):
+    def spe_layer(self, layer, emission='Lower', th_num=10):
         """ Evaluate the spontaneous emission rates for dipoles in a layer radiating into 'Lower' or 'Upper' modes.
         Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
         """
         # Check lower cladding has higher refractive index than the upper cladding. For partially radiative modes.
-        # Can probably remove depending on how i deal with partially radiative modes.
-        assert self.n_list[0] >= self.n_list[-1], \
-            ValueError('Lower cladding refractive index must be higher than the upper cladding. '
-                       'Consider flipping the structure.')
+        # TODO: Can probably remove depending on how i deal with partially radiative modes.
+        # assert self.n_list[0] >= self.n_list[-1], \
+        #     ValueError('Lower cladding refractive index must be higher than the upper cladding. '
+        #                'Consider flipping the structure.')
 
         # Other option checks
         assert 'Full' or 'Partial' or 'Both' in emission, \
             ValueError('Emission option must be either "Upper" or "Lower".')
-        assert 'Lower' or 'Upper' in radiative, \
-            ValueError('Radiative option must be either "Partial", "Full" or "Both".')
         assert isinstance(th_num, int), ValueError('th_num must be an integer.')
 
         # Flip the structure and solve using lower radiative equations for upper radiative modes.
@@ -60,7 +58,8 @@ class LifetimeTmm(TransferMatrix):
                                                         ('TM_s_partial', 'float64')])
 
         # Structure to hold field SPE(z) components of each mode for each dipole orientation for a theta
-        spe = np.zeros(len(z), dtype=[('TE', 'float64'),
+        spe = np.zeros(len(z), dtype=[('total', 'float64'),
+                                      ('TE', 'float64'),
                                       ('TM_p', 'float64'),
                                       ('TM_s', 'float64'),
                                       ('TE_full', 'float64'),
@@ -146,7 +145,7 @@ class LifetimeTmm(TransferMatrix):
         spe['TE'] = spe['TE_full'] + spe['TE_partial']
         spe['TM_p'] = spe['TM_p_full'] + spe['TM_p_partial']
         spe['TM_s'] = spe['TM_s_full'] + spe['TM_s_partial']
-
+        spe['total'] = spe['TE'] + spe['TM_p'] + spe['TM_s']
         # Flip structure and results back to original orientation
         if emission == 'Upper':
             self.flip()
@@ -226,7 +225,8 @@ class LifetimeTmm(TransferMatrix):
         spe['TM_p_total'] = spe['TM_p_lower'] + spe['TM_p_upper']
         spe['total_lower'] = spe['TE_lower'] + spe['TM_p_lower'] + spe['TM_s_lower']
         spe['total_upper'] = spe['TE_upper'] + spe['TM_p_upper'] + spe['TM_s_upper']
-        spe['total'] = spe['total_lower'] + spe['total_upper']
+        # TODO: check exactly why i should be dividing by to (averaging)
+        spe['total'] = (spe['total_lower'] + spe['total_upper']) / 2
 
         return {'z': z_pos,
                 'spe': spe}

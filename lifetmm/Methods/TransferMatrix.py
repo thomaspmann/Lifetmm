@@ -261,10 +261,11 @@ class TransferMatrix:
         """
         return self.d_cumsum[-1]
 
-    def z_to_lambda(self, z):
-        """ Convert z positions to units of wavelength from the centre.
+    def z_to_lambda(self, z, center=True):
+        """ Convert z positions to units of wavelength (optional) from the centre.
         """
-        z -= self.get_structure_thickness()/2
+        if center:
+            z -= self.get_structure_thickness()/2
         z /= self.lam_vac
         return z
 
@@ -292,7 +293,7 @@ class TransferMatrix:
         self.n_list = self.n_list[::-1]
         self.d_cumsum = np.cumsum(self.d_list)
 
-    def verbose(self):
+    def info(self):
         """ Command line verbose feedback of the structure.
         """
         print('Simulation info.\n')

@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://Z:/LabOnChip/.idea/LabOnChip.iml" filepath="Z:/LabOnChip/.idea/LabOnChip.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/Lifetmm.iml" filepath="$PROJECT_DIR$/.idea/Lifetmm.iml" />
     </modules>
   </component>
