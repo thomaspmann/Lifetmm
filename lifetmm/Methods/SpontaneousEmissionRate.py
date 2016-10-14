@@ -7,17 +7,11 @@ from lifetmm.Methods.TransferMatrix import TransferMatrix
 
 
 class LifetimeTmm(TransferMatrix):
-    def spe_layer(self, layer, emission='Lower', th_num=10):
+    def spe_layer(self, layer, emission='Lower', th_num=8):
         """ Evaluate the spontaneous emission rates for dipoles in a layer radiating into 'Lower' or 'Upper' modes.
         Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
         """
-        # Check lower cladding has higher refractive index than the upper cladding. For partially radiative modes.
-        # TODO: Can probably remove depending on how i deal with partially radiative modes.
-        # assert self.n_list[0] >= self.n_list[-1], \
-        #     ValueError('Lower cladding refractive index must be higher than the upper cladding. '
-        #                'Consider flipping the structure.')
-
-        # Other option checks
+        # Option checks
         assert 'Full' or 'Partial' or 'Both' in emission, \
             ValueError('Emission option must be either "Upper" or "Lower".')
         assert isinstance(th_num, int), ValueError('th_num must be an integer.')
@@ -158,6 +152,13 @@ class LifetimeTmm(TransferMatrix):
         """ Evaluate the spontaneous emission rate vs z of the structure for each dipole orientation.
             Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
         """
+        # Check lower cladding has higher refractive index than the upper cladding. For partially radiative modes.
+        # Don't neet to define upper_full/partial variables if this is the case - shorter code!
+        assert self.n_list[0] >= self.n_list[-1], \
+            ValueError('Lower cladding refractive index must be higher than the upper cladding. '
+                       'Consider running self.flip(), spe=flip_spe_results(spe), self.flip to get'
+                       ' the correct orientation.')
+
         # z positions to evaluate E field at over entire structure
         z_pos = np.arange((self.z_step / 2.0), self.d_cumsum[-1], self.z_step)
 
@@ -228,5 +229,12 @@ class LifetimeTmm(TransferMatrix):
         # TODO: check exactly why i should be dividing by to (averaging)
         spe['total'] = (spe['total_lower'] + spe['total_upper']) / 2
 
-        return {'z': z_pos,
-                'spe': spe}
+        return {'z': z_pos, 'spe': spe}
+
+
+def flip_spe_results(spe):
+    """ Flip the spe results - can be used
+    """
+    for key in spe.dtype.names:
+        spe[key] = spe[key][::-1]
+    return spe
