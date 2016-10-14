@@ -21,7 +21,7 @@ def t2_spe_vs_z():
         # Create structure
         st = LifetimeTmm()
         st.set_wavelength(lam0)
-        st.add_layer(4000, 1.56)  # 1.45 is silica glass substrate
+        st.add_layer(4000, 1.45)  # 1.45 is silica glass substrate
         st.add_layer(980, 1.56)
         st.add_layer(4000, n)
 
@@ -44,7 +44,7 @@ def t2_spe_vs_z():
     plt.legend()
     plt.tight_layout()
     if SAVE:
-        plt.savefig('../Images/spe_vs_z_t2.png', dpi=300)
+        plt.savefig('../Images/spe_vs_z_t2_sub.png', dpi=300)
     plt.show()
 
 
