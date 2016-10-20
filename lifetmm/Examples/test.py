@@ -93,17 +93,61 @@ def guiding():
     # Set vacuum wavelength
     lam0 = 1550
     st.set_wavelength(lam0)
-
+    st.set_polarization('s')
     # Add layers
-    st.add_layer(lam0, 1)
+    st.add_layer(2 * lam0, 1)
     st.add_layer(lam0, 3.48)
-    st.add_layer(lam0, 1)
-    st.add_layer(lam0, 3.48)
-    st.add_layer(lam0, 1)
+    st.add_layer(2 * lam0, 1)
 
-    st.find_guided_modes()
+    # Get results
+    result = st.spe_structure()
+    z = result['z']
+    spe = result['spe']
+    spe_TE = spe['TE_total']
+    spe_TM_p = spe['TM_p_total']
+    spe_TM_s = spe['TM_s_total']
+
+    # Plot spe rates
+    fig = plt.figure()
+    ax1 = fig.add_subplot(211)
+    ax1.plot(z, spe_TE, label='TE')
+    ax1.plot(z, spe_TM_p, label='TM')
+    ax1.plot(z, spe_TE+spe_TM_p, 'k', label='TE + TM')
+    ax2 = fig.add_subplot(212)
+    ax2.plot(z, spe_TM_s, label='TM')
+
+    ax1.set_title('Spontaneous Emission Rate. LHS n=3.48, RHS n=1.')
+    ax1.set_ylabel('$\Gamma / \Gamma_0$')
+    ax2.set_ylabel('$\Gamma /\Gamma_0$')
+    ax2.set_xlabel('Position in layer (nm)')
+
+    ax1.axhline(y=1, linestyle='--', color='k')
+    ax2.axhline(y=1, linestyle='--', color='k')
+    # Plot layer boundaries
+    for z in st.get_layer_boundaries()[:-1]:
+        ax1.axvline(z, color='r', lw=2)
+        ax2.axvline(z, color='r', lw=2)
+    ax1.legend(title='Horizontal Dipoles')
+    ax2.legend(title='Vertical Dipoles')
+    plt.show()
+
+    # t_list = []
+    # th_list = []
+    # for th in np.linspace(0, pi/2, num=300, endpoint=False):
+    #     st.set_angle(th)
+    #     S_mat = st.S_mat()
+    #     t = 1 / S_mat[1, 1]
+    #     if np.isreal(t):
+    #         print(t, abs(t))
+    #         th_list.append(th*(180/pi))
+    #         t_list.append(t.real)
+    # plt.figure()
+    # plt.plot(th_list, t_list)
+    # plt.xlabel('Theta (Degrees)')
+    # plt.ylabel('Transmission (abs(t))')
+    # plt.show()
 
 if __name__ == "__main__":
     # mcgehee()
-    # spe()
-    guiding()
+    spe()
+    # guiding()

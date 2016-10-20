@@ -226,16 +226,10 @@ class LifetimeTmm(TransferMatrix):
 
         return {'z': z_pos, 'spe': spe}
 
-    def find_guided_modes(self):
-        for th in np.linspace(0, pi / 2, num=200, endpoint=False):
-            self.set_angle(th)
-            S_mat = self.S_mat()
-            t = 1 / S_mat[1, 1]
-            print(t)
 
-
+# Helper Functions
 def flip_spe_results(spe):
-    """ Flip the spe results - can be used
+    """ Flip the spe result
     """
     for key in spe.dtype.names:
         spe[key] = spe[key][::-1]

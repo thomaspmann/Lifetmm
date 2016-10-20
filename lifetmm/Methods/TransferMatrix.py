@@ -12,7 +12,7 @@ class TransferMatrix:
         self.z_step = 1
         self.lam_vac = 0
         self.num_layers = 0
-        self.pol = 'u'
+        self.pol = ''
         self.th = 0
         self.field = 'E'
 
@@ -110,9 +110,11 @@ class TransferMatrix:
         if self.pol in ['p', 'TM']:
             r = (qj * nk ** 2 - qk * nj ** 2) / (qj * nk ** 2 + qk * nj ** 2)
             t = (2 * nj * nk * qj) / (qj * nk ** 2 + qk * nj ** 2)
-        elif self.pol in ['s', 'TE', 'u']:
+        elif self.pol in ['s', 'TE']:
             r = (qj - qk) / (qj + qk)
             t = (2 * qj) / (qj + qk)
+        else:
+            raise ValueError('A polarisation for the field must be set.')
         if self.field == 'H':
             # Convert transmission coefficent for electric to that of the H field.
             # Note that the reflection coefficient is the same as the medium does not change.

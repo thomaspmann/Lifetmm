@@ -7,7 +7,7 @@ Script to recreate the plots in the paper
 
 import matplotlib.pyplot as plt
 from lifetmm.Methods.SpontaneousEmissionRate import *
-
+SAVE = True
 
 def fig3():
     """ Silicon to air semi-infinite half spaces.
@@ -68,7 +68,8 @@ def fig3():
     ax3.legend(title='Vertical Dipoles', prop={'size': size})
     ax4.legend(title='Vertical Dipoles', prop={'size': size})
     fig.tight_layout()
-    # plt.savefig('../Images/spe_vs_n.png', dpi=300)
+    if SAVE:
+        plt.savefig('../Images/spe_vs_n.png', dpi=300)
     plt.show()
 
 
@@ -98,11 +99,11 @@ def fig6():
     # Plot spontaneous emission rates
     fig = plt.figure()
     ax1 = fig.add_subplot(211)
-    ax1.plot(z, spe['TE'], label='TE')
-    ax1.plot(z, spe['TM_p'], label='TM')
-    ax1.plot(z, spe['TE']+spe['TM_p'], 'k', label='TE + TM')
+    ax1.plot(z, spe['TE_total'], label='TE')
+    ax1.plot(z, spe['TM_p_total'], label='TM')
+    ax1.plot(z, spe['TE_total']+spe['TM_p_total'], 'k', label='TE + TM')
     ax2 = fig.add_subplot(212)
-    ax2.plot(z, spe['TM_s'], label='TM')
+    ax2.plot(z, spe['TM_s_total'], label='TM')
 
     # Plot layer boundaries
     for z in st.get_layer_boundaries()[:-1]:
@@ -117,7 +118,8 @@ def fig6():
     ax2.set_xlabel('z/$\lambda$')
     ax1.legend(title='Horizontal Dipoles', loc='lower right', fontsize='medium')
     ax2.legend(title='Vertical Dipoles', loc='lower right', fontsize='medium')
-    plt.savefig('../Images/SPE_silicon_layer_air_cladding.png', dpi=300)
+    if SAVE:
+        plt.savefig('../Images/SPE_silicon_layer_air_cladding.png', dpi=300)
     plt.show()
 
 
@@ -147,11 +149,11 @@ def figx():
     # Plot spontaneous emission rates
     fig = plt.figure()
     ax1 = fig.add_subplot(211)
-    ax1.plot(z, spe['TE'], label='TE')
-    ax1.plot(z, spe['TM_p'], label='TM')
-    ax1.plot(z, spe['TE']+spe['TM_p'], 'k', label='TE + TM')
+    ax1.plot(z, spe['TE_total'], label='TE')
+    ax1.plot(z, spe['TM_p_total'], label='TM')
+    ax1.plot(z, spe['TE_total']+spe['TM_p_total'], 'k', label='TE + TM')
     ax2 = fig.add_subplot(212)
-    ax2.plot(z, spe['TM_s'], label='TM')
+    ax2.plot(z, spe['TM_s_total'], label='TM')
 
     # Plot layer boundaries
     for z in st.get_layer_boundaries()[:-1]:
@@ -168,6 +170,6 @@ def figx():
     plt.show()
 
 if __name__ == "__main__":
-    fig3()
-    # fig6()
+    # fig3()
+    fig6()
     # figx()
