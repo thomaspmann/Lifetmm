@@ -1,13 +1,15 @@
-import numpy as np
 import time
+
+import numpy as np
 import scipy.integrate as integrate
-from tqdm import *
 from numpy import pi, sin, sum, exp
+from tqdm import *
+
 from lifetmm.Methods.TransferMatrix import TransferMatrix
 
 
 class LifetimeTmm(TransferMatrix):
-    def spe_layer(self, layer, emission='Lower', th_num=8):
+    def spe_layer(self, layer, emission='Lower', th_num=10):
         """ Evaluate the spontaneous emission rates for dipoles in a layer radiating into 'Lower' or 'Upper' modes.
         Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
         """
@@ -152,13 +154,6 @@ class LifetimeTmm(TransferMatrix):
         """ Evaluate the spontaneous emission rate vs z of the structure for each dipole orientation.
             Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
         """
-        # Check lower cladding has higher refractive index than the upper cladding. For partially radiative modes.
-        # Don't neet to define upper_full/partial variables if this is the case - shorter code!
-        assert self.n_list[0] >= self.n_list[-1], \
-            ValueError('Lower cladding refractive index must be higher than the upper cladding. '
-                       'Consider running self.flip(), spe=flip_spe_results(spe), self.flip to get'
-                       ' the correct orientation.')
-
         # z positions to evaluate E field at over entire structure
         z_pos = np.arange((self.z_step / 2.0), self.d_cumsum[-1], self.z_step)
 
@@ -230,6 +225,13 @@ class LifetimeTmm(TransferMatrix):
         spe['total'] = (spe['total_lower'] + spe['total_upper']) / 2
 
         return {'z': z_pos, 'spe': spe}
+
+    def find_guided_modes(self):
+        for th in np.linspace(0, pi / 2, num=200, endpoint=False):
+            self.set_angle(th)
+            S_mat = self.S_mat()
+            t = 1 / S_mat[1, 1]
+            print(t)
 
 
 def flip_spe_results(spe):

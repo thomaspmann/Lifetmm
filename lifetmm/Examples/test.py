@@ -1,8 +1,5 @@
 import matplotlib.pyplot as plt
-from lifetmm import *
-from numpy import pi, linspace, inf, array, sum, cos, sin
-from scipy.interpolate import interp1d
-# from lifetmm.Methods.TransferMatrix import *
+
 from lifetmm.Methods.SpontaneousEmissionRate import *
 
 # # To run a sample use the following in python console:
@@ -89,7 +86,24 @@ def spe():
     plt.show()
 
 
-if __name__ == "__main__":
-    mcgehee()
-    spe()
+def guiding():
+    # Create structure
+    st = LifetimeTmm()
 
+    # Set vacuum wavelength
+    lam0 = 1550
+    st.set_wavelength(lam0)
+
+    # Add layers
+    st.add_layer(lam0, 1)
+    st.add_layer(lam0, 3.48)
+    st.add_layer(lam0, 1)
+    st.add_layer(lam0, 3.48)
+    st.add_layer(lam0, 1)
+
+    st.find_guided_modes()
+
+if __name__ == "__main__":
+    # mcgehee()
+    # spe()
+    guiding()
