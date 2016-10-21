@@ -116,7 +116,7 @@ class TransferMatrix:
         else:
             raise ValueError('A polarisation for the field must be set.')
         if self.field == 'H':
-            # Convert transmission coefficent for electric to that of the H field.
+            # Convert transmission coefficient for electric to that of the H field.
             # Note that the reflection coefficient is the same as the medium does not change.
             t *= nk / nj
         assert t != 0, ValueError('Transmission is zero, cannot evaluate I_mat.')
@@ -181,7 +181,9 @@ class TransferMatrix:
         return A_plus, A_minus
 
     def layer_field(self, layer):
-        """ Evaluate the field (E or H) as a function of z (depth) inside the layer.
+        """ Evaluate the field (E or H) as a function of z (depth) into the layer, j.
+        A_plus is the forward component of the field (E_j^+)
+        A_minus is the backward component of the field (E_j^-)
         """
         # Wave vector components in layer
         k, q, k_11 = self.wave_vector(layer)
@@ -207,20 +209,20 @@ class TransferMatrix:
     def structure_field(self):
         """ Evaluate the field at all z positions within the structure.
         """
-        z_pos = np.arange((self.z_step / 2.0), self.d_cumsum[-1], self.z_step)
-        # get z_mat - specifies what layer the corresponding point in z_pos is in
-        comp1 = np.kron(np.ones((self.num_layers, 1)), z_pos)
-        comp2 = np.transpose(np.kron(np.ones((len(z_pos), 1)), self.d_cumsum))
+        z = np.arange((self.z_step / 2.0), self.d_cumsum[-1], self.z_step)
+        # get z_mat - specifies what layer the corresponding point in z is in
+        comp1 = np.kron(np.ones((self.num_layers, 1)), z)
+        comp2 = np.transpose(np.kron(np.ones((len(z), 1)), self.d_cumsum))
         z_mat = sum(comp1 > comp2, 0)
 
-        A = np.zeros(len(z_pos), dtype=complex)
+        A = np.zeros(len(z), dtype=complex)
         for layer in range(self.num_layers):
             # Calculate z indices inside structure for the layer
             z_indices = np.where(z_mat == layer)
             A_layer = self.layer_field(layer)['A']
             A[z_indices] = A_layer
         A_squared = abs(A)**2
-        return {'z': z_pos, 'A': A, 'A_squared': A_squared}
+        return {'z': z, 'A': A, 'A_squared': A_squared}
 
     def show_structure(self):
         """ Brings up a plot showing the structure."""

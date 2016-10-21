@@ -7,7 +7,8 @@ Script to recreate the plots in the paper
 
 import matplotlib.pyplot as plt
 from lifetmm.Methods.SpontaneousEmissionRate import *
-SAVE = True
+SAVE = False
+
 
 def fig3():
     """ Silicon to air semi-infinite half spaces.
