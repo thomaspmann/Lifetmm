@@ -3,6 +3,7 @@ import numpy as np
 from numpy import pi
 from lifetmm.Methods.TransferMatrix import TransferMatrix
 from lifetmm.Methods.SpontaneousEmissionRate import LifetimeTmm
+from tqdm import tqdm
 
 
 def mcgehee():
@@ -126,9 +127,9 @@ def guiding():
     st.set_wavelength(lam0)
     st.set_polarization('s')
     # Add layers
-    st.add_layer(2 * lam0, 1)
+    st.add_layer(2.5 * lam0, 1)
     st.add_layer(1*lam0, 3.48)
-    st.add_layer(2 * lam0, 1)
+    st.add_layer(2.5 * lam0, 1)
 
     # Get results
     result = st.spe_structure()
@@ -168,12 +169,13 @@ def guiding():
     for th in np.linspace(0, pi/2, num=500, endpoint=False):
         st.set_angle(th)
         S_mat = st.S_mat()
-        t = 1/ S_mat[1, 1]
-        t = np.real_if_close([t])
-        t = t[0]
-        if np.isclose(abs(t), [1]):
-            print('t is {0:g}, magnitude is {1:g} at {2:g}'.format(t, abs(t), np.rad2deg(th)))
+        t = S_mat[0, 0]
+        # t = np.real_if_close([t])
+        # t = t[0]
+        # if np.isclose(abs(t), [1]):
+        #     print('t is {0:g}, magnitude is {1:g} at {2:g}'.format(t, abs(t), np.rad2deg(th)))
         th_list.append(th*(180/pi))
+        t = 1/t
         t_list.append(abs(t))
         t_list_r.append(t.real)
         t_list_i.append(t.imag)
@@ -185,8 +187,102 @@ def guiding():
     ax4.legend()
     plt.show()
 
+
+def guiding2():
+    # Create structure
+    st = LifetimeTmm()
+    # Set vacuum wavelength
+    lam0 = 1550
+    st.set_wavelength(lam0)
+    # Add layers
+    st.set_polarization('p')
+    st.set_field('E')
+    st.add_layer(0, 3.48)
+    # st.add_layer(2.5 * lam0, 1)
+    st.add_layer(1 * lam0, 1)
+    # st.add_layer(2.5 * lam0, 1)
+    st.add_layer(0, 3.48)
+
+    # Find Guided modes
+    t_list = np.array([])
+    th_list = np.array([])
+    for th in tqdm(np.linspace(0, 90, num=500, endpoint=False)):
+        st.set_angle(th, units='degrees')
+        k, q, k_11 = st.wave_vector(2)
+        print(q)
+
+        S_mat = st.S_mat()
+        t = S_mat[0, 0]
+        # if np.isclose(t, [0]):
+        #     print('close {}'.format(t))
+        th_list = np.append(th_list, th)
+        t_list = np.append(t_list, t)
+
+    # Plot S_11 rates for radiative modes
+    fig, (ax1, ax2) = plt.subplots(2, 1, sharex='col', sharey='none')
+    ax1.plot(th_list, abs(t_list), label='Magnitude')
+    ax1.plot(th_list, t_list.real, label='Real')
+    ax1.plot(th_list, t_list.imag, label='Imaginary')
+    ax1.set_ylabel('Transmission ($s_{22}$)')
+    ax1.legend()
+    t_list = 1/t_list
+    ax2.plot(th_list, abs(t_list), label='Magnitude')
+    ax2.plot(th_list, t_list.real, label='Real')
+    ax2.plot(th_list, t_list.imag, label='Imaginary')
+    ax2.set_xlabel('Theta (Degrees)')
+    ax2.set_ylabel('Transmission ($t = 1/s_{22}$)')
+    ax2.legend()
+    ax1.axhline(color='k')
+    ax2.axhline(color='k')
+    plt.show()
+
+
+def guiding3():
+    # Create structure
+    st = LifetimeTmm()
+    lam0 = 1550
+    st.set_wavelength(lam0)
+    st.set_polarization('TE')
+    st.set_field('E')
+    air = 1
+    sio2 = 3.48
+    st.add_layer(0 * lam0, air)
+    st.add_layer(1 * lam0, sio2)
+    st.add_layer(0 * lam0, air)
+
+    # Find Guided modes
+    t_list = np.array([])
+    th_list = np.array([])
+
+    st.set_angle(80, units='degrees')
+    k, q, k_11 = st.wave_vector(2)
+    print(q)
+
+    S_mat = st.S_mat()
+    t = S_mat[0, 0]
+    th_list = np.append(th_list, th)
+    t_list = np.append(t_list, t)
+
+    # Plot S_11 rates for radiative modes
+    fig, (ax1, ax2) = plt.subplots(2, 1, sharex='col', sharey='none')
+    ax1.plot(th_list, abs(t_list), label='Magnitude')
+    ax1.plot(th_list, t_list.real, label='Real')
+    ax1.plot(th_list, t_list.imag, label='Imaginary')
+    ax1.set_ylabel('Transmission ($s_{22}$)')
+    ax1.legend()
+    t_list = 1/t_list
+    ax2.plot(th_list, abs(t_list), label='Magnitude')
+    ax2.plot(th_list, t_list.real, label='Real')
+    ax2.plot(th_list, t_list.imag, label='Imaginary')
+    ax2.set_xlabel('Theta (Degrees)')
+    ax2.set_ylabel('Transmission ($t = 1/s_{22}$)')
+    ax2.legend()
+    ax1.axhline(color='k')
+    ax2.axhline(color='k')
+    plt.show()
+
 if __name__ == "__main__":
     # mcgehee()
     # spe()
-    guiding()
-    # test1()
+    guiding2()
+

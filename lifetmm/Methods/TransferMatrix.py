@@ -89,7 +89,8 @@ class TransferMatrix:
         n = self.n_list[layer].real
         k = 2 * pi * n / self.lam_vac
         k_11 = k0 * sin(self.th)  # Note th needs to be in same layer as k0
-        # q = sp.sqrt(k**2 - k_11**2)
+        # k_11 = k * sin(self.th)
+        #  q = sp.sqrt(k**2 - k_11**2)
         # TODO: above breaks when n is complex the above breaks down as k is defined with n.real
         q = (2 * pi * self.q(layer)) / self.lam_vac
         return k, q, k_11
@@ -273,13 +274,29 @@ class TransferMatrix:
         z /= self.lam_vac
         return z
 
-    def calc_R_and_T(self):
-        """ Return the reflection and transmission coefficients of the structure.
+    def calc_r_and_t(self):
+        """ Return the complex reflection and transmission coefficients of the structure.
         """
         S = self.S_mat()
-        R = abs(S[1, 0] / S[0, 0]) ** 2
-        T = abs(1 / S[0, 0]) ** 2
-        # note this is incorrect T: https://en.wikipedia.org/wiki/Fresnel_equations
+        r = S[1, 0] / S[0, 0]
+        t = 1 / S[0, 0]
+        return r, t
+
+    def calc_R_and_T(self, correction=True):
+        """ Return the reflectance and transmittance of the structure.
+        """
+        r, t = self.calc_r_and_t()
+        R = abs(r) ** 2
+        T = abs(t) ** 2
+        if correction:
+            # note correction for T due to beam expanding
+            # https://en.wikipedia.org/wiki/Fresnel_equations
+            n_1 = self.n_list[0]
+            n_2 = self.n_list[-1]
+            th_out = self.snell(n_1, n_2, self.th)
+            rho = n_2 / n_1
+            m = np.cos(th_out)/np.cos(self.th)
+            T *= rho*m
         return R, T
 
     def calc_absorption(self):
