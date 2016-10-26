@@ -197,11 +197,11 @@ def guiding2():
     # Add layers
     st.set_polarization('p')
     st.set_field('E')
-    st.add_layer(0, 3.48)
-    # st.add_layer(2.5 * lam0, 1)
-    st.add_layer(1 * lam0, 1)
-    # st.add_layer(2.5 * lam0, 1)
-    st.add_layer(0, 3.48)
+    air = 1
+    sio2 = 3.48
+    st.add_layer(0 * lam0, air)
+    st.add_layer(1 * lam0, sio2)
+    st.add_layer(0 * lam0, air)
 
     # Find Guided modes
     t_list = np.array([])
@@ -281,8 +281,14 @@ def guiding3():
     ax2.axhline(color='k')
     plt.show()
 
+
+def test():
+    # Create structure
+    pass
+
 if __name__ == "__main__":
     # mcgehee()
     # spe()
     guiding2()
+    # test()
 

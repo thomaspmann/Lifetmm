@@ -96,9 +96,17 @@ class TransferMatrix:
         return k, q, k_11
 
     def q(self, j):
-        n0 = self.n_list[0].real
+        """ Normalised perpendicular wave-vector.
+        """
+        # Normalised wave-vector in layer
         nj = self.n_list[j]
-        return sqrt(nj**2 - (n0*sin(self.th))**2)
+        # Normalised parallel/in-plane wave-vector.
+        # Continuous across layers, so can evaluate from input theta and medium
+        n0 = self.n_list[0].real
+        beta = n0*sin(self.th)
+        # TODO: This accounts for when theta=0 to give beta/k=n1. Now need max beta/k=n2 (where n2 is guided mode)
+        beta += n0
+        return sqrt(nj**2 - beta**2)
 
     def I_mat(self, j, k):
         """ Returns the interference matrix between layers j and k.
@@ -120,7 +128,8 @@ class TransferMatrix:
             # Convert transmission coefficient for electric to that of the H field.
             # Note that the reflection coefficient is the same as the medium does not change.
             t *= nk / nj
-        assert t != 0, ValueError('Transmission is zero, cannot evaluate I_mat.')
+        # TODO: Put back in? When t=0 we have a waveguiding mode. Is actually allowed.
+        # assert t != 0, ValueError('Transmission is zero, cannot evaluate I_mat.')
         return (1 / t) * np.array([[1, r], [r, 1]], dtype=complex)
 
     def L_mat(self, j):
@@ -289,10 +298,10 @@ class TransferMatrix:
         R = abs(r) ** 2
         T = abs(t) ** 2
         if correction:
-            # note correction for T due to beam expanding
+            # note correction for T due to beam expansion
             # https://en.wikipedia.org/wiki/Fresnel_equations
-            n_1 = self.n_list[0]
-            n_2 = self.n_list[-1]
+            n_1 = self.n_list[0].real
+            n_2 = self.n_list[-1].real
             th_out = self.snell(n_1, n_2, self.th)
             rho = n_2 / n_1
             m = np.cos(th_out)/np.cos(self.th)
