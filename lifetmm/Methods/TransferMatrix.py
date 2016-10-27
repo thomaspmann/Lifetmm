@@ -15,6 +15,7 @@ class TransferMatrix:
         self.pol = ''
         self.th = 0
         self.field = 'E'
+        self.guided = False
 
     def add_layer(self, d, n):
         """ Add layer of thickness d and refractive index n to the structure.
@@ -103,9 +104,11 @@ class TransferMatrix:
         # Normalised parallel/in-plane wave-vector.
         # Continuous across layers, so can evaluate from input theta and medium
         n0 = self.n_list[0].real
-        beta = n0*sin(self.th)
-        # TODO: This accounts for when theta=0 to give beta/k=n1. Now need max beta/k=n2 (where n2 is guided mode)
-        beta += n0
+        if not self.guided:
+            beta = n0*sin(self.th)
+        else:
+            # TODO: This accounts for when theta=0 to give beta/k=n1. Now need max beta/k=n2 (where n2 is guided mode)
+            beta = self.beta
         return sqrt(nj**2 - beta**2)
 
     def I_mat(self, j, k):
@@ -128,8 +131,9 @@ class TransferMatrix:
             # Convert transmission coefficient for electric to that of the H field.
             # Note that the reflection coefficient is the same as the medium does not change.
             t *= nk / nj
-        # TODO: Put back in? When t=0 we have a waveguiding mode. Is actually allowed.
-        # assert t != 0, ValueError('Transmission is zero, cannot evaluate I_mat.')
+        if t == 0:
+            # Can't evaluate I_mat when transmission t==0 as 1/t == inf
+            t = np.nan
         return (1 / t) * np.array([[1, r], [r, 1]], dtype=complex)
 
     def L_mat(self, j):
@@ -233,6 +237,42 @@ class TransferMatrix:
             A[z_indices] = A_layer
         A_squared = abs(A)**2
         return {'z': z, 'A': A, 'A_squared': A_squared}
+
+    def find_guided_modes_plot(self):
+        self.guided = True
+        n = self.n_list.real
+
+        beta_list = np.linspace(n[0], max(n), num=5000, endpoint=False)
+        S_11_list = np.array([])
+        for beta in beta_list:
+            self.beta = beta
+            # Evaluate transfer matrix (S)
+            S = self.S_mat()
+            S_11 = S[0, 0]
+            S_11_list = np.append(S_11_list, [S_11])
+        self.guided = False
+        return beta_list, S_11_list
+
+    def find_guided_modes_beta(self):
+        from scipy.optimize import brentq
+        self.guided = True
+        n = self.n_list.real
+
+        def s_11(beta):
+            # Evaluate transfer matrix (S)
+            self.beta = beta
+            S = self.S_mat()
+            s11 = S[0, 0].real
+            # print(beta, s11)
+            return s11
+
+        # TODO: Evaluate roots recursively in a given interval and extract unique values
+        # http://stackoverflow.com/questions/13054758/python-finding-multiple-roots-of-nonlinear-equation
+        # http://stackoverflow.com/questions/12897374/get-unique-values-from-a-list-in-python
+
+        result = brentq(s_11, 1.1*n[0], 0.9*max(n))
+        self.guided = False
+        return result
 
     def show_structure(self):
         """ Brings up a plot showing the structure."""

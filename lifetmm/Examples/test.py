@@ -4,6 +4,7 @@ from numpy import pi
 from lifetmm.Methods.TransferMatrix import TransferMatrix
 from lifetmm.Methods.SpontaneousEmissionRate import LifetimeTmm
 from tqdm import tqdm
+SAVE = True
 
 
 def mcgehee():
@@ -250,35 +251,23 @@ def guiding3():
     st.add_layer(1 * lam0, sio2)
     st.add_layer(0 * lam0, air)
 
-    # Find Guided modes
-    t_list = np.array([])
-    th_list = np.array([])
-
-    st.set_angle(80, units='degrees')
-    k, q, k_11 = st.wave_vector(2)
-    print(q)
-
-    S_mat = st.S_mat()
-    t = S_mat[0, 0]
-    th_list = np.append(th_list, th)
-    t_list = np.append(t_list, t)
+    # Find transmission as a function of beta (k_ll/k)
+    [beta, S_11] = st.find_guided_modes_plot()
 
     # Plot S_11 rates for radiative modes
-    fig, (ax1, ax2) = plt.subplots(2, 1, sharex='col', sharey='none')
-    ax1.plot(th_list, abs(t_list), label='Magnitude')
-    ax1.plot(th_list, t_list.real, label='Real')
-    ax1.plot(th_list, t_list.imag, label='Imaginary')
-    ax1.set_ylabel('Transmission ($s_{22}$)')
-    ax1.legend()
-    t_list = 1/t_list
-    ax2.plot(th_list, abs(t_list), label='Magnitude')
-    ax2.plot(th_list, t_list.real, label='Real')
-    ax2.plot(th_list, t_list.imag, label='Imaginary')
-    ax2.set_xlabel('Theta (Degrees)')
-    ax2.set_ylabel('Transmission ($t = 1/s_{22}$)')
-    ax2.legend()
+    fig, ax1 = plt.subplots(1, 1)
+    ax1.plot(beta, S_11.real, label='Real')
+    ax1.plot(beta, S_11.imag, label='Imaginary')
+    ax1.set_ylabel('$S_{11}$')
+    ax1.set_xlabel('Normalised in parallel wave vector (beta/k)')
+    ax1.legend(loc='best')
     ax1.axhline(color='k')
-    ax2.axhline(color='k')
+
+    # result = st.find_guided_modes_beta()
+    # print(result)
+    fig.tight_layout()
+    if SAVE:
+        plt.savefig('../Images/guided modes.png', dpi=300)
     plt.show()
 
 
@@ -289,6 +278,6 @@ def test():
 if __name__ == "__main__":
     # mcgehee()
     # spe()
-    guiding2()
+    guiding3()
     # test()
 
