@@ -262,10 +262,10 @@ class TransferMatrix:
         return beta, S_11
 
     def find_guided_modes_beta(self):
-        # TODO: Evaluate roots recursively in a given interval and extract unique values
+        """ Evaluate S_11 as a function of beta (k_ll) in the guided regime.
+        When S_11 = 0 the corresponding beta is a guided mode.
+        """
         # http://stackoverflow.com/questions/13054758/python-finding-multiple-roots-of-nonlinear-equation
-        # http://stackoverflow.com/questions/12897374/get-unique-values-from-a-list-in-python
-
         from scipy.optimize import brentq
         import math
 
@@ -273,7 +273,7 @@ class TransferMatrix:
         n = self.n_list.real
 
         def s_11(beta):
-            # Evaluate transfer matrix element S_11 for a give beta
+            # Evaluate transfer matrix element S_11 for a given beta
             self.beta = beta
             S = self.S_mat()
             s11 = S[0, 0].real
@@ -296,23 +296,25 @@ class TransferMatrix:
                 f2 = f(x2)
             return x1, x2
 
-        def roots(f, a, b, eps=1e-6):
+        def roots(f, a, b, eps=1e-5):
             print('The roots on the interval [%f, %f] are:' % (a, b))
+            root_list = []
             while 1:
                 x1, x2 = root_search(f, a, b, eps)
                 if x1 is not None:
                     a = x2
-                    root = brentq(f, x1, x2, rtol=1e-4)
-                    if root is not None:
+                    root = brentq(f, x1, x2, rtol=1e-9)
+                    if root is not None and root != 0:
                         root = round(root, -int(math.log(eps, 10)))
                         print('{:.4f}'.format(root))
+                        root_list.append(root)
                 else:
                     print('\nDone')
-                    break
+                    return np.array(root_list)
 
-        roots(s_11, n[0], max(n))
+        root_list = roots(s_11, n[0], max(n))
         self.guided = False
-        # return result
+        return root_list
 
     def show_structure(self):
         """ Brings up a plot showing the structure."""

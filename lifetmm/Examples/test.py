@@ -261,8 +261,10 @@ def guiding3():
     ax1.set_xlabel('Normalised in parallel wave vector (beta/k)')
     ax1.axhline(color='k')
 
-    result = st.find_guided_modes_beta()
-    # print(result)
+    roots = st.find_guided_modes_beta()
+    for root in roots:
+        ax1.axvline(root, color='r')
+
     fig.tight_layout()
     if SAVE:
         plt.savefig('../Images/guided modes.png', dpi=300)
