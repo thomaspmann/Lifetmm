@@ -239,40 +239,80 @@ class TransferMatrix:
         return {'z': z, 'A': A, 'A_squared': A_squared}
 
     def find_guided_modes_plot(self):
+        """ Evaluate S_11 as a function of beta (k_ll) in the guided regime.
+        When S_11 = 0 the corresponding beta is a guided mode.
+        """
         self.guided = True
         n = self.n_list.real
 
-        beta_list = np.linspace(n[0], max(n), num=5000, endpoint=False)
-        S_11_list = np.array([])
-        for beta in beta_list:
-            self.beta = beta
+        beta = np.linspace(n[0], max(n), num=5000, endpoint=False)
+        S_11 = np.array([])
+        for b in beta:
+            self.beta = b
             # Evaluate transfer matrix (S)
             S = self.S_mat()
-            S_11 = S[0, 0]
-            S_11_list = np.append(S_11_list, [S_11])
+            S_11 = np.append(S_11, S[0, 0])
+        # Remove S_11 at n[0] as this is nan (1/0=inf)
+        beta = beta[1:]
+        S_11 = S_11[1:]
+        # Convert to real is imaginary component is v. small (at guided modes S_11(=0) is real)
+        S_11 = np.real_if_close(S_11)
+        assert np.isreal(np.all(S_11)), ValueError('S_11 should be real for guided modes.')
         self.guided = False
-        return beta_list, S_11_list
+        return beta, S_11
 
     def find_guided_modes_beta(self):
+        # TODO: Evaluate roots recursively in a given interval and extract unique values
+        # http://stackoverflow.com/questions/13054758/python-finding-multiple-roots-of-nonlinear-equation
+        # http://stackoverflow.com/questions/12897374/get-unique-values-from-a-list-in-python
+
         from scipy.optimize import brentq
+        import math
+
         self.guided = True
         n = self.n_list.real
 
         def s_11(beta):
-            # Evaluate transfer matrix (S)
+            # Evaluate transfer matrix element S_11 for a give beta
             self.beta = beta
             S = self.S_mat()
             s11 = S[0, 0].real
             # print(beta, s11)
             return s11
 
-        # TODO: Evaluate roots recursively in a given interval and extract unique values
-        # http://stackoverflow.com/questions/13054758/python-finding-multiple-roots-of-nonlinear-equation
-        # http://stackoverflow.com/questions/12897374/get-unique-values-from-a-list-in-python
+        def root_search(f, a, b, dx):
+            # Find an interval of f between x and x+dx that contains a root
+            x1 = a
+            f1 = f(x1)
+            x2 = a + dx
+            f2 = f(x2)
+            # Look for two f(x) values that give opposite signs (therefore root in between). Spacing is dx.
+            while f1 * f2 > 0.0:
+                if x1 >= b:
+                    return None, None
+                x1 = x2
+                f1 = f2
+                x2 = x2 + dx
+                f2 = f(x2)
+            return x1, x2
 
-        result = brentq(s_11, 1.1*n[0], 0.9*max(n))
+        def roots(f, a, b, eps=1e-6):
+            print('The roots on the interval [%f, %f] are:' % (a, b))
+            while 1:
+                x1, x2 = root_search(f, a, b, eps)
+                if x1 is not None:
+                    a = x2
+                    root = brentq(f, x1, x2, rtol=1e-4)
+                    if root is not None:
+                        root = round(root, -int(math.log(eps, 10)))
+                        print('{:.4f}'.format(root))
+                else:
+                    print('\nDone')
+                    break
+
+        roots(s_11, n[0], max(n))
         self.guided = False
-        return result
+        # return result
 
     def show_structure(self):
         """ Brings up a plot showing the structure."""

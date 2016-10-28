@@ -4,7 +4,7 @@ from numpy import pi
 from lifetmm.Methods.TransferMatrix import TransferMatrix
 from lifetmm.Methods.SpontaneousEmissionRate import LifetimeTmm
 from tqdm import tqdm
-SAVE = True
+SAVE = False
 
 
 def mcgehee():
@@ -257,13 +257,11 @@ def guiding3():
     # Plot S_11 rates for radiative modes
     fig, ax1 = plt.subplots(1, 1)
     ax1.plot(beta, S_11.real, label='Real')
-    ax1.plot(beta, S_11.imag, label='Imaginary')
     ax1.set_ylabel('$S_{11}$')
     ax1.set_xlabel('Normalised in parallel wave vector (beta/k)')
-    ax1.legend(loc='best')
     ax1.axhline(color='k')
 
-    # result = st.find_guided_modes_beta()
+    result = st.find_guided_modes_beta()
     # print(result)
     fig.tight_layout()
     if SAVE:
