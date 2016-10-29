@@ -1,4 +1,5 @@
 import numpy as np
+import scipy as sp
 from numpy import pi, sqrt, sin, exp
 from numpy.linalg import det
 
@@ -10,13 +11,14 @@ class TransferMatrix:
         self.d_list = np.array([], dtype=float)
         self.n_list = np.array([], dtype=complex)
         self.d_cumsum = np.array([], dtype=float)
-        self.z_step = 1
-        self.lam_vac = 0
         self.num_layers = 0
+        self.lam_vac = 0
         self.pol = ''
-        self.th = 0
+        # Default simulation parameters
         self.field = 'E'
+        self.th = 0
         self.guided = False
+        self.z_step = 1
 
     def add_layer(self, d, n):
         """ Add layer of thickness d and refractive index n to the structure.
@@ -36,7 +38,7 @@ class TransferMatrix:
         self.lam_vac = lam_vac
 
     def set_polarization(self, pol):
-        """ Set the mode polarisation to be simulated. 's' == TE and 'p' == TM
+        """ Set the mode polarisation to be simulated ('s' or 'TE' and 'p' or 'TM')
         """
         if pol not in ['s', 'p', 'TE', 'TM'] and self.th != 0:
             raise ValueError("Polarisation must be defined when angle of incidence is"
@@ -75,42 +77,52 @@ class TransferMatrix:
                              'inputs for thicknesses and wavelengths for greater resolution ')
         self.z_step = step
 
-    def k0(self):
-        """ Calculate the free space wave vector
+    def k(self, j):
+        """ Calculate the wave vector magnitude in layer j. Alternatively if j ==- 1
+        then we calculate the vacuum wave vector (k=omega/c).
         """
-        n0 = self.n_list[0].real
-        return 2 * pi * n0 / self.lam_vac
-
-    def wave_vector(self, layer):
-        """ The wave vector magnitude and it's components perpendicular and parallel
-        to the interface inside the layer.
-        """
-        k0 = self.k0()
-
-        # Layer wave vector and components
-        n = self.n_list[layer].real
-        k = 2 * pi * n / self.lam_vac
-        k_11 = k0 * sin(self.th)  # Note th needs to be in same layer as k0
-        # k_11 = k * sin(self.th)
-        #  q = sp.sqrt(k**2 - k_11**2)
-        # TODO: above breaks when n is complex the above breaks down as k is defined with n.real
-        q = (2 * pi * self.q(layer)) / self.lam_vac
-        return k, q, k_11
+        if j == -1:
+            n = 1
+        else:
+            n = self.n_list[j].real
+        return 2 * pi * n / self.lam_vac
 
     def q(self, j):
-        """ Normalised perpendicular wave-vector.
+        """ Normalised perpendicular wave-vector in layer j.
         """
         # Normalised wave-vector in layer
         nj = self.n_list[j]
-        # Normalised parallel/in-plane wave-vector.
-        # Continuous across layers, so can evaluate from input theta and medium
-        n0 = self.n_list[0].real
+
+        # Continuous across layers, so can evaluate from input theta
+        # and medium for incoming wave (hence radiative mode)
         if not self.guided:
-            beta = n0*sin(self.th)
+            n0 = self.n_list[0].real
+            n_11 = n0*sin(self.th)
         else:
             # TODO: This accounts for when theta=0 to give beta/k=n1. Now need max beta/k=n2 (where n2 is guided mode)
-            beta = self.beta
-        return sqrt(nj**2 - beta**2)
+            n_11 = self.beta
+        return sqrt(nj**2 - n_11**2)
+
+    def k_11(self):
+        """ NOTE: This will not work for guided modes as there is no incident radiation (theta).
+        """
+        # For radiative modes
+        k0 = self.k(0)
+        k_11 = k0 * sin(self.th)  # Note th needs to be in same layer as k0
+        return k_11
+
+    def wave_vector(self, j):
+        """ The wave vector magnitude and it's components perpendicular and parallel
+        to the interface inside the layer calculated from the incident angle of wave.
+        """
+        # Layer wave vector and components
+        k = self.k(j)
+        k_11 = self.k_11()
+        k_vac = self.k(-1)
+        q = self.q(j)*k_vac
+        # TODO: this method will only give real part of q as k() is derived from n.real
+        # q = sp.sqrt(k**2 - k_11**2)
+        return k, q, k_11
 
     def I_mat(self, j, k):
         """ Returns the interference matrix between layers j and k.
@@ -129,7 +141,7 @@ class TransferMatrix:
         else:
             raise ValueError('A polarisation for the field must be set.')
         if self.field == 'H':
-            # Convert transmission coefficient for electric to that of the H field.
+            # Convert transmission coefficient for E field to that of the H field.
             # Note that the reflection coefficient is the same as the medium does not change.
             t *= nk / nj
         if t == 0:
@@ -151,9 +163,9 @@ class TransferMatrix:
         """ Returns the total system transfer matrix S.
         """
         S = self.I_mat(0, 1)
-        for layer in range(1, self.num_layers - 1):
-            mL = self.L_mat(layer)
-            mI = self.I_mat(layer, layer + 1)
+        for j in range(1, self.num_layers - 1):
+            mL = self.L_mat(j)
+            mI = self.I_mat(j, j + 1)
             S = S @ mL @ mI
         return S
 
@@ -181,40 +193,44 @@ class TransferMatrix:
         """ Evaluate fwd and bkwd field amplitude coefficients (E or H) in a layer.
          Coefficients are in units of the fwd incoming wave amplitude.
         """
+        # Transfer matrix of system
         S = self.S_mat()
-        rR = S[1, 0] / S[0, 0]
-        if layer == 0:  # Evaluate lower cladding
+        # Reflection for incoming wave incident of LHS of structure
+        r = S[1, 0] / S[0, 0]
+        # Evaluate lower cladding
+        if layer == 0:
             A_plus = 1
-            A_minus = rR
-        elif layer == self.num_layers - 1:  # Evaluate upper cladding
+            A_minus = r
+        # Evaluate upper cladding
+        elif layer == self.num_layers - 1:
             A_plus = 1 / S[0, 0]
             A_minus = 0
-        else:  # Evaluate internal layer electric field
+        # Evaluate field amplitudes in internal layers
+        else:
             S_prime = self.S_primed_mat(layer)
-            A_plus = (S_prime[1, 1] - rR * S_prime[0, 1]) / det(S_prime)
-            A_minus = (rR * S_prime[0, 0] - S_prime[1, 0]) / det(S_prime)
+            A_plus = (S_prime[1, 1] - r * S_prime[0, 1]) / det(S_prime)
+            A_minus = (r * S_prime[0, 0] - S_prime[1, 0]) / det(S_prime)
         return A_plus, A_minus
 
     def layer_field(self, layer):
         """ Evaluate the field (E or H) as a function of z (depth) into the layer, j.
-        A_plus is the forward component of the field (E_j^+)
-        A_minus is the backward component of the field (E_j^-)
+        A_plus is the forward component of the field (e.g. E_j^+)
+        A_minus is the backward component of the field (e.g. E_j^-)
         """
         # Wave vector components in layer
         k, q, k_11 = self.wave_vector(layer)
 
         # z positions to evaluate field at at
         z = np.arange((self.z_step / 2.0), self.d_list[layer], self.z_step)
+        # Note A_plus and A_minus are defined at cladding-layer boundary so need to
+        # propagate wave 'backwards' in the lower cladding by reversing z
         if layer == 0:
-            # Note A_plus and A_minus are defined at cladding-layer boundary
             z = -z[::-1]
 
-        # A field in terms of E_0^+
+        # A(z) field in terms of incident field amplitude (A_0^+)
         A_plus, A_minus = self.amplitude_coefficients(layer)
-
         A = A_plus * exp(1j * q * z) + A_minus * exp(-1j * q * z)
         A_squared = abs(A)**2
-
         if self.d_list[layer] != 0:
             A_avg = sum(A_squared) / (self.z_step * self.d_list[layer])
         else:
@@ -238,6 +254,22 @@ class TransferMatrix:
             A[z_indices] = A_layer
         A_squared = abs(A)**2
         return {'z': z, 'A': A, 'A_squared': A_squared}
+
+    def s11_vs_beta_guided(self):
+        """ Evaluate S_11=(1/t) as a function of beta (k_ll) in the guided regime.
+        When S_11 = 0 the corresponding beta is a guided mode.
+        """
+        self.guided = True
+        n = self.n_list.real
+
+        beta = np.linspace(n[0], max(n), num=1000, endpoint=False)[1:]
+        S_11 = np.array([])
+        for b in beta:
+            self.beta = b
+            S = self.S_mat()
+            S_11 = np.append(S_11, S[0, 0])
+        self.guided = False
+        return beta, S_11.real
 
     def find_guided_modes_beta(self):
         """ Evaluate beta at S_11=0 as a function of beta (k_ll) in the guided regime.
@@ -306,28 +338,6 @@ class TransferMatrix:
         z /= self.lam_vac
         return z
 
-    def s11_vs_beta_guided(self):
-        """ Evaluate S_11=(1/t) as a function of beta (k_ll) in the guided regime.
-        When S_11 = 0 the corresponding beta is a guided mode.
-        """
-        self.guided = True
-        n = self.n_list.real
-
-        beta = np.linspace(n[0], max(n), num=5000, endpoint=False)
-        S_11 = np.array([])
-        for b in beta:
-            self.beta = b
-            # Evaluate transfer matrix (S)
-            S = self.S_mat()
-            S_11 = np.append(S_11, S[0, 0])
-        # Remove S_11 at n[0] as this is nan (1/0=inf)
-        beta = beta[1:]
-        S_11 = S_11[1:]
-        # Convert to real is imaginary component is v. small (at guided modes S_11(=0) is real)
-        S_11 = np.real_if_close(S_11)
-        assert np.isreal(np.all(S_11)), ValueError('S_11 should be real for guided modes.')
-        self.guided = False
-        return beta, S_11
 
     def calc_r_and_t(self):
         """ Return the complex reflection and transmission coefficients of the structure.

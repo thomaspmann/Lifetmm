@@ -9,6 +9,7 @@ from lifetmm.Methods.TransferMatrix import TransferMatrix
 
 
 class LifetimeTmm(TransferMatrix):
+
     def spe_layer(self, layer, emission='Lower', th_num=8):
         """ Evaluate the spontaneous emission rates for dipoles in a layer radiating into 'Lower' or 'Upper' modes.
         Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
@@ -17,7 +18,6 @@ class LifetimeTmm(TransferMatrix):
         assert 'Full' or 'Partial' or 'Both' in emission, \
             ValueError('Emission option must be either "Upper" or "Lower".')
         assert isinstance(th_num, int), ValueError('th_num must be an integer.')
-
         # Flip the structure and solve using lower radiative equations for upper radiative modes.
         # Results are flipped back at the end of this function to give the correct orientation again.
         if emission == 'Upper':
@@ -25,7 +25,7 @@ class LifetimeTmm(TransferMatrix):
             layer = self.num_layers - layer - 1
 
         # Free space wave vector magnitude
-        k0 = self.k0()
+        k0 = self.k(0)
 
         # z positions to evaluate E at
         z = np.arange((self.z_step / 2.0), self.d_list[layer], self.z_step)
@@ -86,7 +86,7 @@ class LifetimeTmm(TransferMatrix):
             E_plus, E_minus = self.amplitude_coefficients(layer)
             E['TE'] = E_plus * exp(1j * q * z) + E_minus * exp(-1j * q * z)
             # Orthonormality condition: Normalise outgoing TE wave to medium refractive index.
-            E['TE'] /= self.n_list[0].real
+            E['TE'] /= self.n_list[0]
 
             # !* TM modes *!
             self.set_polarization('TM')
