@@ -1,7 +1,7 @@
-from numpy import sin, cos, deg2rad, rad2deg, arcsin, arange, allclose
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import scipy as sp
+from numpy import sin, cos, deg2rad, rad2deg
 
 __author__ = 'mn14tm'
 

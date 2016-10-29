@@ -1,9 +1,11 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import pi
-from lifetmm.Methods.TransferMatrix import TransferMatrix
-from lifetmm.Methods.SpontaneousEmissionRate import LifetimeTmm
 from tqdm import tqdm
+
+from lifetmm.Methods.SpontaneousEmissionRate import LifetimeTmm
+from lifetmm.Methods.TransferMatrix import TransferMatrix
+
 SAVE = False
 
 
@@ -251,16 +253,17 @@ def guiding3():
     st.add_layer(1 * lam0, sio2)
     st.add_layer(0 * lam0, air)
 
-    # Find transmission as a function of beta (k_ll/k)
-    [beta, S_11] = st.find_guided_modes_plot()
+    # Find transmission as a function of beta (k_ll/k) for guiding modes
+    [beta, S_11] = st.s11_vs_beta_guided()
 
     # Plot S_11 rates for radiative modes
     fig, ax1 = plt.subplots(1, 1)
     ax1.plot(beta, S_11.real, label='Real')
     ax1.set_ylabel('$S_{11}$')
-    ax1.set_xlabel('Normalised in parallel wave vector (beta/k)')
+    ax1.set_xlabel('Normalised parallel wave vector (beta/k)')
     ax1.axhline(color='k')
 
+    # Find roots and add to plot to check (vertical red lines)
     roots = st.find_guided_modes_beta()
     for root in roots:
         ax1.axvline(root, color='r')

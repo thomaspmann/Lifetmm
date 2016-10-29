@@ -1,7 +1,8 @@
 import numpy as np
-import scipy as sp
 from numpy import pi, sqrt, sin, exp
 from numpy.linalg import det
+
+from lifetmm.Methods.HelperFunctions import roots, snell
 
 
 class TransferMatrix:
@@ -238,37 +239,9 @@ class TransferMatrix:
         A_squared = abs(A)**2
         return {'z': z, 'A': A, 'A_squared': A_squared}
 
-    def find_guided_modes_plot(self):
-        """ Evaluate S_11 as a function of beta (k_ll) in the guided regime.
-        When S_11 = 0 the corresponding beta is a guided mode.
-        """
-        self.guided = True
-        n = self.n_list.real
-
-        beta = np.linspace(n[0], max(n), num=5000, endpoint=False)
-        S_11 = np.array([])
-        for b in beta:
-            self.beta = b
-            # Evaluate transfer matrix (S)
-            S = self.S_mat()
-            S_11 = np.append(S_11, S[0, 0])
-        # Remove S_11 at n[0] as this is nan (1/0=inf)
-        beta = beta[1:]
-        S_11 = S_11[1:]
-        # Convert to real is imaginary component is v. small (at guided modes S_11(=0) is real)
-        S_11 = np.real_if_close(S_11)
-        assert np.isreal(np.all(S_11)), ValueError('S_11 should be real for guided modes.')
-        self.guided = False
-        return beta, S_11
-
     def find_guided_modes_beta(self):
-        """ Evaluate S_11 as a function of beta (k_ll) in the guided regime.
-        When S_11 = 0 the corresponding beta is a guided mode.
+        """ Evaluate beta at S_11=0 as a function of beta (k_ll) in the guided regime.
         """
-        # http://stackoverflow.com/questions/13054758/python-finding-multiple-roots-of-nonlinear-equation
-        from scipy.optimize import brentq
-        import math
-
         self.guided = True
         n = self.n_list.real
 
@@ -279,38 +252,6 @@ class TransferMatrix:
             s11 = S[0, 0].real
             # print(beta, s11)
             return s11
-
-        def root_search(f, a, b, dx):
-            # Find an interval of f between x and x+dx that contains a root
-            x1 = a
-            f1 = f(x1)
-            x2 = a + dx
-            f2 = f(x2)
-            # Look for two f(x) values that give opposite signs (therefore root in between). Spacing is dx.
-            while f1 * f2 > 0.0:
-                if x1 >= b:
-                    return None, None
-                x1 = x2
-                f1 = f2
-                x2 = x2 + dx
-                f2 = f(x2)
-            return x1, x2
-
-        def roots(f, a, b, eps=1e-5):
-            print('The roots on the interval [%f, %f] are:' % (a, b))
-            root_list = []
-            while 1:
-                x1, x2 = root_search(f, a, b, eps)
-                if x1 is not None:
-                    a = x2
-                    root = brentq(f, x1, x2, rtol=1e-9)
-                    if root is not None and root != 0:
-                        root = round(root, -int(math.log(eps, 10)))
-                        print('{:.4f}'.format(root))
-                        root_list.append(root)
-                else:
-                    print('\nDone')
-                    return np.array(root_list)
 
         root_list = roots(s_11, n[0], max(n))
         self.guided = False
@@ -365,6 +306,29 @@ class TransferMatrix:
         z /= self.lam_vac
         return z
 
+    def s11_vs_beta_guided(self):
+        """ Evaluate S_11=(1/t) as a function of beta (k_ll) in the guided regime.
+        When S_11 = 0 the corresponding beta is a guided mode.
+        """
+        self.guided = True
+        n = self.n_list.real
+
+        beta = np.linspace(n[0], max(n), num=5000, endpoint=False)
+        S_11 = np.array([])
+        for b in beta:
+            self.beta = b
+            # Evaluate transfer matrix (S)
+            S = self.S_mat()
+            S_11 = np.append(S_11, S[0, 0])
+        # Remove S_11 at n[0] as this is nan (1/0=inf)
+        beta = beta[1:]
+        S_11 = S_11[1:]
+        # Convert to real is imaginary component is v. small (at guided modes S_11(=0) is real)
+        S_11 = np.real_if_close(S_11)
+        assert np.isreal(np.all(S_11)), ValueError('S_11 should be real for guided modes.')
+        self.guided = False
+        return beta, S_11
+
     def calc_r_and_t(self):
         """ Return the complex reflection and transmission coefficients of the structure.
         """
@@ -384,7 +348,7 @@ class TransferMatrix:
             # https://en.wikipedia.org/wiki/Fresnel_equations
             n_1 = self.n_list[0].real
             n_2 = self.n_list[-1].real
-            th_out = self.snell(n_1, n_2, self.th)
+            th_out = snell(n_1, n_2, self.th)
             rho = n_2 / n_1
             m = np.cos(th_out)/np.cos(self.th)
             T *= rho*m
@@ -416,14 +380,3 @@ class TransferMatrix:
             print('{0:g}\t{1:g}'.format(d, n))
         print('\nFree space wavelength: {:g}\n'.format(self.lam_vac))
 
-    @staticmethod
-    def snell(n_1, n_2, th_1):
-        """ Return angle theta in layer 2 with refractive index n_2, assuming
-        it has angle th_1 in layer with refractive index n_1. Use Snell's law. Note
-        that "angles" may be complex!!
-        """
-        # Important that the arcsin here is scipy.arcsin, not numpy.arcsin!! (They
-        # give different results e.g. for arcsin(2).)
-        # Use real_if_close because e.g. arcsin(2 + 1e-17j) is very different from
-        # arcsin(2) due to branch cut
-        return sp.arcsin(np.real_if_close(n_1 * sin(th_1) / n_2))
