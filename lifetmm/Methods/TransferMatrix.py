@@ -14,6 +14,7 @@ class TransferMatrix:
         self.num_layers = 0
         self.lam_vac = 0
         self.pol = ''
+        self.n_11 = 0
         # Default simulation parameters
         self.field = 'E'
         self.th = 0
@@ -87,7 +88,7 @@ class TransferMatrix:
             n = self.n_list[j].real
         return 2 * pi * n / self.lam_vac
 
-    def q(self, j):
+    def q_norm(self, j):
         """ Normalised perpendicular wave-vector in layer j.
         """
         # Normalised wave-vector in layer
@@ -99,16 +100,26 @@ class TransferMatrix:
             n0 = self.n_list[0].real
             n_11 = n0*sin(self.th)
         else:
-            # TODO: This accounts for when theta=0 to give beta/k=n1. Now need max beta/k=n2 (where n2 is guided mode)
-            n_11 = self.beta
+            n_11 = self.n_11
         return sqrt(nj**2 - n_11**2)
 
-    def k_11(self):
-        """ NOTE: This will not work for guided modes as there is no incident radiation (theta).
+    def q(self, j):
+        """ Perpendicular wave vector in layer j
         """
-        # For radiative modes
-        k0 = self.k(0)
-        k_11 = k0 * sin(self.th)  # Note th needs to be in same layer as k0
+        q_norm = self.q_norm(j)
+        k_vac = self.k(-1)
+        return q_norm * k_vac
+
+    def k_11(self):
+        """ Parallel wave vector (same in all layers due to BCs)
+        """
+        if not self.guided:
+            k0 = self.k(0)
+            k_11 = k0 * sin(self.th)  # Note th needs to be in same layer as k0
+        else:
+            # TODO: check - n_11 will only be at discrete values.
+            # Probably multiply by k(j=guided instead)
+            k_11 = self.n_11 * self.k(-1)
         return k_11
 
     def wave_vector(self, j):
@@ -118,17 +129,14 @@ class TransferMatrix:
         # Layer wave vector and components
         k = self.k(j)
         k_11 = self.k_11()
-        k_vac = self.k(-1)
-        q = self.q(j)*k_vac
-        # TODO: this method will only give real part of q as k() is derived from n.real
-        # q = sp.sqrt(k**2 - k_11**2)
+        q = self.q(j)
         return k, q, k_11
 
     def I_mat(self, j, k):
         """ Returns the interference matrix between layers j and k.
         """
-        qj = self.q(j)
-        qk = self.q(k)
+        qj = self.q_norm(j)
+        qk = self.q_norm(k)
         nj = self.n_list[j]
         nk = self.n_list[k]
         # Evaluate reflection and transmission coefficients for E field
@@ -142,7 +150,7 @@ class TransferMatrix:
             raise ValueError('A polarisation for the field must be set.')
         if self.field == 'H':
             # Convert transmission coefficient for E field to that of the H field.
-            # Note that the reflection coefficient is the same as the medium does not change.
+            # The reflection coefficient is the same as the medium does not change.
             t *= nk / nj
         if t == 0:
             # Can't evaluate I_mat when transmission t==0 as 1/t == inf
@@ -150,14 +158,13 @@ class TransferMatrix:
         return (1 / t) * np.array([[1, r], [r, 1]], dtype=complex)
 
     def L_mat(self, j):
-        """ Returns the propagation matrix for layer j.
+        """ Returns the propagation L matrix for layer j.
         """
         qj = self.q(j)
         dj = self.d_list[j]
-        eps = (2*pi*qj) / self.lam_vac
-        assert -1j*eps*dj < 25, \
+        assert -1j*qj*dj < 25, \
             ValueError('L_matrix is unstable for such a large thickness with an exponentially growing mode.')
-        return np.array([[exp(-1j*eps*dj), 0], [0, exp(1j*eps*dj)]], dtype=complex)
+        return np.array([[exp(-1j*qj*dj), 0], [0, exp(1j*qj*dj)]], dtype=complex)
 
     def S_mat(self):
         """ Returns the total system transfer matrix S.
@@ -255,42 +262,37 @@ class TransferMatrix:
         A_squared = abs(A)**2
         return {'z': z, 'A': A, 'A_squared': A_squared}
 
-    def s11_vs_beta_guided(self):
+    def s11(self, n_11):
+        self.n_11 = n_11
+        S = self.S_mat()
+        return S[0, 0].real
+
+    def s11_guided(self):
         """ Evaluate S_11=(1/t) as a function of beta (k_ll) in the guided regime.
         When S_11 = 0 the corresponding beta is a guided mode.
         """
-        self.guided = True
+        assert self.guided, \
+            ValueError('"self.guided" must be set to true before running this function.')
         n = self.n_list.real
-
-        beta = np.linspace(n[0], max(n), num=1000, endpoint=False)[1:]
+        n_11_range = np.linspace(n[0], max(n), num=1000, endpoint=False)[1:]
         S_11 = np.array([])
-        for b in beta:
-            self.beta = b
-            S = self.S_mat()
-            S_11 = np.append(S_11, S[0, 0])
-        self.guided = False
-        return beta, S_11.real
+        for n_11 in n_11_range:
+            S_11 = np.append(S_11, self.s11(n_11))
+        return n_11_range, S_11.real
 
-    def find_guided_modes_beta(self):
-        """ Evaluate beta at S_11=0 as a function of beta (k_ll) in the guided regime.
+    def find_guided_modes(self):
+        """ Evaluate beta at S_11=0 as a function of k_ll in the guided regime.
+        Guided regime:  n_clad < k_ll/k < max(n), k_11/k = n_11
         """
-        self.guided = True
+        assert self.guided, \
+            ValueError('"self.guided" must be set to true before running this function.')
         n = self.n_list.real
-
-        def s_11(beta):
-            # Evaluate transfer matrix element S_11 for a given beta
-            self.beta = beta
-            S = self.S_mat()
-            s11 = S[0, 0].real
-            # print(beta, s11)
-            return s11
-
-        root_list = roots(s_11, n[0], max(n))
-        self.guided = False
-        return root_list
+        alphas = roots(self.s11, n[0], max(n))
+        return alphas
 
     def show_structure(self):
-        """ Brings up a plot showing the structure."""
+        """ Brings up a plot showing the structure.
+        """
         import matplotlib.pyplot as plt
         import matplotlib.patches as patches
         from collections import OrderedDict
@@ -337,7 +339,6 @@ class TransferMatrix:
             z -= self.get_structure_thickness()/2
         z /= self.lam_vac
         return z
-
 
     def calc_r_and_t(self):
         """ Return the complex reflection and transmission coefficients of the structure.

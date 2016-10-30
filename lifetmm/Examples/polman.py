@@ -33,9 +33,9 @@ def fig3():
         st.add_layer(1550, 1.5)
         st.add_layer(0, n)
         # Calculate spontaneous emission of layer 0 (1st)
-        result = st.spe_layer(layer=0, emission='Lower', th_num=13)
+        result = st.spe_layer_radiative(layer=0, emission='Lower', th_num=13)
         spe = result['spe']['total']
-        result = st.spe_layer(layer=0, emission='Upper', th_num=13)
+        result = st.spe_layer_radiative(layer=0, emission='Upper', th_num=13)
         spe += result['spe']['total']
         # Take average
         spe /= 2
@@ -83,7 +83,7 @@ def fig4():
         st.add_layer(4*units, 1.5)
         st.info()
         # Calculate spontaneous emission over whole structure
-        result = st.spe_structure()
+        result = st.spe_structure_radiative()
         z = result['z']
         # Shift so centre of structure at z=0
         z -= st.get_structure_thickness() / 2

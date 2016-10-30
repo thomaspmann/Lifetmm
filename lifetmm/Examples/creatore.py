@@ -26,7 +26,7 @@ def fig3():
     st.info()
 
     # Calculate spontaneous emission over whole structure
-    result = st.spe_structure()
+    result = st.spe_structure_radiative()
     z = result['z']
     spe = result['spe']
 
@@ -90,7 +90,7 @@ def fig6():
     st.add_layer(2.5*lam0, 1)
 
     # Calculate spontaneous emission over whole structure
-    result = st.spe_structure()
+    result = st.spe_structure_radiative()
     z = result['z']
     spe = result['spe']
 
@@ -140,7 +140,7 @@ def figx():
     st.add_layer(lam0, 3.48)
 
     # Calculate spontaneous emission over whole structure
-    result = st.spe_structure()
+    result = st.spe_structure_radiative()
     z = result['z']
     spe = result['spe']
 

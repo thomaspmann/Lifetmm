@@ -26,7 +26,7 @@ def t2_spe_vs_z():
         st.add_layer(4000, n)
 
         # Calculate spontaneous emission over whole structure
-        result = st.spe_structure()
+        result = st.spe_structure_radiative()
         z = result['z']
         spe = result['spe']['total']
         # Plot
@@ -65,9 +65,9 @@ def t2_spe_vs_n():
         st.add_layer(980, 1.56)
         st.add_layer(0, n)
         # Calculate spontaneous emission of layer 0 (1st)
-        result = st.spe_layer(layer=1, emission='Lower', th_num=13)
+        result = st.spe_layer_radiative(layer=1, emission='Lower', th_num=13)
         spe = result['spe']['total']
-        result = st.spe_layer(layer=1, emission='Upper', th_num=13)
+        result = st.spe_layer_radiative(layer=1, emission='Upper', th_num=13)
         spe += result['spe']['total']
         # Take average
         spe /= 2

@@ -52,7 +52,7 @@ def spe():
     # st.add_layer(lam0, 1)
 
     # Get results
-    result = st.spe_structure()
+    result = st.spe_structure_radiative()
     z = result['z']
     spe = result['spe']
     spe_TE = spe['TE_total']
@@ -96,6 +96,7 @@ def guiding_plot():
     lam0 = 1550
     st.set_wavelength(lam0)
     st.set_field('E')
+    st.guided = True
     air = 1
     sio2 = 3.48
     st.add_layer(0 * lam0, air)
@@ -107,17 +108,17 @@ def guiding_plot():
 
     # TE modes
     st.set_polarization('TE')
-    [beta, S_11] = st.s11_vs_beta_guided()
+    [beta, S_11] = st.s11_guided()
     ax1.plot(beta, S_11, label='TE')
-    roots = st.find_guided_modes_beta()
+    roots = st.find_guided_modes()
     for root in roots:
         ax1.axvline(root, color='r')
 
     # TM modes
     st.set_polarization('TM')
-    [beta, S_11] = st.s11_vs_beta_guided()
+    [beta, S_11] = st.s11_guided()
     ax2.plot(beta, S_11, label='TM')
-    roots = st.find_guided_modes_beta()
+    roots = st.find_guided_modes()
     for root in roots:
         ax2.axvline(root, color='r')
 
@@ -126,7 +127,7 @@ def guiding_plot():
     ax1.set_ylabel('$S_{11}$')
     ax1.axhline(color='k')
     ax2.set_ylabel('$S_{11}$')
-    ax2.set_xlabel('Normalised parallel wave vector (beta/k)')
+    ax2.set_xlabel('Normalised parallel wave vector (k_11/k)')
     ax2.axhline(color='k')
     ax1.legend()
     ax2.legend()
@@ -135,7 +136,58 @@ def guiding_plot():
     plt.show()
 
 
+def guiding_E_plot():
+    # Create structure
+    st = TransferMatrix()
+    lam0 = 1550
+    st.set_wavelength(lam0)
+    st.set_field('E')
+    air = 1
+    sio2 = 3.48
+    st.add_layer(0.3 * lam0, air)
+    st.add_layer(1 * lam0, sio2)
+    st.add_layer(0.3 * lam0, air)
+
+    st.set_polarization('TE')
+    st.guided = True
+    alpha = st.find_guided_modes()[::-1]
+    plt.figure()
+    for i, a in enumerate(alpha):
+        st.n_11 = a
+        result = st.structure_field()
+        z = result['z']
+        E = result['A']
+        plt.plot(z, abs(E)**2, label=i)
+    for z in st.get_layer_boundaries()[:-1]:
+        plt.axvline(x=z, color='r', lw=2)
+        plt.legend(title='Mode index')
+    plt.show()
+
+
+def test():
+    # Create structure
+    st = LifetimeTmm()
+    lam0 = 1550
+    st.set_wavelength(lam0)
+    st.set_field('E')
+    air = 1
+    sio2 = 3.48
+    st.add_layer(0 * lam0, air)
+    st.add_layer(1 * lam0, sio2)
+    st.add_layer(0 * lam0, air)
+
+    st.set_polarization('TE')
+    result = st.spe_layer_guided(1)
+    z = result['z']
+    E = result['E']['TE']
+
+    plt.figure()
+    plt.plot(z, abs(E)**2)
+    plt.show()
+
 if __name__ == "__main__":
-    mcgehee()
-    spe()
-    guiding_plot()
+    # mcgehee()
+    # spe()
+    # guiding_plot()
+    # guiding_E_plot()
+    test()
