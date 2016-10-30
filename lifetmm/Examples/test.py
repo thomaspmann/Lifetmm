@@ -186,8 +186,8 @@ def test():
     plt.show()
 
 if __name__ == "__main__":
-    # mcgehee()
-    # spe()
-    # guiding_plot()
-    # guiding_E_plot()
-    test()
+    mcgehee()
+    spe()
+    guiding_plot()
+    guiding_E_plot()
+    # test()

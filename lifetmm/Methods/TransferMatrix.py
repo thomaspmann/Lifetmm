@@ -88,7 +88,7 @@ class TransferMatrix:
             n = self.n_list[j].real
         return 2 * pi * n / self.lam_vac
 
-    def q_norm(self, j):
+    def xi(self, j):
         """ Normalised perpendicular wave-vector in layer j.
         """
         # Normalised wave-vector in layer
@@ -106,9 +106,9 @@ class TransferMatrix:
     def q(self, j):
         """ Perpendicular wave vector in layer j
         """
-        q_norm = self.q_norm(j)
+        xi = self.xi(j)
         k_vac = self.k(-1)
-        return q_norm * k_vac
+        return xi * k_vac
 
     def k_11(self):
         """ Parallel wave vector (same in all layers due to BCs)
@@ -135,17 +135,17 @@ class TransferMatrix:
     def I_mat(self, j, k):
         """ Returns the interference matrix between layers j and k.
         """
-        qj = self.q_norm(j)
-        qk = self.q_norm(k)
+        xj = self.xi(j)
+        xk = self.xi(k)
         nj = self.n_list[j]
         nk = self.n_list[k]
         # Evaluate reflection and transmission coefficients for E field
         if self.pol in ['p', 'TM']:
-            r = (qj * nk ** 2 - qk * nj ** 2) / (qj * nk ** 2 + qk * nj ** 2)
-            t = (2 * nj * nk * qj) / (qj * nk ** 2 + qk * nj ** 2)
+            r = (xj * nk ** 2 - xk * nj ** 2) / (xj * nk ** 2 + xk * nj ** 2)
+            t = (2 * nj * nk * xj) / (xj * nk ** 2 + xk * nj ** 2)
         elif self.pol in ['s', 'TE']:
-            r = (qj - qk) / (qj + qk)
-            t = (2 * qj) / (qj + qk)
+            r = (xj - xk) / (xj + xk)
+            t = (2 * xj) / (xj + xk)
         else:
             raise ValueError('A polarisation for the field must be set.')
         if self.field == 'H':
