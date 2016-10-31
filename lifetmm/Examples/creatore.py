@@ -20,13 +20,13 @@ def fig3():
 
     # Set vacuum wavelength
     lam0 = 1550
-    st.set_wavelength(lam0)
+    st.set_vacuum_wavelength(lam0)
 
     # Feedback to user the structure being simulated
-    st.info()
+    st.print_info()
 
     # Calculate spontaneous emission over whole structure
-    result = st.spe_structure_radiative()
+    result = st.calc_spe_structure_radiative()
     z = result['z']
     spe = result['spe']
 
@@ -82,7 +82,7 @@ def fig6():
 
     # Set vacuum wavelength
     lam0 = 1550
-    st.set_wavelength(lam0)
+    st.set_vacuum_wavelength(lam0)
 
     # Add layers
     st.add_layer(2.5*lam0, 1)
@@ -90,7 +90,7 @@ def fig6():
     st.add_layer(2.5*lam0, 1)
 
     # Calculate spontaneous emission over whole structure
-    result = st.spe_structure_radiative()
+    result = st.calc_spe_structure_radiative()
     z = result['z']
     spe = result['spe']
 
@@ -132,7 +132,7 @@ def figx():
 
     # Set vacuum wavelength
     lam0 = 1550
-    st.set_wavelength(lam0)
+    st.set_vacuum_wavelength(lam0)
 
     # Add layers
     st.add_layer(lam0, 3.48)
@@ -140,7 +140,7 @@ def figx():
     st.add_layer(lam0, 3.48)
 
     # Calculate spontaneous emission over whole structure
-    result = st.spe_structure_radiative()
+    result = st.calc_spe_structure_radiative()
     z = result['z']
     spe = result['spe']
 

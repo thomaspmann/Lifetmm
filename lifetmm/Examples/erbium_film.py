@@ -20,13 +20,13 @@ def t2_spe_vs_z():
         print('Evaluating n={:g}'.format(n))
         # Create structure
         st = LifetimeTmm()
-        st.set_wavelength(lam0)
+        st.set_vacuum_wavelength(lam0)
         st.add_layer(4000, 1.45)  # 1.45 is silica glass substrate
         st.add_layer(980, 1.56)
         st.add_layer(4000, n)
 
         # Calculate spontaneous emission over whole structure
-        result = st.spe_structure_radiative()
+        result = st.calc_spe_structure_radiative()
         z = result['z']
         spe = result['spe']['total']
         # Plot
@@ -59,7 +59,7 @@ def t2_spe_vs_n():
         print('Evaluating n={:g}'.format(n))
         # Create structure
         st = LifetimeTmm()
-        st.set_wavelength(lam0)
+        st.set_vacuum_wavelength(lam0)
         # st.add_layer(0, 1.45)
         st.add_layer(0, 1.56)
         st.add_layer(980, 1.56)

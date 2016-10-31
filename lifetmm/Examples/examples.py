@@ -22,11 +22,11 @@ def example1():
         print('Evaluating n={}'.format(n))
         # Create structure
         st = LifetimeTmm()
-        st.set_wavelength(lam0)
+        st.set_vacuum_wavelength(lam0)
         st.add_layer(1550, 1.5)
         st.add_layer(1550, n)
         # Calculate spontaneous emission over whole structure
-        result = st.spe_structure_radiative()
+        result = st.calc_spe_structure_radiative()
         z = result['z']
         spe = result['spe']['total']
 

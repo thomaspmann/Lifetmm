@@ -6,43 +6,45 @@ from tqdm import tqdm
 from lifetmm.Methods.SpontaneousEmissionRate import LifetimeTmm
 from lifetmm.Methods.TransferMatrix import TransferMatrix
 
-SAVE = False
-
 
 def mcgehee():
     st = TransferMatrix()
     st.add_layer(0, 1.4504)
-    st.add_layer(110, 1.7704+0.01161j)
-    st.add_layer(35, 1.4621+0.04426j)
-    st.add_layer(220, 2.12+0.3166016j)
-    st.add_layer(7, 2.095+2.3357j)
+    st.add_layer(110, 1.7704 + 0.01161j)
+    st.add_layer(35, 1.4621 + 0.04426j)
+    st.add_layer(220, 2.12 + 0.3166016j)
+    st.add_layer(7, 2.095 + 2.3357j)
     st.add_layer(200, 1.20252 + 7.25439j)
     st.add_layer(0, 1.20252 + 7.25439j)
 
-    plt.figure()
-    st.set_wavelength(600)
+    st.set_vacuum_wavelength(600)
     st.set_polarization('s')
-    st.set_angle(0, units='degrees')
+    st.set_field('E')
+    st.set_incident_angle(0, units='degrees')
+    st.print_info()
 
-    y = st.structure_field()['A_squared']
-    plt.plot(y)
+    # Do calculations
+    result = st.calc_field_structure()
+    z = result['z']
+    y = result['field_squared']
 
-    plt.axhline(y=1, linestyle='--', color='k')
+    # Plot results
+    plt.figure()
+    plt.plot(z, y)
     for z in st.get_layer_boundaries()[:-1]:
-        plt.axvline(x=z, color='r', lw=2)
+        plt.axvline(x=z, color='k', lw=2)
     plt.xlabel('Position in Device (nm)')
-    plt.ylabel('Normalized |E|$^2$Intensity')
-    plt.savefig('../Images/McGehee_structure.png', dpi=300)
+    plt.ylabel('Normalized |E|$^2$ Intensity ($|E(z)/E_0(0)|^2$)')
+    if SAVE:
+        plt.savefig('../Images/McGehee structure.png', dpi=300)
     plt.show()
 
 
 def spe():
-    # Create structure
     st = LifetimeTmm()
 
-    # Set vacuum wavelength
     lam0 = 1550
-    st.set_wavelength(lam0)
+    st.set_vacuum_wavelength(lam0)
 
     # Add layers
     # st.add_layer(lam0, 1)
@@ -52,7 +54,7 @@ def spe():
     # st.add_layer(lam0, 1)
 
     # Get results
-    result = st.spe_structure_radiative()
+    result = st.calc_spe_structure_radiative()
     z = result['z']
     spe = result['spe']
     spe_TE = spe['TE_total']
@@ -64,7 +66,7 @@ def spe():
     ax1 = fig.add_subplot(211)
     ax1.plot(z, spe_TE, label='TE')
     ax1.plot(z, spe_TM_p, label='TM')
-    ax1.plot(z, spe_TE+spe_TM_p, 'k', label='TE + TM')
+    ax1.plot(z, spe_TE + spe_TM_p, 'k', label='TE + TM')
     ax2 = fig.add_subplot(212)
     ax2.plot(z, spe_TM_s, label='TM')
 
@@ -77,8 +79,8 @@ def spe():
     ax2.axhline(y=1, linestyle='--', color='k')
     # Plot layer boundaries
     for z in st.get_layer_boundaries()[:-1]:
-        ax1.axvline(z, color='r', lw=2)
-        ax2.axvline(z, color='r', lw=2)
+        ax1.axvline(z, color='k', lw=2)
+        ax2.axvline(z, color='k', lw=2)
     ax1.legend(title='Horizontal Dipoles')
     ax2.legend(title='Vertical Dipoles')
     plt.show()
@@ -94,7 +96,7 @@ def guiding_plot():
     # Create structure
     st = LifetimeTmm()
     lam0 = 1550
-    st.set_wavelength(lam0)
+    st.set_vacuum_wavelength(lam0)
     st.set_field('E')
     st.guided = True
     air = 1
@@ -140,7 +142,7 @@ def guiding_E_plot():
     # Create structure
     st = TransferMatrix()
     lam0 = 1550
-    st.set_wavelength(lam0)
+    st.set_vacuum_wavelength(lam0)
     st.set_field('E')
     air = 1
     sio2 = 3.48
@@ -154,10 +156,10 @@ def guiding_E_plot():
     plt.figure()
     for i, a in enumerate(alpha):
         st.n_11 = a
-        result = st.structure_field()
+        result = st.calc_field_structure()
         z = result['z']
         E = result['A']
-        plt.plot(z, abs(E)**2, label=i)
+        plt.plot(z, abs(E) ** 2, label=i)
     for z in st.get_layer_boundaries()[:-1]:
         plt.axvline(x=z, color='r', lw=2)
         plt.legend(title='Mode index')
@@ -168,7 +170,7 @@ def test():
     # Create structure
     st = LifetimeTmm()
     lam0 = 1550
-    st.set_wavelength(lam0)
+    st.set_vacuum_wavelength(lam0)
     st.set_field('E')
     air = 1
     sio2 = 3.48
@@ -182,12 +184,15 @@ def test():
     E = result['E']['TE']
 
     plt.figure()
-    plt.plot(z, abs(E)**2)
+    plt.plot(z, abs(E) ** 2)
     plt.show()
 
+
 if __name__ == "__main__":
-    mcgehee()
-    spe()
+    SAVE = False
+
+    # mcgehee()
+    # spe()
     guiding_plot()
-    guiding_E_plot()
+    # guiding_E_plot()
     # test()

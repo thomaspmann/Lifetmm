@@ -26,7 +26,7 @@ class LifetimeTmm(TransferMatrix):
             self.flip()
             layer = self.num_layers - layer - 1
 
-        # Lower cladding incomming wave vector magnitude
+        # Lower cladding incoming wave vector magnitude
         k0 = self.k(0)
 
         # z positions to evaluate E at
@@ -72,7 +72,7 @@ class LifetimeTmm(TransferMatrix):
         # Evaluate all E field components for TE and TM modes looping over the emission angles.
         for i, theta in tqdm(enumerate(th_in), **kwargs):
             # Set the angle to be evaluated
-            self.set_angle(theta)
+            self.set_incident_angle(theta)
 
             # Wave vector components in layer (q, k_11 are angle dependent)
             k, q, k_11 = self.wave_vector(layer)
@@ -151,16 +151,16 @@ class LifetimeTmm(TransferMatrix):
 
         return {'z': z, 'spe': spe}
 
-    def spe_structure_radiative(self):
+    def calc_spe_structure_radiative(self):
         """ Evaluate the spontaneous emission rate vs z of the structure for each dipole orientation.
             Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
         """
         # z positions to evaluate E field at over entire structure
-        z_pos = np.arange((self.z_step / 2.0), self.d_cumsum[-1], self.z_step)
+        z_pos = np.arange((self.z_step / 2.0), self.d_cumulative[-1], self.z_step)
 
         # get z_mat - specifies what layer the corresponding point in z_pos is in
         comp1 = np.kron(np.ones((self.num_layers, 1)), z_pos)
-        comp2 = np.transpose(np.kron(np.ones((len(z_pos), 1)), self.d_cumsum))
+        comp2 = np.transpose(np.kron(np.ones((len(z_pos), 1)), self.d_cumulative))
         z_mat = sum(comp1 > comp2, 0)
 
         # Structure to hold field spontaneous emission rate components over z

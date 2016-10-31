@@ -29,7 +29,7 @@ def fig3():
         print('Evaluating n={:g}'.format(n))
         # Create structure
         st = LifetimeTmm()
-        st.set_wavelength(lam0)
+        st.set_vacuum_wavelength(lam0)
         st.add_layer(1550, 1.5)
         st.add_layer(0, n)
         # Calculate spontaneous emission of layer 0 (1st)
@@ -78,12 +78,12 @@ def fig4():
         print('Evaluating n={:g}'.format(n))
         # Create structure
         st = LifetimeTmm()
-        st.set_wavelength(lam0)
+        st.set_vacuum_wavelength(lam0)
         st.add_layer(4*units, n)
         st.add_layer(4*units, 1.5)
-        st.info()
+        st.print_info()
         # Calculate spontaneous emission over whole structure
-        result = st.spe_structure_radiative()
+        result = st.calc_spe_structure_radiative()
         z = result['z']
         # Shift so centre of structure at z=0
         z -= st.get_structure_thickness() / 2
