@@ -112,7 +112,7 @@ def guiding_plot():
     st.set_polarization('TE')
     [beta, S_11] = st.s11_guided()
     ax1.plot(beta, S_11, label='TE')
-    roots = st.find_guided_modes()
+    roots = st.calc_guided_modes()
     for root in roots:
         ax1.axvline(root, color='r')
 
@@ -120,7 +120,7 @@ def guiding_plot():
     st.set_polarization('TM')
     [beta, S_11] = st.s11_guided()
     ax2.plot(beta, S_11, label='TM')
-    roots = st.find_guided_modes()
+    roots = st.calc_guided_modes()
     for root in roots:
         ax2.axvline(root, color='r')
 
@@ -138,7 +138,7 @@ def guiding_plot():
     plt.show()
 
 
-def guiding_E_plot():
+def guiding_electric_field():
     # Create structure
     st = TransferMatrix()
     lam0 = 1550
@@ -152,17 +152,17 @@ def guiding_E_plot():
 
     st.set_polarization('TE')
     st.guided = True
-    alpha = st.find_guided_modes()[::-1]
+    alpha = st.calc_guided_modes()[::-1]
     plt.figure()
     for i, a in enumerate(alpha):
         st.n_11 = a
         result = st.calc_field_structure()
         z = result['z']
-        E = result['A']
+        E = result['field']
         plt.plot(z, abs(E) ** 2, label=i)
     for z in st.get_layer_boundaries()[:-1]:
-        plt.axvline(x=z, color='r', lw=2)
-        plt.legend(title='Mode index')
+        plt.axvline(x=z, color='k', lw=2)
+    plt.legend(title='Mode index')
     plt.show()
 
 
@@ -174,17 +174,20 @@ def test():
     st.set_field('E')
     air = 1
     sio2 = 3.48
-    st.add_layer(0 * lam0, air)
+    st.add_layer(1 * lam0, air)
     st.add_layer(1 * lam0, sio2)
-    st.add_layer(0 * lam0, air)
+    st.add_layer(1 * lam0, air)
 
-    st.set_polarization('TE')
-    result = st.spe_layer_guided(1)
+    result = st.calc_spe_structure_guided()
     z = result['z']
-    E = result['E']['TE']
+    spe = result['spe']
 
     plt.figure()
-    plt.plot(z, abs(E) ** 2)
+    plt.plot(z, spe['TE'], lw=2)
+    # plt.plot(z, spe['TM_p'], lw=2)
+    # plt.plot(z, spe['TM_s'], lw=2)
+    for z in st.get_layer_boundaries()[:-1]:
+        plt.axvline(x=z, color='k', lw=2, zorder=-1)
     plt.show()
 
 
@@ -193,6 +196,6 @@ if __name__ == "__main__":
 
     # mcgehee()
     # spe()
-    guiding_plot()
+    # guiding_plot()
     # guiding_E_plot()
-    # test()
+    test()

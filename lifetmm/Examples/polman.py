@@ -33,9 +33,9 @@ def fig3():
         st.add_layer(1550, 1.5)
         st.add_layer(0, n)
         # Calculate spontaneous emission of layer 0 (1st)
-        result = st.spe_layer_radiative(layer=0, emission='Lower', th_num=13)
+        result = st.calc_spe_layer_radiative(layer=0, emission='Lower', th_num=13)
         spe = result['spe']['total']
-        result = st.spe_layer_radiative(layer=0, emission='Upper', th_num=13)
+        result = st.calc_spe_layer_radiative(layer=0, emission='Upper', th_num=13)
         spe += result['spe']['total']
         # Take average
         spe /= 2

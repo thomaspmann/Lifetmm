@@ -31,7 +31,7 @@ def fig3():
     spe = result['spe']
 
     # Convert z into z/lam0 and center
-    z = st.z_to_lambda(z)
+    z = st.calc_z_to_lambda(z)
 
     # Plot spontaneous emission rates
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row', figsize=(15, 7))
@@ -51,10 +51,10 @@ def fig3():
 
     # Plot internal layer boundaries
     for z in st.get_layer_boundaries()[:-1]:
-        ax1.axvline(st.z_to_lambda(z), color='k', lw=2)
-        ax2.axvline(st.z_to_lambda(z), color='k', lw=2)
-        ax3.axvline(st.z_to_lambda(z), color='k', lw=2)
-        ax4.axvline(st.z_to_lambda(z), color='k', lw=2)
+        ax1.axvline(st.calc_z_to_lambda(z), color='k', lw=2)
+        ax2.axvline(st.calc_z_to_lambda(z), color='k', lw=2)
+        ax3.axvline(st.calc_z_to_lambda(z), color='k', lw=2)
+        ax4.axvline(st.calc_z_to_lambda(z), color='k', lw=2)
 
     ax1.set_ylim(0, 4)
     ax3.set_ylim(0, 6)
@@ -95,7 +95,7 @@ def fig6():
     spe = result['spe']
 
     # Convert z into z/lam0 and center
-    z = st.z_to_lambda(z)
+    z = st.calc_z_to_lambda(z)
 
     # Plot spontaneous emission rates
     fig = plt.figure()
@@ -108,8 +108,8 @@ def fig6():
 
     # Plot layer boundaries
     for z in st.get_layer_boundaries()[:-1]:
-        ax1.axvline(st.z_to_lambda(z), color='r', lw=2)
-        ax2.axvline(st.z_to_lambda(z), color='r', lw=2)
+        ax1.axvline(st.calc_z_to_lambda(z), color='r', lw=2)
+        ax2.axvline(st.calc_z_to_lambda(z), color='r', lw=2)
 
     ax1.set_ylim(0, 1.4)
     ax2.set_ylim(0, 1.4)
@@ -145,7 +145,7 @@ def figx():
     spe = result['spe']
 
     # Convert z into z/lam0 and center
-    z = st.z_to_lambda(z)
+    z = st.calc_z_to_lambda(z)
 
     # Plot spontaneous emission rates
     fig = plt.figure()
@@ -158,8 +158,8 @@ def figx():
 
     # Plot layer boundaries
     for z in st.get_layer_boundaries()[:-1]:
-        ax1.axvline(st.z_to_lambda(z), color='r', lw=2)
-        ax2.axvline(st.z_to_lambda(z), color='r', lw=2)
+        ax1.axvline(st.calc_z_to_lambda(z), color='r', lw=2)
+        ax2.axvline(st.calc_z_to_lambda(z), color='r', lw=2)
 
     ax1.set_title('Spontaneous Emission Rate. Air (n=1) with silicon cladding (n=3.48).')
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
