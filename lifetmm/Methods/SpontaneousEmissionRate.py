@@ -253,7 +253,6 @@ class LifetimeTmm(TransferMatrix):
                                       ('TE', 'float64'),
                                       ('TM_p', 'float64'),
                                       ('TM_s', 'float64')])
-        spe1 = np.zeros(len(z))
 
         # !* TE guided modes *!
         self.set_polarization('TE')
@@ -344,15 +343,14 @@ class LifetimeTmm(TransferMatrix):
             assert max(electric_field['TM_p']) < 100, ValueError('TMM Unstable.')
 
             # TODO: Find corresponding phase velocity
-            v = 1
+            v = c
 
             spe['TM_s'] += abs(electric_field['TM_s']) ** 2 * (k / v)
             spe['TM_p'] += abs(electric_field['TM_p']) ** 2 * (k / v)
-        # # Normalise emission rates to vacuum emission rate of a randomly orientated dipole
-        # # TODO: omega
-        # omega = 1
-        # spe['TM_s'] *= (3*pi*c**5)/(4*omega**4)
-        # spe['TM_p'] *= (3*pi*c**5)/(2*omega**4)
+        # Normalise emission rates to vacuum emission rate of a randomly orientated dipole
+
+        spe['TM_s'] *= (3*pi*c*self.lam_vac**4)/(4*(2*pi)**4)
+        spe['TM_p'] *= (3*pi*c*self.lam_vac**4)/(2*(2*pi)**4)
 
         return {'z': z, 'spe': spe}
 
