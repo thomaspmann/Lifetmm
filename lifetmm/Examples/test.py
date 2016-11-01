@@ -182,12 +182,15 @@ def test():
     z = result['z']
     spe = result['spe']
 
-    plt.figure()
-    plt.plot(z, spe['TE'], lw=2)
-    # plt.plot(z, spe['TM_p'], lw=2)
-    # plt.plot(z, spe['TM_s'], lw=2)
+    fig, ax = plt.subplots(3, 1, sharex='col', sharey='none')
+    (ax1, ax2, ax3) = ax
+    ax1.plot(z, spe['TE'], lw=2, label='TE')
+    ax2.plot(z, spe['TM_p'], lw=2, label='TM_p')
+    ax3.plot(z, spe['TM_s'], lw=2, label='TM_s')
     for z in st.get_layer_boundaries()[:-1]:
-        plt.axvline(x=z, color='k', lw=2, zorder=-1)
+        ax1.axvline(x=z, color='k', lw=2, zorder=-1)
+        ax2.axvline(x=z, color='k', lw=2, zorder=-1)
+        ax3.axvline(x=z, color='k', lw=2, zorder=-1)
     plt.show()
 
 

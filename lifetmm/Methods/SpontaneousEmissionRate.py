@@ -231,18 +231,10 @@ class LifetimeTmm(TransferMatrix):
     def calc_spe_layer_guided(self, layer):
         self.guided = True
 
-        # # Evaluate all layer and cladding field coefficients for guiding field
-        # amp_plus = np.zeros(self.num_layers, dtype=complex)
-        # amp_minus = np.zeros(self.num_layers, dtype=complex)
-        # for j in range(0, self.num_layers):
-        #     plus, minus = self.calc_layer_guided_amplitudes(j)
-        #     amp_plus[j] = plus
-        #     amp_minus[j] = minus
-
         # # Evaluate guiding layer in structure(one with highest refractive index)
-        # n = self.n_list
-        # layer_guiding = np.where(n == max(n))[0][0]
-
+        n = self.n_list
+        layer_guiding = np.where(n == max(n))[0][0]
+        assert layer_guiding not in [0, self.num_layers-1], ValueError('This structure does not support wave guiding.')
         # z positions to evaluate E at
         assert self.d_list[layer] != 0, ValueError('The layer must have a thickness to use this function.)')
         z = np.arange((self.z_step / 2.0), self.d_list[layer], self.z_step)
