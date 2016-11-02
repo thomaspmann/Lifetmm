@@ -228,8 +228,11 @@ class LifetimeTmm(TransferMatrix):
 
         return {'z': z_pos, 'spe': spe}
 
-    def calc_spe_layer_guided(self, layer, roots_te, roots_tm):
+    def calc_spe_layer_guided(self, layer, roots_te=None, roots_tm=None):
         self.guided = True
+
+        if roots_te is None or roots_tm is None:
+            roots_te, roots_tm = self.calc_guided_roots()
 
         # # Evaluate guiding layer in structure(one with highest refractive index)
         n = self.n_list.real
@@ -369,15 +372,7 @@ class LifetimeTmm(TransferMatrix):
                                           ('TM_s', 'float64')])
 
         # !* Evaluate roots for TE and TM guided modes *!
-        print('Evaluating guided modes (k_11/k) for each polarisation:')
-        print('TE')
-        self.set_polarization('TE')
-        self.set_field('E')
-        roots_te = self.calc_guided_modes()
-        print('TM')
-        self.set_polarization('TM')
-        self.set_field('H')
-        roots_tm = self.calc_guided_modes()
+        roots_te, roots_tm = self.calc_guided_roots()
 
         print('Evaluating guided modes for each layer:')
         for layer in range(self.num_layers):
@@ -404,6 +399,19 @@ class LifetimeTmm(TransferMatrix):
 
         return {'z': z_pos, 'spe': spe}
 
+    def calc_guided_roots(self):
+        self.guided = True
+        # !* Evaluate roots for TE and TM guided modes *!
+        print('Evaluating guided modes (k_11/k) for each polarisation:')
+        print('TE')
+        self.set_polarization('TE')
+        self.set_field('E')
+        roots_te = self.calc_guided_modes()
+        print('TM')
+        self.set_polarization('TM')
+        self.set_field('H')
+        roots_tm = self.calc_guided_modes()
+        return roots_te, roots_tm
 
 # Helper Functions
 def flip_spe_results(spe):
