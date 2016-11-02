@@ -6,7 +6,9 @@ Script to recreate the plots in the paper
 """
 
 import matplotlib.pyplot as plt
+
 from lifetmm.Methods.SpontaneousEmissionRate import *
+
 SAVE = False
 
 
@@ -68,6 +70,51 @@ def fig3():
     ax2.legend(title='Horizontal Dipoles', prop={'size': size})
     ax3.legend(title='Vertical Dipoles', prop={'size': size})
     ax4.legend(title='Vertical Dipoles', prop={'size': size})
+    fig.tight_layout()
+    if SAVE:
+        plt.savefig('../Images/spe_vs_n.png', dpi=300)
+    plt.show()
+
+
+def fig5():
+    # Create structure
+    st = LifetimeTmm()
+    lam0 = 1550
+    st.set_vacuum_wavelength(lam0)
+    st.set_field('E')
+    air = 1
+    sio2 = 3.48
+    st.add_layer(1.5 * lam0, air)
+    st.add_layer(1 * lam0, sio2)
+    st.add_layer(1.5 * lam0, air)
+
+    result = st.calc_spe_structure_guided()
+    z = result['z']
+    spe = result['spe']
+    # Convert z into z/lam0 and center
+    z = st.calc_z_to_lambda(z)
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, sharex='col', sharey='none')
+
+    ax1.plot(z, spe['TE'], label='TE')
+    ax1.plot(z, spe['TM_p'], label='TM')
+    ax1.plot(z, spe['TE'] + spe['TM_p'], label='TE + TM')
+
+    ax2.plot(z, spe['TM_s'], lw=2, label='TM')
+    for z in st.get_layer_boundaries()[:-1]:
+        z = st.calc_z_to_lambda(z)
+        ax1.axvline(x=z, color='k', lw=2, zorder=-1)
+        ax2.axvline(x=z, color='k', lw=2, zorder=-1)
+    ax1.set_ylim(0, 4)
+    ax2.set_ylim(0, 6)
+    ax1.set_title('Spontaneous Emission Rate. LHS n=3.48, RHS n=1.')
+    ax1.set_ylabel('$\Gamma / \Gamma_0$')
+    ax2.set_ylabel('$\Gamma /\Gamma_0$')
+    ax2.set_xlabel('z/$\lambda$')
+    size = 12
+    ax1.legend(title='Horizontal Dipoles', prop={'size': size})
+    ax2.legend(title='Horizontal Dipoles', prop={'size': size})
+
     fig.tight_layout()
     if SAVE:
         plt.savefig('../Images/spe_vs_n.png', dpi=300)
@@ -171,6 +218,7 @@ def figx():
     plt.show()
 
 if __name__ == "__main__":
-    fig3()
-    fig6()
+    # fig3()
+    fig5()
+    # fig6()
     # figx()

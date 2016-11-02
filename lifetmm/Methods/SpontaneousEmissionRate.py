@@ -3,7 +3,6 @@ import time
 import numpy as np
 import scipy.integrate as integrate
 from numpy import pi, sin, sum, exp, sinc, conj
-from scipy.constants import c
 from tqdm import *
 
 from lifetmm.Methods.TransferMatrix import TransferMatrix
@@ -232,7 +231,7 @@ class LifetimeTmm(TransferMatrix):
         self.guided = True
 
         # # Evaluate guiding layer in structure(one with highest refractive index)
-        n = self.n_list
+        n = self.n_list.real
         layer_guiding = np.where(n == max(n))[0][0]
         assert layer_guiding not in [0, self.num_layers-1], ValueError('This structure does not support wave guiding.')
         # z positions to evaluate E at
@@ -291,19 +290,18 @@ class LifetimeTmm(TransferMatrix):
             # Evaluate E(z)
             electric_field['TE'] = a * exp(1j * q * z) + b * exp(-1j * q * z)
             assert max(electric_field['TE']) < 100, ValueError('TMM likely unstable.')
-            # TODO: Find corresponding phase velocity
-            v = c
-            spe['TE'] += abs(electric_field['TE']) ** 2 * (k / v)
+
+            spe['TE'] += abs(electric_field['TE']) ** 2 * k_11
         # Normalise emission rates to vacuum emission rate of a randomly orientated dipole
-        spe['TE'] *= 3*pi*c/4
+        spe['TE'] *= 3 * pi * n[layer_guiding] / 4
 
         # !* TM radiative modes *!
         self.set_polarization('TM')
         # Calculate H field within layer
         self.set_field('H')
         # Find guided modes parallel wave vector
-        for alpha in self.calc_guided_modes():
-            self.n_11 = alpha
+        for mode in self.calc_guided_modes():
+            self.n_11 = mode
 
             # Evaluate the normalisation (B8) and apply
             norm = 0
@@ -342,15 +340,14 @@ class LifetimeTmm(TransferMatrix):
             assert max(electric_field['TM_s']) < 100, ValueError('TMM Unstable.')
             assert max(electric_field['TM_p']) < 100, ValueError('TMM Unstable.')
 
-            # TODO: Find corresponding phase velocity
-            v = c
-
-            spe['TM_s'] += abs(electric_field['TM_s']) ** 2 * (k / v)
-            spe['TM_p'] += abs(electric_field['TM_p']) ** 2 * (k / v)
+            # TODO: Find corresponding group velocity dw/dk
+            v = 1 / n[layer_guiding]
+            print(k_11)
+            spe['TM_p'] += abs(electric_field['TM_p']) ** 2 * (k_11 / v)
+            spe['TM_s'] += abs(electric_field['TM_s']) ** 2 * (k_11 / v)
         # Normalise emission rates to vacuum emission rate of a randomly orientated dipole
-
-        spe['TM_s'] *= (3*pi*c*self.lam_vac**4)/(4*(2*pi)**4)
-        spe['TM_p'] *= (3*pi*c*self.lam_vac**4)/(2*(2*pi)**4)
+        spe['TM_p'] *= (3 * self.lam_vac ** 4) / (2 ** 6 * pi ** 3)
+        spe['TM_s'] *= (3 * self.lam_vac ** 4) / (2 ** 5 * pi ** 3)
 
         return {'z': z, 'spe': spe}
 
