@@ -3,6 +3,7 @@ import time
 import numpy as np
 import scipy.integrate as integrate
 from numpy import pi, sin, sum, exp, sinc, conj
+from scipy.constants import c
 from tqdm import *
 
 from lifetmm.Methods.TransferMatrix import TransferMatrix
@@ -290,10 +291,11 @@ class LifetimeTmm(TransferMatrix):
             # Evaluate E(z)
             electric_field['TE'] = a * exp(1j * q * z) + b * exp(-1j * q * z)
             assert max(electric_field['TE']) < 100, ValueError('TMM likely unstable.')
-
-            spe['TE'] += abs(electric_field['TE']) ** 2 * k_11
+            # TODO: Find corresponding group velocity dw/dk
+            v = c / n[layer_guiding]
+            spe['TE'] += abs(electric_field['TE']) ** 2 * (k_11 / v)
         # Normalise emission rates to vacuum emission rate of a randomly orientated dipole
-        spe['TE'] *= 3 * pi * n[layer_guiding] / 4
+        spe['TE'] *= 3 * pi * c / 4
 
         # !* TM radiative modes *!
         self.set_polarization('TM')
@@ -341,13 +343,13 @@ class LifetimeTmm(TransferMatrix):
             assert max(electric_field['TM_p']) < 100, ValueError('TMM Unstable.')
 
             # TODO: Find corresponding group velocity dw/dk
-            v = 1 / n[layer_guiding]
+            v = c / n[layer_guiding]
             print(k_11)
             spe['TM_p'] += abs(electric_field['TM_p']) ** 2 * (k_11 / v)
             spe['TM_s'] += abs(electric_field['TM_s']) ** 2 * (k_11 / v)
         # Normalise emission rates to vacuum emission rate of a randomly orientated dipole
-        spe['TM_p'] *= (3 * self.lam_vac ** 4) / (2 ** 6 * pi ** 3)
-        spe['TM_s'] *= (3 * self.lam_vac ** 4) / (2 ** 5 * pi ** 3)
+        spe['TM_p'] *= (3 * c * self.lam_vac ** 4) / (2 ** 6 * pi ** 3)
+        spe['TM_s'] *= (3 * c * self.lam_vac ** 4) / (2 ** 5 * pi ** 3)
 
         return {'z': z, 'spe': spe}
 
