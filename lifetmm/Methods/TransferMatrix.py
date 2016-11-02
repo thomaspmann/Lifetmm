@@ -308,6 +308,20 @@ class TransferMatrix:
         alphas = roots(self._s11, n[0], max(n))
         return alphas
 
+    def calc_guided_modes_te_tm(self):
+        self.guided = True
+        # !* Evaluate roots for TE and TM guided modes *!
+        print('Evaluating guided modes (k_11/k) for each polarisation:')
+        print('TE')
+        self.set_polarization('TE')
+        self.set_field('E')
+        roots_te = self.calc_guided_modes()
+        print('TM')
+        self.set_polarization('TM')
+        self.set_field('H')
+        roots_tm = self.calc_guided_modes()
+        return roots_te, roots_tm
+
     def show_structure(self):
         """ Brings up a plot showing the structure.
         """
