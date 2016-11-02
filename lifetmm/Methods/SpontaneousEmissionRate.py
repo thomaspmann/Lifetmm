@@ -228,7 +228,7 @@ class LifetimeTmm(TransferMatrix):
 
         return {'z': z_pos, 'spe': spe}
 
-    def calc_spe_layer_guided(self, layer):
+    def calc_spe_layer_guided(self, layer, roots_te, roots_tm):
         self.guided = True
 
         # # Evaluate guiding layer in structure(one with highest refractive index)
@@ -258,7 +258,7 @@ class LifetimeTmm(TransferMatrix):
         self.set_polarization('TE')
         # Calculate E field within layer
         self.set_field('E')
-        for mode in self.calc_guided_modes():
+        for mode in roots_te:
             self.n_11 = mode
 
             # Evaluate the normalisation (B4) and apply
@@ -302,7 +302,7 @@ class LifetimeTmm(TransferMatrix):
         # Calculate H field within layer
         self.set_field('H')
         # Find guided modes parallel wave vector
-        for mode in self.calc_guided_modes():
+        for mode in roots_tm:
             self.n_11 = mode
 
             # Evaluate the normalisation (B8) and apply
@@ -344,7 +344,6 @@ class LifetimeTmm(TransferMatrix):
 
             # TODO: Find corresponding group velocity dw/dk
             v = c / n[layer_guiding]
-            print(k_11)
             spe['TM_p'] += abs(electric_field['TM_p']) ** 2 * (k_11 / v)
             spe['TM_s'] += abs(electric_field['TM_s']) ** 2 * (k_11 / v)
         # Normalise emission rates to vacuum emission rate of a randomly orientated dipole
@@ -354,6 +353,7 @@ class LifetimeTmm(TransferMatrix):
         return {'z': z, 'spe': spe}
 
     def calc_spe_structure_guided(self):
+        self.guided = True
         # z positions to evaluate E field at over entire structure
         z_pos = np.arange((self.z_step / 2.0), self.d_cumulative[-1], self.z_step)
 
@@ -368,8 +368,18 @@ class LifetimeTmm(TransferMatrix):
                                           ('TM_p', 'float64'),
                                           ('TM_s', 'float64')])
 
-        # Calculate emission rates for guided modes in each layer
-        print('Evaluating lower and upper radiative modes for each layer:')
+        # !* Evaluate roots for TE and TM guided modes *!
+        print('Evaluating guided modes (k_11/k) for each polarisation:')
+        print('TE')
+        self.set_polarization('TE')
+        self.set_field('E')
+        roots_te = self.calc_guided_modes()
+        print('TM')
+        self.set_polarization('TM')
+        self.set_field('H')
+        roots_tm = self.calc_guided_modes()
+
+        print('Evaluating guided modes for each layer:')
         for layer in range(self.num_layers):
             # Print simulation information to command line
             if layer == 0:
@@ -384,7 +394,7 @@ class LifetimeTmm(TransferMatrix):
             ind = np.where(z_mat == layer)
 
             # Calculate lower radiative modes
-            spe_layer = self.calc_spe_layer_guided(layer)['spe']
+            spe_layer = self.calc_spe_layer_guided(layer, roots_te, roots_tm)['spe']
             spe['TE'][ind] += spe_layer['TE']
             spe['TM_p'][ind] += spe_layer['TM_p']
             spe['TM_s'][ind] += spe_layer['TM_s']
