@@ -25,7 +25,7 @@ class TransferMatrix:
         Add layer of t hickness d and refractive index n to the structure.
         """
         d = float(d)
-        assert d.is_integer(), ValueError('Thickness must be a whole number (integer).')
+        assert d.is_integer() or d == 0, ValueError('Thickness must be a whole number (integer).')
         self.d_list = np.append(self.d_list, d)
         self.n_list = np.append(self.n_list, n)
         self.d_cumulative = np.cumsum(self.d_list)

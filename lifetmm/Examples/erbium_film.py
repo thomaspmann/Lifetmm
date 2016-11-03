@@ -4,7 +4,9 @@ Thin film calculations.
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 from lifetmm.Methods.SpontaneousEmissionRate import LifetimeTmm
+
 SAVE = True  # Save figs and data? (bool)
 
 
@@ -65,9 +67,9 @@ def t2_spe_vs_n():
         st.add_layer(980, 1.56)
         st.add_layer(0, n)
         # Calculate spontaneous emission of layer 0 (1st)
-        result = st.calc_spe_layer_radiative(layer=1, emission='Lower', th_num=13)
+        result = st.calc_spe_layer_radiative(layer=1, emission='Lower', th_pow=13)
         spe = result['spe']['total']
-        result = st.calc_spe_layer_radiative(layer=1, emission='Upper', th_num=13)
+        result = st.calc_spe_layer_radiative(layer=1, emission='Upper', th_pow=13)
         spe += result['spe']['total']
         # Take average
         spe /= 2

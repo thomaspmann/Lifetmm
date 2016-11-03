@@ -8,7 +8,9 @@ Recreate plots from
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import pi
+
 from lifetmm.Methods.SpontaneousEmissionRate import LifetimeTmm
+
 SAVE = False  # Save figs and data? (bool)
 
 
@@ -79,8 +81,8 @@ def fig4():
         # Create structure
         st = LifetimeTmm()
         st.set_vacuum_wavelength(lam0)
-        st.add_layer(4*units, n)
-        st.add_layer(4*units, 1.5)
+        st.add_layer(int(4 * units), n)
+        st.add_layer(int(4 * units), 1.5)
         st.print_info()
         # Calculate spontaneous emission over whole structure
         result = st.calc_spe_structure_radiative()
