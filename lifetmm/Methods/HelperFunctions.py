@@ -25,7 +25,7 @@ def root_search(f, a, b, dx):
     return x1, x2
 
 
-def roots(f, a, b, num=1000):
+def roots(f, a, b, num=20000):
     """ Find roots of f within the interval [a,b]. Interval is discretised
     into num equal elements, dx, and a root is searched for within each dx.
     """

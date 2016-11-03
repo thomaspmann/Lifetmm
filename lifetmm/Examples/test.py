@@ -95,7 +95,8 @@ def guiding_plot():
     lam0 = 1550
     st.set_vacuum_wavelength(lam0)
     st.set_field('E')
-    st.guided = True
+    st.set_radiative_or_guiding(radiative=False)
+    # st.guided = True
     air = 1
     sio2 = 3.48
     st.add_layer(0 * lam0, air)
@@ -147,11 +148,11 @@ def guiding_electric_field():
     st.add_layer(1 * lam0, sio2)
     st.add_layer(1 * lam0, air)
     st.set_polarization('TE')
-    st.guided = True
+    st.set_radiative_or_guiding('guiding')
     alpha = st.calc_guided_modes()[::-1]
     plt.figure()
     for i, a in enumerate(alpha):
-        st.n_11 = a
+        st.set_guided_mode(a)
         result = st.calc_field_structure()
         z = result['z']
         z = st.calc_z_to_lambda(z)
@@ -163,37 +164,8 @@ def guiding_electric_field():
         z = st.calc_z_to_lambda(z)
         plt.axvline(x=z, color='k', lw=2)
     plt.legend(title='Mode index')
-    plt.show()
-
-
-def test():
-    # Create structure
-    st = TransferMatrix()
-    lam0 = 1550
-    st.set_vacuum_wavelength(lam0)
-    st.set_field('E')
-    air = 1
-    sio2 = 3.48
-    st.add_layer(1 * lam0, air)
-    st.add_layer(1 * lam0, sio2)
-    st.add_layer(1 * lam0, air)
-    st.set_polarization('TE')
-    st.guided = True
-    alpha = st.calc_guided_modes()[::-1]
-    plt.figure()
-
-    st.n_11 = alpha[0]
-    result = st.calc_field_structure()
-    z = result['z']
-    z = st.calc_z_to_lambda(z)
-    E = result['field']
-    # Normalise fields
-    # E /= max(E)
-    plt.plot(z, abs(E) ** 2, label='0')
-    for z in st.get_layer_boundaries()[:-1]:
-        z = st.calc_z_to_lambda(z)
-        plt.axvline(x=z, color='k', lw=2)
-    plt.legend(title='Mode index')
+    if SAVE:
+        plt.savefig('../Images/guided fields.png', dpi=300)
     plt.show()
 
 
@@ -204,4 +176,3 @@ if __name__ == "__main__":
     # spe()
     # guiding_plot()
     guiding_electric_field()
-    # test()

@@ -13,23 +13,27 @@ class TransferMatrix:
         self.num_layers = 0
         self.lam_vac = 0
         self.pol = ''
-        self.n_11 = 0
         # Default simulation parameters
         self.field = 'E'
         self.th = 0
-        self.guided = False
         self.z_step = 1
+        self.guided = False
+        self.n_11 = 0  # Normalised parallel wave vector. Only defined and used for guiding modes.
 
     def add_layer(self, d, n):
-        """ Add layer of thickness d and refractive index n to the structure.
         """
+        Add layer of t hickness d and refractive index n to the structure.
+        """
+        d = float(d)
+        assert d.is_integer(), ValueError('Thickness must be a whole number (integer).')
         self.d_list = np.append(self.d_list, d)
         self.n_list = np.append(self.n_list, n)
         self.d_cumulative = np.cumsum(self.d_list)
         self.num_layers = np.size(self.d_list)
 
     def set_vacuum_wavelength(self, lam_vac):
-        """ Set the vacuum wavelength to be simulated.
+        """
+        Set the vacuum wavelength to be simulated.
         Note to ensure that dimensions must be consistent with layer thicknesses.
         """
         if hasattr(lam_vac, 'size') and lam_vac.size > 1:
@@ -38,7 +42,8 @@ class TransferMatrix:
         self.lam_vac = lam_vac
 
     def set_polarization(self, pol):
-        """ Set the mode polarisation to be simulated ('s' or 'TE' and 'p' or 'TM')
+        """
+        Set the mode polarisation to be simulated ('s' or 'TE' and 'p' or 'TM')
         """
         if pol not in ['s', 'p', 'TE', 'TM'] and self.th != 0:
             raise ValueError("Polarisation must be defined when angle of incidence is"
@@ -46,14 +51,17 @@ class TransferMatrix:
         self.pol = pol
 
     def set_field(self, field):
-        """ Set the field to be evaluated. Either 'E' (default) or 'H' field.
+        """
+        Set the field to be evaluated. Either 'E' (default) or 'H' field.
         """
         if field not in ['E', 'H']:
             raise ValueError("The field must be either 'E' of 'H'.")
         self.field = field
 
     def set_incident_angle(self, th, units='radians'):
-        """ Set the incident angle of the plane wave.
+        """
+        Set the incident angle of the plane wave.
+        Used if simulating a radiative mode.
         """
         if hasattr(th, 'size') and th.size > 1:
             raise ValueError('This function is not vectorized; you need to run one '
@@ -70,15 +78,36 @@ class TransferMatrix:
             raise ValueError('Units of angle not recognised. Please enter \'radians\' or \'degrees\'.')
 
     def set_z_step(self, step):
-        """ Set the resolution in z of the simulation.
+        """
+        Set the resolution in z of the simulation.
         """
         if type(step) != int:
             raise ValueError('z_step must be an integer. Reduce SI unit'
                              'inputs for thicknesses and wavelengths for greater resolution ')
         self.z_step = step
 
+    def set_radiative_or_guiding(self, mode='radiative', n_11=0):
+        """
+        Determines whether simulation will solve for a guiding mode or radiative mode.
+        """
+        if mode == 'radiative':
+            self.guided = False
+        elif mode == 'guiding':
+            self.guided = True
+        else:
+            ValueError('options for mode must be either "radiative" or "guiding"')
+
+    def set_guided_mode(self, n_11):
+        assert self.guided, \
+            ValueError('Run set_radiative_or_guiding(radiative=False) first to initialise wave guiding guiding.')
+        n = self.n_list
+        # See Quantum Electronics by Yariv pg.603
+        assert max(n) >= n_11 > max(n[0], n[-1]), ValueError('Input n_11 is not valid for a guided mode.')
+        self.n_11 = n_11
+
     def calc_k(self, j):
-        """ Calculate the wave vector magnitude in layer j. Alternatively if j ==- 1
+        """
+        Calculate the wave vector magnitude in layer j. Alternatively if j ==- 1
         then we calculate the vacuum wave vector (k=omega/c).
         """
         if j == -1:
@@ -87,42 +116,46 @@ class TransferMatrix:
             n = self.n_list[j].real
         return 2 * pi * n / self.lam_vac
 
-    def calc_xi(self, j):
-        """ Normalised perpendicular wave-vector in layer j.
-        """
-        # Normalised wave-vector in layer
-        nj = self.n_list[j]
-
-        # Continuous across layers, so can evaluate from input theta
-        # and medium for incoming wave (hence radiative mode)
+    def calc_n_11(self):
         if not self.guided:
+            # Continuous across layers, so can evaluate from input theta
+            # and medium for incoming wave (hence radiative mode)
             n0 = self.n_list[0].real
-            n_11 = n0 * sin(self.th)
+            return n0 * sin(self.th)
         else:
-            n_11 = self.n_11
+            return self.n_11
+
+    def calc_xi(self, j):
+        """
+        Normalised perpendicular wave-vector in layer j.
+        """
+        # Normalised wave-vector magnitude in layer
+        nj = self.n_list[j]  # equivalent to k(j)/k0
+
+        n_11 = self.calc_n_11()
         return sqrt(nj ** 2 - n_11 ** 2)
 
     def calc_q(self, j):
-        """ Perpendicular wave vector in layer j
+        """
+        Perpendicular wave vector in layer j
         """
         xi = self.calc_xi(j)
-        k_vac = self.calc_k(-1)
-        return xi * k_vac
+        k0 = self.calc_k(-1)
+        return xi * k0
 
     def calc_k_11(self):
-        """ Parallel wave vector (same in all layers due to BCs)
         """
-        if not self.guided:
-            k0 = self.calc_k(0)
-            k_11 = k0 * sin(self.th)  # Note th needs to be in same layer as k0
-        else:
-            # TODO: check - n_11 will only be at discrete values.
-            # Probably multiply by k(j=guided instead)
-            k_11 = self.n_11 * self.calc_k(-1)
-        return k_11
+        Parallel wave vector (same in all layers due to BCs)
+        """
+        # Normalised parallel wave vector
+        n_11 = self.calc_n_11()
+        # Un-normalise
+        k0 = self.calc_k(-1)
+        return k0 * n_11
 
     def calc_wave_vector_components(self, j):
-        """ The wave vector magnitude and it's components perpendicular and parallel
+        """
+        The wave vector magnitude and it's components perpendicular and parallel
         to the interface inside the layer j.
         """
         # Layer wave vector and components
@@ -132,32 +165,34 @@ class TransferMatrix:
         return k, q, k_11
 
     def calc_i_matrix(self, j, k):
-        """ Returns the interference matrix between layers j and k.
         """
-        xj = self.calc_xi(j)
-        xk = self.calc_xi(k)
-        nj = self.n_list[j]
-        nk = self.n_list[k]
+        Returns the interference matrix between layers j and k.
+        """
+        xi_j = self.calc_xi(j)
+        xi_k = self.calc_xi(k)
+        n_j = self.n_list[j]
+        n_k = self.n_list[k]
         # Evaluate reflection and transmission coefficients for E field
         if self.pol in ['p', 'TM']:
-            r = (xj * nk ** 2 - xk * nj ** 2) / (xj * nk ** 2 + xk * nj ** 2)
-            t = (2 * nj * nk * xj) / (xj * nk ** 2 + xk * nj ** 2)
+            r = (xi_j * n_k ** 2 - xi_k * n_j ** 2) / (xi_j * n_k ** 2 + xi_k * n_j ** 2)
+            t = (2 * n_j * n_k * xi_j) / (xi_j * n_k ** 2 + xi_k * n_j ** 2)
         elif self.pol in ['s', 'TE']:
-            r = (xj - xk) / (xj + xk)
-            t = (2 * xj) / (xj + xk)
+            r = (xi_j - xi_k) / (xi_j + xi_k)
+            t = (2 * xi_j) / (xi_j + xi_k)
         else:
             raise ValueError('A polarisation for the field must be set.')
         if self.field == 'H':
             # Convert transmission coefficient for E field to that of the H field.
             # The reflection coefficient is the same as the medium does not change.
-            t *= nk / nj
+            t *= n_k / n_j
         if t == 0:
             # Can't evaluate I_mat when transmission t==0 as 1/t == inf
             t = np.nan
         return (1 / t) * np.array([[1, r], [r, 1]], dtype=complex)
 
     def calc_l_matrix(self, j):
-        """ Returns the propagation L matrix for layer j.
+        """
+        Returns the propagation L matrix for layer j.
         """
         qj = self.calc_q(j)
         dj = self.d_list[j]
@@ -166,7 +201,8 @@ class TransferMatrix:
         return np.array([[exp(-1j * qj * dj), 0], [0, exp(1j * qj * dj)]], dtype=complex)
 
     def calc_s_matrix(self):
-        """ Returns the total system transfer matrix s.
+        """
+        Returns the total system transfer matrix s.
         """
         s = self.calc_i_matrix(0, 1)
         for j in range(1, self.num_layers - 1):
@@ -176,7 +212,8 @@ class TransferMatrix:
         return s
 
     def calc_s_primed_matrix(self, layer):
-        """ Returns the partial system transfer matrix s_prime.
+        """
+        Returns the partial system transfer matrix s_prime.
         """
         s_prime = self.calc_i_matrix(0, 1)
         for j in range(1, layer):
@@ -186,7 +223,8 @@ class TransferMatrix:
         return s_prime
 
     def calc_s_dprimed_matrix(self, layer):
-        """ Returns the partial system transfer matrix s_dprime (doubled prime).
+        """
+        Returns the partial system transfer matrix s_dprime (doubled prime).
         """
         s_dprime = self.calc_i_matrix(layer, layer + 1)
         for j in range(layer + 1, self.num_layers - 1):
@@ -196,9 +234,10 @@ class TransferMatrix:
         return s_dprime
 
     def calc_layer_field_amplitudes(self, layer):
-        """ Evaluate fwd and bkwd field amplitude coefficients (E or H) in a layer.
-         Coefficients are in units of the fwd incoming wave amplitude for radiative modes
-         and in terms of the superstrate (j=0) outgoing wave amplitude for guided modes.
+        """
+        Evaluate fwd and bkwd field amplitude coefficients (E or H) in a layer.
+        Coefficients are in units of the fwd incoming wave amplitude for radiative modes
+        and in terms of the superstrate (j=0) outgoing wave amplitude for guided modes.
         """
         if not self.guided:
             # Calculate radiative amplitudes
@@ -238,7 +277,8 @@ class TransferMatrix:
         return field_plus, field_minus
 
     def calc_layer_field(self, layer):
-        """ Evaluate the field (E or H) as a function of z (depth) into the layer, j.
+        """
+        Evaluate the field (E or H) as a function of z (depth) into the layer, j.
         field_plus is the forward component of the field (e.g. E_j^+)
         field_minus is the backward component of the field (e.g. E_j^-)
         """
@@ -263,7 +303,8 @@ class TransferMatrix:
         return {'z': z, 'field': field, 'field_squared': field_squared, 'field_avg': field_avg}
 
     def calc_field_structure(self):
-        """ Evaluate the field at all z positions within the structure.
+        """
+        Evaluate the field at all z positions within the structure.
         """
         z = np.arange((self.z_step / 2.0), self.d_cumulative[-1], self.z_step)
         # get z_mat - specifies what layer the corresponding point in z is in
@@ -285,7 +326,8 @@ class TransferMatrix:
         return s[0, 0].real
 
     def s11_guided(self):
-        """ Evaluate S_11=(1/t) as a function of beta (k_ll) in the guided regime.
+        """
+        Evaluate S_11=(1/t) as a function of beta (k_ll) in the guided regime.
         When S_11 = 0 the corresponding beta is a guided mode.
         """
         assert self.guided, \
@@ -298,7 +340,8 @@ class TransferMatrix:
         return n_11_range, s_11.real
 
     def calc_guided_modes(self):
-        """ Evaluate beta at S_11=0 as a function of k_ll in the guided regime.
+        """
+        Evaluate beta at S_11=0 as a function of k_ll in the guided regime.
         Guided regime:  n_clad < k_ll/k < max(n), k_11/k = n_11
         """
         assert self.guided, \
@@ -322,7 +365,8 @@ class TransferMatrix:
         return roots_te, roots_tm
 
     def show_structure(self):
-        """ Brings up a plot showing the structure.
+        """
+        Brings up a plot showing the structure.
         """
         import matplotlib.pyplot as plt
         import matplotlib.patches as patches
@@ -354,17 +398,20 @@ class TransferMatrix:
         plt.show()
 
     def get_layer_boundaries(self):
-        """ Return layer boundary zs assuming that the lower cladding boundary is at z=0.
+        """
+        Return layer boundary zs assuming that the lower cladding boundary is at z=0.
         """
         return self.d_cumulative
 
     def get_structure_thickness(self):
-        """ Return the structure thickness.
+        """
+        Return the structure thickness.
         """
         return self.d_cumulative[-1]
 
     def calc_z_to_lambda(self, z, center=True):
-        """ Convert z positions to units of wavelength (optional) from the centre.
+        """
+        Convert z positions to units of wavelength (optional) from the centre.
         """
         if center:
             z -= self.get_structure_thickness() / 2
@@ -372,7 +419,8 @@ class TransferMatrix:
         return z
 
     def calc_r_and_t(self):
-        """ Return the complex reflection and transmission coefficients of the structure.
+        """
+        Return the complex reflection and transmission coefficients of the structure.
         """
         s = self.calc_s_matrix()
         r = s[1, 0] / s[0, 0]
@@ -380,7 +428,8 @@ class TransferMatrix:
         return r, t
 
     def calc_reflection_and_transmission(self, correction=True):
-        """ Return the reflectance and transmittance of the structure.
+        """
+        Return the reflectance and transmittance of the structure.
         """
         r, t = self.calc_r_and_t()
         reflection = abs(r) ** 2
@@ -405,14 +454,16 @@ class TransferMatrix:
         return absorption
 
     def flip(self):
-        """ Flip the structure front-to-back.
+        """
+        Flip the structure front-to-back.
         """
         self.d_list = self.d_list[::-1]
         self.n_list = self.n_list[::-1]
         self.d_cumulative = np.cumsum(self.d_list)
 
     def print_info(self):
-        """ Command line verbose feedback of the structure.
+        """
+        Command line verbose feedback of the structure.
         """
         print('Simulation info.\n')
 

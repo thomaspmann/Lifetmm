@@ -9,8 +9,6 @@ import matplotlib.pyplot as plt
 
 from lifetmm.Methods.SpontaneousEmissionRate import *
 
-SAVE = False
-
 
 def fig3():
     """ Silicon to air semi-infinite half spaces.
@@ -85,7 +83,7 @@ def fig5():
     air = 1
     sio2 = 3.48
     st.add_layer(1.5 * lam0, air)
-    st.add_layer(1 * lam0, sio2)
+    st.add_layer(lam0, sio2)
     st.add_layer(1.5 * lam0, air)
 
     result = st.calc_spe_structure_guided()
@@ -218,7 +216,9 @@ def figx():
     plt.show()
 
 if __name__ == "__main__":
-    fig3()
+    SAVE = False
+
+    # fig3()
     fig5()
-    fig6()
+    # fig6()
     # figx()

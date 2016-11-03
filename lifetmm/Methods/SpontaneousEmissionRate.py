@@ -11,23 +11,22 @@ from lifetmm.Methods.TransferMatrix import TransferMatrix
 
 class LifetimeTmm(TransferMatrix):
     def calc_spe_layer_radiative(self, layer, emission='Lower', th_pow=8):
-        """ Evaluate the spontaneous emission rates for dipoles in a layer radiating into 'Lower' or 'Upper' modes.
+        """
+        Evaluate the spontaneous emission rates for dipoles in a layer radiating into 'Lower' or 'Upper' modes.
         Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
         """
+        self.set_radiative_or_guiding('radiative')
         # Option checks
         assert emission in ['Lower', 'Upper'], \
             ValueError('Emission option must be either "Upper" or "Lower".')
         assert isinstance(th_pow, int), ValueError('pow must be an integer.')
         assert self.d_list[layer] != 0, ValueError('The layer must have a thickness to use this function.)')
-        assert self.guided is False, ValueError('self.guided must be false to fun this function.')
+
         # Flip the structure and solve using lower radiative equations for upper radiative modes.
         # Results are flipped back at the end of this function to give the correct orientation again.
         if emission == 'Upper':
             self.flip()
             layer = self.num_layers - layer - 1
-
-        # Lower cladding incoming wave vector magnitude
-        k0 = self.calc_k(0)
 
         # z positions to evaluate E at
         z = np.arange((self.z_step / 2.0), self.d_list[layer], self.z_step)
@@ -78,7 +77,7 @@ class LifetimeTmm(TransferMatrix):
             k, q, k_11 = self.calc_wave_vector_components(layer)
 
             # Check that the mode exists
-            assert k_11**2 < k0**2, ValueError('k_11 can not be larger than k0!')
+            assert k_11 ** 2 < self.calc_k(0) ** 2, ValueError('k_11 can not be larger than k0!')
 
             # !* TE radiative modes *!
             self.set_polarization('TE')
@@ -152,9 +151,12 @@ class LifetimeTmm(TransferMatrix):
         return {'z': z, 'spe': spe}
 
     def calc_spe_structure_radiative(self):
-        """ Evaluate the spontaneous emission rate vs z of the structure for each dipole orientation.
-            Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
         """
+        Evaluate the spontaneous emission rate vs z of the structure for each dipole orientation.
+        Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
+        """
+        self.set_radiative_or_guiding('radiative')
+
         # z positions to evaluate E field at over entire structure
         z_pos = np.arange((self.z_step / 2.0), self.d_cumulative[-1], self.z_step)
 
@@ -222,13 +224,13 @@ class LifetimeTmm(TransferMatrix):
         spe['TM_p_total'] = spe['TM_p_lower'] + spe['TM_p_upper']
         spe['total_lower'] = spe['TE_lower'] + spe['TM_p_lower'] + spe['TM_s_lower']
         spe['total_upper'] = spe['TE_upper'] + spe['TM_p_upper'] + spe['TM_s_upper']
-        # TODO: check exactly why i should be dividing by to (averaging)
         spe['total'] = (spe['total_lower'] + spe['total_upper']) / 2
 
         return {'z': z_pos, 'spe': spe}
 
     def calc_spe_layer_guided(self, layer, roots_te=None, roots_tm=None):
-        self.guided = True
+        # assert self.guided, ValueError('Please run set_radiative_or_guiding("guiding") first.')
+        self.set_radiative_or_guiding('guiding')
 
         if roots_te is None or roots_tm is None:
             roots_te, roots_tm = self.calc_guided_modes_te_tm()
@@ -355,7 +357,7 @@ class LifetimeTmm(TransferMatrix):
         return {'z': z, 'spe': spe}
 
     def calc_spe_structure_guided(self):
-        self.guided = True
+        self.set_radiative_or_guiding('guiding')
         # z positions to evaluate E field at over entire structure
         z_pos = np.arange((self.z_step / 2.0), self.d_cumulative[-1], self.z_step)
 
@@ -401,7 +403,8 @@ class LifetimeTmm(TransferMatrix):
 
 # Helper Functions
 def flip_spe_results(spe):
-    """ Flip the spe result
+    """
+    Flip the spe result
     """
     for key in spe.dtype.names:
         spe[key] = spe[key][::-1]
