@@ -115,7 +115,7 @@ def fig5():
 
     fig.tight_layout()
     if SAVE:
-        plt.savefig('../Images/spe_vs_n.png', dpi=300)
+        plt.savefig('../Images/creatore_fig5.png', dpi=300)
     plt.show()
 
 
@@ -216,7 +216,7 @@ def figx():
     plt.show()
 
 if __name__ == "__main__":
-    SAVE = False
+    SAVE = True
 
     # fig3()
     fig5()

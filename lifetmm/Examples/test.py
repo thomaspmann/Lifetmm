@@ -95,7 +95,7 @@ def guiding_plot():
     lam0 = 1550
     st.set_vacuum_wavelength(lam0)
     st.set_field('E')
-    st.set_radiative_or_guiding(radiative=False)
+    st.set_radiative_or_guiding('guiding')
     # st.guided = True
     air = 1
     sio2 = 3.48
@@ -170,9 +170,9 @@ def guiding_electric_field():
 
 
 if __name__ == "__main__":
-    SAVE = False
+    SAVE = True
 
     # mcgehee()
     # spe()
     # guiding_plot()
-    guiding_electric_field()
+    # guiding_electric_field()
