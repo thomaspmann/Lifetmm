@@ -85,7 +85,7 @@ class LifetimeTmm(TransferMatrix):
             # Calculate E field within layer
             self.set_field('E')
             # E field coefficients in terms of incoming amplitude
-            E_plus, E_minus = self.calc_layer_radiative_amplitudes(layer)
+            E_plus, E_minus = self.calc_layer_field_amplitudes(layer)
             E['TE'] = E_plus * exp(1j * q * z) + E_minus * exp(-1j * q * z)
             # Orthonormality condition: Normalise outgoing TE wave to medium refractive index.
             E['TE'] /= self.n_list[0]
@@ -95,7 +95,7 @@ class LifetimeTmm(TransferMatrix):
             # Calculate H field within layer
             self.set_field('H')
             # H field coefficients in terms of incoming amplitude
-            H_plus, H_minus = self.calc_layer_radiative_amplitudes(layer)
+            H_plus, H_minus = self.calc_layer_field_amplitudes(layer)
             # Calculate the electric field component perpendicular (s) to the interface
             E['TM_s'] = k_11*(H_plus * exp(1j * q * z) + H_minus * exp(-1j * q * z))
             # Calculate the electric field component parallel (p) to the interface
@@ -267,7 +267,7 @@ class LifetimeTmm(TransferMatrix):
             norm = 0
             for j in range(0, self.num_layers):
                 k, q, k_11 = self.calc_wave_vector_components(j)
-                a, b = self.calc_layer_guided_amplitudes(j)
+                a, b = self.calc_layer_field_amplitudes(j)
                 if j == 0:
                     chi = np.imag(q)
                     norm += abs(b) ** 2 * (chi ** 2 + k_11 ** 2) / (2 * chi)
@@ -282,7 +282,7 @@ class LifetimeTmm(TransferMatrix):
             norm = 1 / np.sqrt(np.real(norm))
 
             # E field coefficients in terms of layer 0 (superstrate) outgoing field amplitude
-            a, b = self.calc_layer_guided_amplitudes(layer)
+            a, b = self.calc_layer_field_amplitudes(layer)
             a *= norm
             b *= norm
 
@@ -311,7 +311,7 @@ class LifetimeTmm(TransferMatrix):
             norm = 0
             for j in range(0, self.num_layers):
                 k, q, k_11 = self.calc_wave_vector_components(j)
-                a, b = self.calc_layer_guided_amplitudes(j)
+                a, b = self.calc_layer_field_amplitudes(j)
                 if j == 0:
                     chi = np.imag(q)
                     norm += abs(b) ** 2 / (2 * chi)
@@ -326,7 +326,7 @@ class LifetimeTmm(TransferMatrix):
             norm = 1 / np.sqrt(np.real(norm))
 
             # E field coefficients in terms of layer 0 (superstrate) outgoing field amplitude
-            a, b = self.calc_layer_guided_amplitudes(layer)
+            a, b = self.calc_layer_field_amplitudes(layer)
             a *= norm
             b *= norm
 

@@ -195,48 +195,47 @@ class TransferMatrix:
             s_dprime = s_dprime @ l @ i
         return s_dprime
 
-    def calc_layer_radiative_amplitudes(self, layer):
+    def calc_layer_field_amplitudes(self, layer):
         """ Evaluate fwd and bkwd field amplitude coefficients (E or H) in a layer.
-         Coefficients are in units of the fwd incoming wave amplitude.
+         Coefficients are in units of the fwd incoming wave amplitude for radiative modes
+         and in terms of the superstrate (j=0) outgoing wave amplitude for guided modes.
         """
-        # Transfer matrix of system
-        s = self.calc_s_matrix()
-        # Reflection for incoming wave incident of LHS of structure
-        r = s[1, 0] / s[0, 0]
-        # Evaluate lower cladding
-        if layer == 0:
-            field_plus = 1 + 0j
-            field_minus = r
-        # Evaluate upper cladding
-        elif layer == self.num_layers - 1:
-            field_plus = 1 / s[0, 0]
-            field_minus = 0 + 0j
-        # Evaluate field amplitudes in internal layers
-        else:
-            s_prime = self.calc_s_primed_matrix(layer)
-            field_plus = (s_prime[1, 1] - r * s_prime[0, 1]) / det(s_prime)
-            field_minus = (r * s_prime[0, 0] - s_prime[1, 0]) / det(s_prime)
-        return field_plus, field_minus
-
-    def calc_layer_guided_amplitudes(self, layer):
-        """ Evaluate fwd and bkwd field amplitude coefficients (E or H) in a layer for guided modes.
-         Coefficients are in units of the superstrate (j=1) outgoing wave amplitude.
-        """
-        # Evaluate lower cladding
-        if layer == 0:
-            field_plus = 0 + 0j
-            field_minus = 1 + 0j
-        # Evaluate upper cladding
-        elif layer == self.num_layers - 1:
+        if not self.guided:
+            # Calculate radiative amplitudes
+            # Transfer matrix of system
             s = self.calc_s_matrix()
-            field_plus = 1 / s[0, 1]
-            field_minus = 0 + 0j
-        # Evaluate field amplitudes in internal layers
+            # Reflection for incoming wave incident of LHS of structure
+            r = s[1, 0] / s[0, 0]
+            # Evaluate lower cladding
+            if layer == 0:
+                field_plus = 1 + 0j
+                field_minus = r
+            # Evaluate upper cladding
+            elif layer == self.num_layers - 1:
+                field_plus = 1 / s[0, 0]
+                field_minus = 0 + 0j
+            # Evaluate field amplitudes in internal layers
+            else:
+                s_prime = self.calc_s_primed_matrix(layer)
+                field_plus = (s_prime[1, 1] - r * s_prime[0, 1]) / det(s_prime)
+                field_minus = (r * s_prime[0, 0] - s_prime[1, 0]) / det(s_prime)
         else:
-            s_prime = self.calc_s_primed_matrix(layer)
-            field_plus = - s_prime[0, 1] / det(s_prime)
-            field_minus = s_prime[0, 0] / det(s_prime)
-        return np.real_if_close(field_plus), np.real_if_close(field_minus)
+            # Calculate guided amplitudes
+            # Evaluate lower cladding
+            if layer == 0:
+                field_plus = 0 + 0j
+                field_minus = 1 + 0j
+            # Evaluate upper cladding
+            elif layer == self.num_layers - 1:
+                s = self.calc_s_matrix()
+                field_plus = 1 / s[0, 1]
+                field_minus = 0 + 0j
+            # Evaluate field amplitudes in internal layers
+            else:
+                s_prime = self.calc_s_primed_matrix(layer)
+                field_plus = - s_prime[0, 1] / det(s_prime)
+                field_minus = s_prime[0, 0] / det(s_prime)
+        return field_plus, field_minus
 
     def calc_layer_field(self, layer):
         """ Evaluate the field (E or H) as a function of z (depth) into the layer, j.
@@ -254,7 +253,7 @@ class TransferMatrix:
             z = -z[::-1]
 
         # field(z) field in terms of incident field amplitude (A_0^+)
-        field_plus, field_minus = self.calc_layer_radiative_amplitudes(layer)
+        field_plus, field_minus = self.calc_layer_field_amplitudes(layer)
         field = field_plus * exp(1j * q * z) + field_minus * exp(-1j * q * z)
         field_squared = abs(field) ** 2
         if self.d_list[layer] != 0:

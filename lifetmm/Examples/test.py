@@ -1,7 +1,4 @@
 import matplotlib.pyplot as plt
-import numpy as np
-from numpy import pi
-from tqdm import tqdm
 
 from lifetmm.Methods.SpontaneousEmissionRate import LifetimeTmm
 from lifetmm.Methods.TransferMatrix import TransferMatrix
@@ -146,10 +143,9 @@ def guiding_electric_field():
     st.set_field('E')
     air = 1
     sio2 = 3.48
-    st.add_layer(0.3 * lam0, air)
+    st.add_layer(1 * lam0, air)
     st.add_layer(1 * lam0, sio2)
-    st.add_layer(0.3 * lam0, air)
-
+    st.add_layer(1 * lam0, air)
     st.set_polarization('TE')
     st.guided = True
     alpha = st.calc_guided_modes()[::-1]
@@ -158,9 +154,13 @@ def guiding_electric_field():
         st.n_11 = a
         result = st.calc_field_structure()
         z = result['z']
+        z = st.calc_z_to_lambda(z)
         E = result['field']
+        # Normalise fields
+        E /= max(E)
         plt.plot(z, abs(E) ** 2, label=i)
     for z in st.get_layer_boundaries()[:-1]:
+        z = st.calc_z_to_lambda(z)
         plt.axvline(x=z, color='k', lw=2)
     plt.legend(title='Mode index')
     plt.show()
@@ -168,7 +168,7 @@ def guiding_electric_field():
 
 def test():
     # Create structure
-    st = LifetimeTmm()
+    st = TransferMatrix()
     lam0 = 1550
     st.set_vacuum_wavelength(lam0)
     st.set_field('E')
@@ -177,20 +177,23 @@ def test():
     st.add_layer(1 * lam0, air)
     st.add_layer(1 * lam0, sio2)
     st.add_layer(1 * lam0, air)
+    st.set_polarization('TE')
+    st.guided = True
+    alpha = st.calc_guided_modes()[::-1]
+    plt.figure()
 
-    result = st.calc_spe_structure_guided()
+    st.n_11 = alpha[0]
+    result = st.calc_field_structure()
     z = result['z']
-    spe = result['spe']
-
-    fig, ax = plt.subplots(3, 1, sharex='col', sharey='none')
-    (ax1, ax2, ax3) = ax
-    ax1.plot(z, spe['TE'], lw=2, label='TE')
-    ax2.plot(z, spe['TM_p'], lw=2, label='TM_p')
-    ax3.plot(z, spe['TM_s'], lw=2, label='TM_s')
+    z = st.calc_z_to_lambda(z)
+    E = result['field']
+    # Normalise fields
+    # E /= max(E)
+    plt.plot(z, abs(E) ** 2, label='0')
     for z in st.get_layer_boundaries()[:-1]:
-        ax1.axvline(x=z, color='k', lw=2, zorder=-1)
-        ax2.axvline(x=z, color='k', lw=2, zorder=-1)
-        ax3.axvline(x=z, color='k', lw=2, zorder=-1)
+        z = st.calc_z_to_lambda(z)
+        plt.axvline(x=z, color='k', lw=2)
+    plt.legend(title='Mode index')
     plt.show()
 
 
@@ -200,5 +203,5 @@ if __name__ == "__main__":
     # mcgehee()
     # spe()
     # guiding_plot()
-    # guiding_E_plot()
-    test()
+    guiding_electric_field()
+    # test()
