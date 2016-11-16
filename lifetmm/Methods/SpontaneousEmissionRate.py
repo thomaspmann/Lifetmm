@@ -239,8 +239,8 @@ class LifetimeTmm(TransferMatrix):
         n = self.n_list.real
         layer_guiding = np.where(n == max(n))[0][0]
         assert layer_guiding not in [0, self.num_layers-1], ValueError('This structure does not support wave guiding.')
-        # z positions to evaluate E at
         assert self.d_list[layer] != 0, ValueError('The layer must have a thickness to use this function.)')
+        # z positions to evaluate E at
         z = np.arange((self.z_step / 2.0), self.d_list[layer], self.z_step)
         if layer == 0:
             # A_plus and A_minus are defined at first cladding-layer boundary.
@@ -270,12 +270,9 @@ class LifetimeTmm(TransferMatrix):
             for j in range(0, self.num_layers):
                 k, q, k_11 = self.calc_wave_vector_components(j)
                 a, b = self.calc_layer_field_amplitudes(j)
-                if j == 0:
+                if j in [0, self.num_layers - 1]:
                     chi = np.imag(q)
                     norm += abs(b) ** 2 * (chi ** 2 + k_11 ** 2) / (2 * chi)
-                elif j == self.num_layers - 1:
-                    chi = np.imag(q)
-                    norm += abs(a) ** 2 * (chi ** 2 + k_11 ** 2) / (2 * chi)
                 else:
                     dj = self.d_list[j]
                     w1 = (k_11 ** 2 + q * conj(q)) * sinc((q - conj(q)) * dj / 2)
@@ -314,10 +311,7 @@ class LifetimeTmm(TransferMatrix):
             for j in range(0, self.num_layers):
                 k, q, k_11 = self.calc_wave_vector_components(j)
                 a, b = self.calc_layer_field_amplitudes(j)
-                if j == 0:
-                    chi = np.imag(q)
-                    norm += abs(b) ** 2 / (2 * chi)
-                elif j == self.num_layers - 1:
+                if j in [0, self.num_layers - 1]:
                     chi = np.imag(q)
                     norm += abs(a) ** 2 / (2 * chi)
                 else:

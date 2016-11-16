@@ -97,8 +97,7 @@ def fig5():
     ax1.plot(z, spe['TE'], label='TE')
     ax1.plot(z, spe['TM_p'], label='TM')
     ax1.plot(z, spe['TE'] + spe['TM_p'], label='TE + TM')
-
-    ax2.plot(z, spe['TM_s'], lw=2, label='TM')
+    ax2.plot(z, spe['TM_s'], label='TM')
     for z in st.get_layer_boundaries()[:-1]:
         z = st.calc_z_to_lambda(z)
         ax1.axvline(x=z, color='k', lw=2, zorder=-1)
@@ -216,7 +215,7 @@ def figx():
     plt.show()
 
 if __name__ == "__main__":
-    SAVE = True
+    SAVE = False
 
     # fig3()
     fig5()

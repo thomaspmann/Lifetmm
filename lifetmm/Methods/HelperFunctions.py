@@ -25,13 +25,14 @@ def root_search(f, a, b, dx):
     return x1, x2
 
 
-def roots(f, a, b, num=20000):
+def roots(f, a, b, num=20000, verbose=True):
     """ Find roots of f within the interval [a,b]. Interval is discretised
     into num equal elements, dx, and a root is searched for within each dx.
     """
     import math
     from scipy.optimize import brentq
-    print('The roots on the interval [%f, %f] are:' % (a, b))
+    if verbose:
+        print('The roots on the interval [%f, %f] are:' % (a, b))
     results = []
     while 1:
         dx = abs(a - b) / num  # alternatively use dx=eps
@@ -43,10 +44,12 @@ def roots(f, a, b, num=20000):
                 # Root is only as accurate as the width of the
                 # element as there could be multiple roots within each dx
                 root = round(root, -int(math.log(dx, 10)))
-                print('{:.4f}'.format(root))
+                if verbose:
+                    print('{:.4f}'.format(root))
                 results.append(root)
         else:
-            print('\nDone')
+            if verbose:
+                print('\nDone')
             return np.array(results)
 
 

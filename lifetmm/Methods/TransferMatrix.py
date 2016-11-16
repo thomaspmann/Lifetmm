@@ -339,7 +339,7 @@ class TransferMatrix:
             s_11 = np.append(s_11, self._s11(n_11))
         return n_11_range, s_11.real
 
-    def calc_guided_modes(self):
+    def calc_guided_modes(self, verbose=True):
         """
         Evaluate beta at S_11=0 as a function of k_ll in the guided regime.
         Guided regime:  n_clad < k_ll/k < max(n), k_11/k = n_11
@@ -347,7 +347,7 @@ class TransferMatrix:
         assert self.guided, \
             ValueError('"self.guided" must be set to true before running this function.')
         n = self.n_list.real
-        alphas = roots(self._s11, n[0], max(n))
+        alphas = roots(self._s11, n[0], max(n), verbose=verbose)
         return alphas
 
     def calc_guided_modes_te_tm(self):
@@ -363,39 +363,6 @@ class TransferMatrix:
         self.set_field('H')
         roots_tm = self.calc_guided_modes()
         return roots_te, roots_tm
-
-    def show_structure(self):
-        """
-        Brings up a plot showing the structure.
-        """
-        import matplotlib.pyplot as plt
-        import matplotlib.patches as patches
-        from collections import OrderedDict
-
-        # Shades to fill rectangles with based on refractive index
-        alphas = abs(self.n_list) / max(abs(self.n_list))
-
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        for i, dx in enumerate(self.d_list[1:-1]):
-            x = self.d_cumulative[i]
-            layer_text = ('{0.real:.2f} + {0.imag:.2f}j'.format(self.n_list[i + 1]))
-            p = patches.Rectangle(
-                (x, 0.0),  # (x,y)
-                dx,  # width
-                1.0,  # height
-                alpha=alphas[i + 1],
-                linewidth=2,
-                label=layer_text,
-            )
-            ax.add_patch(p)
-        # Create legend without duplicate keys
-        handles, labels = ax.get_legend_handles_labels()
-        by_label = OrderedDict(zip(labels, handles))
-        ax.legend(by_label.values(), by_label.keys(), loc='best')
-        ax.set_xlim([0, self.d_cumulative[-1]])
-        ax.set(xlabel=r'x', ylabel=r'A.U.')
-        plt.show()
 
     def get_layer_boundaries(self):
         """
@@ -472,3 +439,36 @@ class TransferMatrix:
         for n, d in zip(self.n_list, self.d_list):
             print('{0:g}\t{1:g}'.format(d, n))
         print('\nFree space wavelength: {:g}\n'.format(self.lam_vac))
+
+    def show_structure(self):
+        """
+        Brings up a plot showing the structure.
+        """
+        import matplotlib.pyplot as plt
+        import matplotlib.patches as patches
+        from collections import OrderedDict
+
+        # Shades to fill rectangles with based on refractive index
+        alphas = abs(self.n_list) / max(abs(self.n_list))
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        for i, dx in enumerate(self.d_list[1:-1]):
+            x = self.d_cumulative[i]
+            layer_text = ('{0.real:.2f} + {0.imag:.2f}j'.format(self.n_list[i + 1]))
+            p = patches.Rectangle(
+                (x, 0.0),  # (x,y)
+                dx,  # width
+                1.0,  # height
+                alpha=alphas[i + 1],
+                linewidth=2,
+                label=layer_text,
+            )
+            ax.add_patch(p)
+        # Create legend without duplicate keys
+        handles, labels = ax.get_legend_handles_labels()
+        by_label = OrderedDict(zip(labels, handles))
+        ax.legend(by_label.values(), by_label.keys(), loc='best')
+        ax.set_xlim([0, self.d_cumulative[-1]])
+        ax.set(xlabel=r'x', ylabel=r'A.U.')
+        plt.show()

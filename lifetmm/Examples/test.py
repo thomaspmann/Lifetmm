@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+import numpy as np
+from scipy.constants import c
 
 from lifetmm.Methods.SpontaneousEmissionRate import LifetimeTmm
 from lifetmm.Methods.TransferMatrix import TransferMatrix
@@ -169,10 +171,51 @@ def guiding_electric_field():
     plt.show()
 
 
+def eval_group_velocity():
+    # Create structure
+    st = TransferMatrix()
+    lam0 = 1550
+    st.set_vacuum_wavelength(lam0)
+    st.set_field('E')
+    air = 1
+    sio2 = 3.48
+    st.add_layer(1 * lam0, air)
+    st.add_layer(1 * lam0, sio2)
+    st.add_layer(1 * lam0, air)
+    st.set_polarization('TE')
+    st.set_radiative_or_guiding('guiding')
+    delta = 50
+    lam_list = np.arange(lam0 - delta, lam0 + delta + 1, step=2 * delta)
+    num_modes = len(st.calc_guided_modes(verbose=False))
+    alpha_list = np.zeros((len(lam_list), num_modes))
+    for i, lam in enumerate(lam_list):
+        st.set_vacuum_wavelength(lam)
+        alpha = st.calc_guided_modes(verbose=False)[::-1]
+        print(lam, alpha)
+        alpha_list[i, :] = alpha
+
+    def group_velocity(lam0, d_beta, d_lam):
+        # return (2 * pi * c * d_lam) / (lam0**2 * d_beta)
+        return c * d_lam * 1E-9 / d_beta
+
+    d_beta = (alpha_list[0, :] - alpha_list[-1, :]) / 2
+    v_g = group_velocity(lam0=lam0, d_beta=d_beta, d_lam=2 * delta)
+    print(v_g * 10 ** 2 / c)
+
+    plt.figure()
+    plt.plot(lam_list, alpha_list, '.-')
+    plt.xlabel('Wavelength ($\mu m$)')
+    plt.ylabel('Propagation constant ($k_\parallel$)')
+    plt.tight_layout()
+    if SAVE:
+        plt.savefig('../Images/group velocity.png', dpi=300)
+    plt.show()
+
 if __name__ == "__main__":
-    SAVE = True
+    SAVE = False
 
     # mcgehee()
     # spe()
     # guiding_plot()
     # guiding_electric_field()
+    eval_group_velocity()
