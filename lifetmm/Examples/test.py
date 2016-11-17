@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.constants import c
+from scipy.constants import c, pi
 
 from lifetmm.Methods.SpontaneousEmissionRate import LifetimeTmm
 from lifetmm.Methods.TransferMatrix import TransferMatrix
@@ -195,8 +195,8 @@ def eval_group_velocity():
         alpha_list[i, :] = alpha
 
     def group_velocity(lam0, d_beta, d_lam):
-        # return (2 * pi * c * d_lam) / (lam0**2 * d_beta)
-        return c * d_lam * 1E-9 / d_beta
+        return (2 * pi * c * d_lam) / (lam0 ** 2 * d_beta)
+        # return c * d_lam * 1E-9 / d_beta
 
     d_beta = (alpha_list[0, :] - alpha_list[-1, :]) / 2
     v_g = group_velocity(lam0=lam0, d_beta=d_beta, d_lam=2 * delta)
@@ -211,6 +211,23 @@ def eval_group_velocity():
         plt.savefig('../Images/group velocity.png', dpi=300)
     plt.show()
 
+
+def test():
+    # Create structure
+    st = TransferMatrix()
+    lam0 = 1550
+    st.set_vacuum_wavelength(lam0)
+    st.set_field('E')
+    air = 1
+    sio2 = 3.48
+    st.add_layer(1 * lam0, air)
+    st.add_layer(1 * lam0, sio2)
+    st.add_layer(1 * lam0, air)
+    st.set_polarization('TE')
+    st.set_radiative_or_guiding('guiding')
+    # alpha = st.calc_guided_modes(verbose=False)[-1]
+    st.calc_group_velocity()
+
 if __name__ == "__main__":
     SAVE = False
 
@@ -218,4 +235,5 @@ if __name__ == "__main__":
     # spe()
     # guiding_plot()
     # guiding_electric_field()
-    eval_group_velocity()
+    # eval_group_velocity()
+    # test()

@@ -228,18 +228,38 @@ class LifetimeTmm(TransferMatrix):
 
         return {'z': z_pos, 'spe': spe}
 
-    def calc_spe_layer_guided(self, layer, roots_te=None, roots_tm=None):
-        # assert self.guided, ValueError('Please run set_radiative_or_guiding("guiding") first.')
+    def calc_spe_layer_guided(self, layer, roots_te=None, roots_tm=None, v_g_te=None, v_g_tm=None):
+        assert self.d_list[layer] != 0, ValueError('The layer must have a thickness to use this function.)')
         self.set_radiative_or_guiding('guiding')
 
-        if roots_te is None or roots_tm is None:
-            roots_te, roots_tm = self.calc_guided_modes_te_tm()
-
-        # # Evaluate guiding layer in structure(one with highest refractive index)
+        # Evaluate guiding layer in structure (one with highest refractive index)
         n = self.n_list.real
         layer_guiding = np.where(n == max(n))[0][0]
         assert layer_guiding not in [0, self.num_layers-1], ValueError('This structure does not support wave guiding.')
-        assert self.d_list[layer] != 0, ValueError('The layer must have a thickness to use this function.)')
+
+        # Only re-evaluate the guided roots and v_g if not passed to function. Computationally intensive.
+        # Will only be required if the function is not called from self.spe_structure_guided()
+        if all(v is None for v in (roots_te, roots_tm, v_g_te, v_g_tm)):
+            print('Evaluating guided modes (k_11/k) and group velocity for each polarisation:')
+            print('Finding TE modes')
+            self.set_polarization('TE')
+            self.set_field('E')
+            roots_te = self.calc_guided_modes()
+            # Calculate group velocity for each mode
+            print('Calculating group velocity for each mode...')
+            v_g_te = self.calc_group_velocity()
+            v_g_te *= 1E2  # Convert m/s to cm/s as in gaussian units
+            print('Done!')
+            print('Finding TM modes')
+            self.set_polarization('TM')
+            self.set_field('H')
+            roots_tm = self.calc_guided_modes()
+            # Calculate group velocity for each mode
+            print('Calculating group velocity for each mode...')
+            v_g_tm = self.calc_group_velocity()
+            v_g_tm *= 1E2  # Convert m/s to cm/s as in gaussian units
+            print('Done!')
+
         # z positions to evaluate E at
         z = np.arange((self.z_step / 2.0), self.d_list[layer], self.z_step)
         if layer == 0:
@@ -262,7 +282,7 @@ class LifetimeTmm(TransferMatrix):
         self.set_polarization('TE')
         # Calculate E field within layer
         self.set_field('E')
-        for mode in roots_te:
+        for mode, v in zip(roots_te, v_g_te):
             self.n_11 = mode
 
             # Evaluate the normalisation (B4) and apply
@@ -270,9 +290,12 @@ class LifetimeTmm(TransferMatrix):
             for j in range(0, self.num_layers):
                 k, q, k_11 = self.calc_wave_vector_components(j)
                 a, b = self.calc_layer_field_amplitudes(j)
-                if j in [0, self.num_layers - 1]:
+                if j == 0:
                     chi = np.imag(q)
                     norm += abs(b) ** 2 * (chi ** 2 + k_11 ** 2) / (2 * chi)
+                elif j == (self.num_layers - 1):
+                    chi = np.imag(q)
+                    norm += abs(a) ** 2 * (chi ** 2 + k_11 ** 2) / (2 * chi)
                 else:
                     dj = self.d_list[j]
                     w1 = (k_11 ** 2 + q * conj(q)) * sinc((q - conj(q)) * dj / 2)
@@ -292,18 +315,16 @@ class LifetimeTmm(TransferMatrix):
             # Evaluate E(z)
             electric_field['TE'] = a * exp(1j * q * z) + b * exp(-1j * q * z)
             assert max(electric_field['TE']) < 100, ValueError('TMM likely unstable.')
-            # TODO: Find corresponding group velocity dw/dk
-            v = c / n[layer_guiding]
             spe['TE'] += abs(electric_field['TE']) ** 2 * (k_11 / v)
         # Normalise emission rates to vacuum emission rate of a randomly orientated dipole
         spe['TE'] *= 3 * pi * c / 4
 
-        # !* TM radiative modes *!
+        # !* TM guided modes *!
         self.set_polarization('TM')
         # Calculate H field within layer
         self.set_field('H')
         # Find guided modes parallel wave vector
-        for mode in roots_tm:
+        for mode, v in zip(roots_tm, v_g_tm):
             self.n_11 = mode
 
             # Evaluate the normalisation (B8) and apply
@@ -311,7 +332,10 @@ class LifetimeTmm(TransferMatrix):
             for j in range(0, self.num_layers):
                 k, q, k_11 = self.calc_wave_vector_components(j)
                 a, b = self.calc_layer_field_amplitudes(j)
-                if j in [0, self.num_layers - 1]:
+                if j == 0:
+                    chi = np.imag(q)
+                    norm += abs(b) ** 2 / (2 * chi)
+                elif j == (self.num_layers - 1):
                     chi = np.imag(q)
                     norm += abs(a) ** 2 / (2 * chi)
                 else:
@@ -340,8 +364,6 @@ class LifetimeTmm(TransferMatrix):
             assert max(electric_field['TM_s']) < 100, ValueError('TMM Unstable.')
             assert max(electric_field['TM_p']) < 100, ValueError('TMM Unstable.')
 
-            # TODO: Find corresponding group velocity dw/dk
-            v = c / n[layer_guiding]
             spe['TM_p'] += abs(electric_field['TM_p']) ** 2 * (k_11 / v)
             spe['TM_s'] += abs(electric_field['TM_s']) ** 2 * (k_11 / v)
         # Normalise emission rates to vacuum emission rate of a randomly orientated dipole
@@ -366,8 +388,25 @@ class LifetimeTmm(TransferMatrix):
                                           ('TM_p', 'float64'),
                                           ('TM_s', 'float64')])
 
-        # !* Evaluate roots for TE and TM guided modes *!
-        roots_te, roots_tm = self.calc_guided_modes_te_tm()
+        print('Evaluating guided modes (k_11/k) and group velocity for each polarisation:')
+        print('Finding TE modes')
+        self.set_polarization('TE')
+        self.set_field('E')
+        roots_te = self.calc_guided_modes()
+        # Calculate group velocity for each mode
+        print('Calculating group velocity for each mode...')
+        v_g_te = self.calc_group_velocity()
+        v_g_te *= 1E2  # Convert m/s to cm/s as in gaussian units
+        print('Done!')
+        print('Finding TM modes')
+        self.set_polarization('TM')
+        self.set_field('H')
+        roots_tm = self.calc_guided_modes()
+        # Calculate group velocity for each mode
+        print('Calculating group velocity for each mode...')
+        v_g_tm = self.calc_group_velocity()
+        v_g_tm *= 1E2  # Convert m/s to cm/s as in gaussian units
+        print('Done!')
 
         print('Evaluating guided modes for each layer:')
         for layer in range(self.num_layers):
@@ -384,7 +423,7 @@ class LifetimeTmm(TransferMatrix):
             ind = np.where(z_mat == layer)
 
             # Calculate lower radiative modes
-            spe_layer = self.calc_spe_layer_guided(layer, roots_te, roots_tm)['spe']
+            spe_layer = self.calc_spe_layer_guided(layer, roots_te, roots_tm, v_g_te, v_g_tm)['spe']
             spe['TE'][ind] += spe_layer['TE']
             spe['TM_p'][ind] += spe_layer['TM_p']
             spe['TM_s'][ind] += spe_layer['TM_s']

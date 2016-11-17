@@ -2,7 +2,7 @@ import numpy as np
 from numpy import pi, sqrt, sin, exp
 from numpy.linalg import det
 
-from lifetmm.Methods.HelperFunctions import roots, snell
+from lifetmm.Methods.HelperFunctions import roots, snell, lambda2omega
 
 
 class TransferMatrix:
@@ -36,6 +36,7 @@ class TransferMatrix:
         Set the vacuum wavelength to be simulated.
         Note to ensure that dimensions must be consistent with layer thicknesses.
         """
+        assert type(lam_vac) == int, ValueError('The wavelength must be an integer.')
         if hasattr(lam_vac, 'size') and lam_vac.size > 1:
             raise ValueError('This function is not vectorized; you need to run one '
                              'calculation for each wavelength at a time')
@@ -350,19 +351,25 @@ class TransferMatrix:
         alphas = roots(self._s11, n[0], max(n), verbose=verbose)
         return alphas
 
-    def calc_guided_modes_te_tm(self):
-        self.guided = True
-        # !* Evaluate roots for TE and TM guided modes *!
-        print('Evaluating guided modes (k_11/k) for each polarisation:')
-        print('TE')
-        self.set_polarization('TE')
-        self.set_field('E')
-        roots_te = self.calc_guided_modes()
-        print('TM')
-        self.set_polarization('TM')
-        self.set_field('H')
-        roots_tm = self.calc_guided_modes()
-        return roots_te, roots_tm
+    def calc_group_velocity(self):
+        # Take 1% either side of the emission wavelength (using meters)
+        lam0 = self.lam_vac
+        lam_upper = int(1.01 * self.lam_vac)
+        lam_lower = int(0.99 * self.lam_vac)
+        omega_lower = lambda2omega(lam_upper * 1E-9)
+        omega_upper = lambda2omega(lam_lower * 1E-9)
+        d_omega = omega_upper - omega_lower
+
+        self.set_vacuum_wavelength(lam_upper)
+        beta_lower = self.calc_guided_modes(verbose=False)
+        self.set_vacuum_wavelength(lam_lower)
+        beta_upper = self.calc_guided_modes(verbose=False)
+        assert len(beta_lower) == len(beta_upper), \
+            ValueError('Number of guided modes must be equal when calculating the group velocity.')
+        d_beta = beta_upper - beta_lower
+        d_beta *= 1E9
+        self.set_vacuum_wavelength(lam0)
+        return d_omega / d_beta
 
     def get_layer_boundaries(self):
         """

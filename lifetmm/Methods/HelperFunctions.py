@@ -56,7 +56,8 @@ def roots(f, a, b, num=20000, verbose=True):
 #####################################################################
 # Snell's Law
 def snell(n_1, n_2, th_1):
-    """ Return angle theta in layer 2 with refractive index n_2, assuming
+    """
+    Return angle theta in layer 2 with refractive index n_2, assuming
     it has angle th_1 in layer with refractive index n_1. Use Snell's law. Note
     that "angles" may be complex!!
     """
@@ -65,3 +66,22 @@ def snell(n_1, n_2, th_1):
     # Use real_if_close because e.g. arcsin(2 + 1e-17j) is very different from
     # arcsin(2) due to branch cut
     return sp.arcsin(np.real_if_close(n_1 * np.sin(th_1) / n_2))
+
+
+def lambda2omega(lambda_):
+    """
+    Convert wavelength to omega
+    """
+    from scipy.constants import lambda2nu
+    from math import pi
+    return 2 * pi * lambda2nu(lambda_)
+
+
+def omega2lambda(omega):
+    """
+    Convert omega to wavelength
+    """
+    from scipy.constants import nu2lambda
+    from math import pi
+    nu = omega / (2 * pi)
+    return nu2lambda(nu)
