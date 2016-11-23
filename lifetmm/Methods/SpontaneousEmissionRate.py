@@ -77,14 +77,14 @@ class LifetimeTmm(TransferMatrix):
             k, q, k_11 = self.calc_wave_vector_components(layer)
 
             # Check that the mode exists
-            assert k_11 ** 2 < self.calc_k(0) ** 2, ValueError('k_11 can not be larger than k0!')
+            assert k_11 ** 2 <= self.calc_k(0) ** 2, ValueError('k_11 can not be larger than k0!')
 
             # !* TE radiative modes *!
             self.set_polarization('TE')
             # Calculate E field within layer
             self.set_field('E')
             # E field coefficients in terms of incoming amplitude
-            E_plus, E_minus = self.calc_layer_field_amplitudes(layer)
+            E_plus, E_minus = self.layer_field_amplitudes(layer)
             E['TE'] = E_plus * exp(1j * q * z) + E_minus * exp(-1j * q * z)
             # Orthonormality condition: Normalise outgoing TE wave to medium refractive index.
             E['TE'] /= self.n_list[0]
@@ -94,7 +94,7 @@ class LifetimeTmm(TransferMatrix):
             # Calculate H field within layer
             self.set_field('H')
             # H field coefficients in terms of incoming amplitude
-            H_plus, H_minus = self.calc_layer_field_amplitudes(layer)
+            H_plus, H_minus = self.layer_field_amplitudes(layer)
             # Calculate the electric field component perpendicular (s) to the interface
             E['TM_s'] = k_11*(H_plus * exp(1j * q * z) + H_minus * exp(-1j * q * z))
             # Calculate the electric field component parallel (p) to the interface
@@ -228,7 +228,7 @@ class LifetimeTmm(TransferMatrix):
 
         return {'z': z_pos, 'spe': spe}
 
-    def calc_spe_layer_guided(self, layer, roots_te=None, roots_tm=None, v_g_te=None, v_g_tm=None):
+    def calc_spe_layer_guided(self, layer, roots_te=None, roots_tm=None, vg_te=None, vg_tm=None):
         assert self.d_list[layer] != 0, ValueError('The layer must have a thickness to use this function.)')
         self.set_radiative_or_guiding('guiding')
 
@@ -239,7 +239,7 @@ class LifetimeTmm(TransferMatrix):
 
         # Only re-evaluate the guided roots and v_g if not passed to function. Computationally intensive.
         # Will only be required if the function is not called from self.spe_structure_guided()
-        if all(v is None for v in (roots_te, roots_tm, v_g_te, v_g_tm)):
+        if all(v is None for v in (roots_te, roots_tm, vg_te, vg_tm)):
             print('Evaluating guided modes (k_11/k) and group velocity for each polarisation:')
             print('Finding TE modes')
             self.set_polarization('TE')
@@ -247,8 +247,8 @@ class LifetimeTmm(TransferMatrix):
             roots_te = self.calc_guided_modes()
             # Calculate group velocity for each mode
             print('Calculating group velocity for each mode...')
-            v_g_te = self.calc_group_velocity()
-            v_g_te *= 1E2  # Convert m/s to cm/s as in gaussian units
+            vg_te = self.calc_group_velocity()
+            vg_te *= 1E2  # Convert m/s to cm/s as in gaussian units
             print('Done!')
             print('Finding TM modes')
             self.set_polarization('TM')
@@ -256,8 +256,8 @@ class LifetimeTmm(TransferMatrix):
             roots_tm = self.calc_guided_modes()
             # Calculate group velocity for each mode
             print('Calculating group velocity for each mode...')
-            v_g_tm = self.calc_group_velocity()
-            v_g_tm *= 1E2  # Convert m/s to cm/s as in gaussian units
+            vg_tm = self.calc_group_velocity()
+            vg_tm *= 1E2  # Convert m/s to cm/s as in gaussian units
             print('Done!')
 
         # z positions to evaluate E at
@@ -282,14 +282,14 @@ class LifetimeTmm(TransferMatrix):
         self.set_polarization('TE')
         # Calculate E field within layer
         self.set_field('E')
-        for mode, v in zip(roots_te, v_g_te):
+        for mode, v in zip(roots_te, vg_te):
             self.n_11 = mode
 
             # Evaluate the normalisation (B4) and apply
             norm = 0
             for j in range(0, self.num_layers):
                 k, q, k_11 = self.calc_wave_vector_components(j)
-                a, b = self.calc_layer_field_amplitudes(j)
+                a, b = self.layer_field_amplitudes(j)
                 if j == 0:
                     chi = np.imag(q)
                     norm += abs(b) ** 2 * (chi ** 2 + k_11 ** 2) / (2 * chi)
@@ -301,16 +301,17 @@ class LifetimeTmm(TransferMatrix):
                     w1 = (k_11 ** 2 + q * conj(q)) * sinc((q - conj(q)) * dj / 2)
                     w2 = (k_11 ** 2 - q * conj(q)) * sinc((q + conj(q)) * dj / 2)
                     norm += dj * (w1 * (abs(a) ** 2 + abs(b) ** 2) + w2 * (conj(a) * b + conj(b) * a))
+            assert np.isreal(norm), ValueError('Check Normalisation - should be real')
             norm = 1 / np.sqrt(np.real(norm))
 
             # E field coefficients in terms of layer 0 (superstrate) outgoing field amplitude
-            a, b = self.calc_layer_field_amplitudes(layer)
+            a, b = self.layer_field_amplitudes(layer)
             a *= norm
             b *= norm
 
             # Wave vector components in layer
             k, q, k_11 = self.calc_wave_vector_components(layer)
-            assert k_11 == (self.n_11 * self.calc_k(-1)), ValueError('Check TE')
+            assert k_11 == (self.n_11 * self.k_vac), ValueError('Check TE')
 
             # Evaluate E(z)
             electric_field['TE'] = a * exp(1j * q * z) + b * exp(-1j * q * z)
@@ -324,14 +325,14 @@ class LifetimeTmm(TransferMatrix):
         # Calculate H field within layer
         self.set_field('H')
         # Find guided modes parallel wave vector
-        for mode, v in zip(roots_tm, v_g_tm):
+        for mode, v in zip(roots_tm, vg_tm):
             self.n_11 = mode
 
             # Evaluate the normalisation (B8) and apply
             norm = 0
             for j in range(0, self.num_layers):
                 k, q, k_11 = self.calc_wave_vector_components(j)
-                a, b = self.calc_layer_field_amplitudes(j)
+                a, b = self.layer_field_amplitudes(j)
                 if j == 0:
                     chi = np.imag(q)
                     norm += abs(b) ** 2 / (2 * chi)
@@ -343,16 +344,17 @@ class LifetimeTmm(TransferMatrix):
                     w1 = sinc((q - conj(q)) * dj / 2)
                     w2 = sinc((q + conj(q)) * dj / 2)
                     norm += dj * (w1 * (abs(a) ** 2 + abs(b) ** 2) + w2 * (conj(a) * b + conj(b) * a))
+            assert np.isreal(norm), ValueError('Check Normalisation - should be real')
             norm = 1 / np.sqrt(np.real(norm))
 
             # E field coefficients in terms of layer 0 (superstrate) outgoing field amplitude
-            a, b = self.calc_layer_field_amplitudes(layer)
+            a, b = self.layer_field_amplitudes(layer)
             a *= norm
             b *= norm
 
             # Wave vector components in layer (q, k_11 are angle dependent)
             k, q, k_11 = self.calc_wave_vector_components(layer)
-            assert k_11 == (self.n_11 * self.calc_k(-1)), ValueError('Check TM')
+            assert k_11 == (self.n_11 * self.k_vac), ValueError('Check TM')
 
             # Calculate the electric field component perpendicular (s) and parallel (p) to the interface
             coeff = 1j / self.n_list[layer]**2
@@ -395,8 +397,7 @@ class LifetimeTmm(TransferMatrix):
         roots_te = self.calc_guided_modes()
         # Calculate group velocity for each mode
         print('Calculating group velocity for each mode...')
-        v_g_te = self.calc_group_velocity()
-        v_g_te *= 1E2  # Convert m/s to cm/s as in gaussian units
+        vg_te = self.calc_group_velocity()
         print('Done!')
         print('Finding TM modes')
         self.set_polarization('TM')
@@ -404,8 +405,7 @@ class LifetimeTmm(TransferMatrix):
         roots_tm = self.calc_guided_modes()
         # Calculate group velocity for each mode
         print('Calculating group velocity for each mode...')
-        v_g_tm = self.calc_group_velocity()
-        v_g_tm *= 1E2  # Convert m/s to cm/s as in gaussian units
+        vg_tm = self.calc_group_velocity()
         print('Done!')
 
         print('Evaluating guided modes for each layer:')
@@ -416,14 +416,14 @@ class LifetimeTmm(TransferMatrix):
             elif layer == self.num_layers - 1:
                 print('\tLayer -> upper cladding...')
             else:
-                print('\tLayer -> internal {0:d} / {1:d}...'.format(layer, self.num_layers-2))
+                print('\tLayer -> internal {0:d} / {1:d}...'.format(layer, self.num_layers - 2))
             time.sleep(0.2)  # Fixes progress bar occurring before text
 
             # Find indices corresponding to the layer we are evaluating
             ind = np.where(z_mat == layer)
 
             # Calculate lower radiative modes
-            spe_layer = self.calc_spe_layer_guided(layer, roots_te, roots_tm, v_g_te, v_g_tm)['spe']
+            spe_layer = self.calc_spe_layer_guided(layer, roots_te, roots_tm, vg_te, vg_tm)['spe']
             spe['TE'][ind] += spe_layer['TE']
             spe['TM_p'][ind] += spe_layer['TM_p']
             spe['TM_s'][ind] += spe_layer['TM_s']

@@ -104,13 +104,13 @@ def fig5():
         ax2.axvline(x=z, color='k', lw=2, zorder=-1)
     # ax1.set_ylim(0, 4)
     # ax2.set_ylim(0, 6)
-    ax1.set_title('Spontaneous Emission Rate. LHS n=3.48, RHS n=1.')
+    ax1.set_title('Spontaneous Emission Rate. Core n=3.48, Cladding n=1.')
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax2.set_ylabel('$\Gamma /\Gamma_0$')
     ax2.set_xlabel('z/$\lambda$')
     size = 12
     ax1.legend(title='Horizontal Dipoles', prop={'size': size})
-    ax2.legend(title='Horizontal Dipoles', prop={'size': size})
+    ax2.legend(title='Vertical Dipoles', prop={'size': size})
 
     fig.tight_layout()
     if SAVE:

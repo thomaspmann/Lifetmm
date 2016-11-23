@@ -32,7 +32,7 @@ def roots(f, a, b, num=20000, verbose=True):
     import math
     from scipy.optimize import brentq
     if verbose:
-        print('The roots on the interval [%f, %f] are:' % (a, b))
+        print('The roots on the interval [{:f}, {:f}] are:'.format(a, b))
     results = []
     while 1:
         dx = abs(a - b) / num  # alternatively use dx=eps

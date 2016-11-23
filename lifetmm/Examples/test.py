@@ -151,7 +151,7 @@ def guiding_electric_field():
     st.add_layer(1 * lam0, air)
     st.set_polarization('TE')
     st.set_radiative_or_guiding('guiding')
-    alpha = st.calc_guided_modes()[::-1]
+    alpha = st.calc_guided_modes()
     plt.figure()
     for i, a in enumerate(alpha):
         st.set_guided_mode(a)
@@ -160,7 +160,7 @@ def guiding_electric_field():
         z = st.calc_z_to_lambda(z)
         E = result['field']
         # Normalise fields
-        E /= max(E)
+        # E /= max(E)
         plt.plot(z, abs(E) ** 2, label=i)
     for z in st.get_layer_boundaries()[:-1]:
         z = st.calc_z_to_lambda(z)
@@ -225,8 +225,28 @@ def test():
     st.add_layer(1 * lam0, air)
     st.set_polarization('TE')
     st.set_radiative_or_guiding('guiding')
-    # alpha = st.calc_guided_modes(verbose=False)[-1]
-    st.calc_group_velocity()
+    guided_mode_list = st.calc_guided_modes()
+    plt.figure()
+    data = np.zeros(4650, dtype=float)
+    for i, n_11 in enumerate(guided_mode_list):
+        st.set_guided_mode(n_11)
+        result = st.calc_field_structure()
+        z = result['z']
+        z = st.calc_z_to_lambda(z)
+        E = result['field']
+        # Normalise fields
+        E /= max(E)
+        data += abs(E) ** 2
+        plt.plot(z, abs(E) ** 2, label=i)
+    for z in st.get_layer_boundaries()[:-1]:
+        z = st.calc_z_to_lambda(z)
+        plt.axvline(x=z, color='k', lw=2)
+    plt.legend(title='Mode index')
+    if SAVE:
+        plt.savefig('../Images/guided fields.png', dpi=300)
+    plt.figure()
+    plt.plot(data)
+    plt.show()
 
 if __name__ == "__main__":
     SAVE = False
@@ -236,4 +256,4 @@ if __name__ == "__main__":
     # guiding_plot()
     # guiding_electric_field()
     # eval_group_velocity()
-    # test()
+    test()

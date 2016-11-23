@@ -1,8 +1,9 @@
 import numpy as np
 from numpy import pi, sqrt, sin, exp
 from numpy.linalg import det
+from scipy.constants import c
 
-from lifetmm.Methods.HelperFunctions import roots, snell, lambda2omega
+from lifetmm.Methods.HelperFunctions import roots, snell, lambda2omega, omega2lambda
 
 
 class TransferMatrix:
@@ -12,22 +13,25 @@ class TransferMatrix:
         self.d_cumulative = np.array([], dtype=float)
         self.num_layers = 0
         self.lam_vac = 0
-        self.pol = ''
+        self.k_vac = 0
+        self.omega = 0
         # Default simulation parameters
         self.field = 'E'
+        self.pol = 'TE'
+        self.guided = False
         self.th = 0
         self.z_step = 1
-        self.guided = False
         self.n_11 = 0  # Normalised parallel wave vector. Only defined and used for guiding modes.
 
     def add_layer(self, d, n):
         """
-        Add layer of t hickness d and refractive index n to the structure.
+        Add layer of thickness d and refractive index n to the structure.
         """
         d = float(d)
         assert d.is_integer() or d == 0, ValueError('Thickness must be a whole number (integer).')
         self.d_list = np.append(self.d_list, d)
         self.n_list = np.append(self.n_list, n)
+        # Recalculate structure info
         self.d_cumulative = np.cumsum(self.d_list)
         self.num_layers = np.size(self.d_list)
 
@@ -41,6 +45,18 @@ class TransferMatrix:
             raise ValueError('This function is not vectorized; you need to run one '
                              'calculation for each wavelength at a time')
         self.lam_vac = lam_vac
+        self.k_vac = 2 * pi / lam_vac
+        self.omega = lambda2omega(lam_vac)
+
+    def set_z_step(self, step):
+        """
+        Set the resolution in z (perpendicular to the multilayer) of the simulation.
+        Default is set to 1 if not called explicitly
+        """
+        if type(step) != int:
+            raise ValueError('z_step must be an integer. Reduce SI unit'
+                             'inputs for thicknesses and wavelengths for greater resolution ')
+        self.z_step = step
 
     def set_polarization(self, pol):
         """
@@ -59,11 +75,23 @@ class TransferMatrix:
             raise ValueError("The field must be either 'E' of 'H'.")
         self.field = field
 
+    def set_radiative_or_guiding(self, mode='radiative'):
+        """
+        Determines whether simulation will solve for a guiding mode or radiative mode.
+        """
+        if mode == 'radiative':
+            self.guided = False
+        elif mode == 'guiding':
+            self.guided = True
+        else:
+            ValueError('options for mode must be either "radiative" or "guiding"')
+
     def set_incident_angle(self, th, units='radians'):
         """
-        Set the incident angle of the plane wave.
-        Used if simulating a radiative mode.
+        Set the incident angle of the plane wave for a radiative mode.
         """
+        assert not self.guided, \
+            ValueError('Run set_radiative_or_guiding(radiative=True) first to evaluate radiative modes.')
         if hasattr(th, 'size') and th.size > 1:
             raise ValueError('This function is not vectorized; you need to run one '
                              'calculation for each angle at a time')
@@ -78,44 +106,22 @@ class TransferMatrix:
         else:
             raise ValueError('Units of angle not recognised. Please enter \'radians\' or \'degrees\'.')
 
-    def set_z_step(self, step):
-        """
-        Set the resolution in z of the simulation.
-        """
-        if type(step) != int:
-            raise ValueError('z_step must be an integer. Reduce SI unit'
-                             'inputs for thicknesses and wavelengths for greater resolution ')
-        self.z_step = step
-
-    def set_radiative_or_guiding(self, mode='radiative', n_11=0):
-        """
-        Determines whether simulation will solve for a guiding mode or radiative mode.
-        """
-        if mode == 'radiative':
-            self.guided = False
-        elif mode == 'guiding':
-            self.guided = True
-        else:
-            ValueError('options for mode must be either "radiative" or "guiding"')
-
     def set_guided_mode(self, n_11):
+        """
+        Set the normalised parallel wave vector, n_11, for the guided mode to be evaluated.
+        """
         assert self.guided, \
-            ValueError('Run set_radiative_or_guiding(radiative=False) first to initialise wave guiding guiding.')
+            ValueError('Run set_radiative_or_guiding(radiative=False) first to evaluate guided modes.')
         n = self.n_list
         # See Quantum Electronics by Yariv pg.603
         assert max(n) >= n_11 > max(n[0], n[-1]), ValueError('Input n_11 is not valid for a guided mode.')
         self.n_11 = n_11
 
-    def calc_k(self, j):
+    def calc_omega(self):
         """
-        Calculate the wave vector magnitude in layer j. Alternatively if j ==- 1
-        then we calculate the vacuum wave vector (k=omega/c).
+        Calculate the omega corresponding to lam_vac. Note units will depend on lam_vac.
         """
-        if j == -1:
-            n = 1
-        else:
-            n = self.n_list[j].real
-        return 2 * pi * n / self.lam_vac
+        return 2 * pi * c / self.lam_vac
 
     def calc_n_11(self):
         if not self.guided:
@@ -130,42 +136,46 @@ class TransferMatrix:
         """
         Normalised perpendicular wave-vector in layer j.
         """
-        # Normalised wave-vector magnitude in layer
-        nj = self.n_list[j]  # equivalent to k(j)/k0
+        n = self.n_list[j]  # Normalised layer wave-vector magnitude (k(j)/k_vac)
+        n_11 = self.calc_n_11()  # Normalised layer parallel wave-vector magnitude
+        return sqrt(n ** 2 - n_11 ** 2)
 
-        n_11 = self.calc_n_11()
-        return sqrt(nj ** 2 - n_11 ** 2)
+    def calc_k(self, j):
+        """
+        Calculate the wave vector magnitude in layer j. Alternatively if j ==- 1
+        then we calculate the vacuum wave vector (k = omega/c = 2pi/lam_vac).
+        """
+        if j == -1:
+            n = 1
+        else:
+            n = self.n_list[j].real
+        return n * self.k_vac
 
     def calc_q(self, j):
         """
-        Perpendicular wave vector in layer j
+        Perpendicular wave vector in layer j.
         """
         xi = self.calc_xi(j)
-        k0 = self.calc_k(-1)
-        return xi * k0
+        return xi * self.k_vac
 
     def calc_k_11(self):
         """
-        Parallel wave vector (same in all layers due to BCs)
+        Parallel wave vector (same in all layers).
         """
-        # Normalised parallel wave vector
         n_11 = self.calc_n_11()
-        # Un-normalise
-        k0 = self.calc_k(-1)
-        return k0 * n_11
+        return n_11 * self.k_vac
 
     def calc_wave_vector_components(self, j):
         """
         The wave vector magnitude and it's components perpendicular and parallel
         to the interface inside the layer j.
         """
-        # Layer wave vector and components
         k = self.calc_k(j)
         k_11 = self.calc_k_11()
         q = self.calc_q(j)
         return k, q, k_11
 
-    def calc_i_matrix(self, j, k):
+    def i_matrix(self, j, k):
         """
         Returns the interference matrix between layers j and k.
         """
@@ -191,50 +201,50 @@ class TransferMatrix:
             t = np.nan
         return (1 / t) * np.array([[1, r], [r, 1]], dtype=complex)
 
-    def calc_l_matrix(self, j):
+    def l_matrix(self, j):
         """
         Returns the propagation L matrix for layer j.
         """
         qj = self.calc_q(j)
         dj = self.d_list[j]
         assert -1j * qj * dj < 25, \
-            ValueError('L_matrix is unstable for such a large thickness with an exponentially growing mode.')
+            ValueError('L_matrix is unstable for such a large thickness with a growing field.')
         return np.array([[exp(-1j * qj * dj), 0], [0, exp(1j * qj * dj)]], dtype=complex)
 
-    def calc_s_matrix(self):
+    def s_matrix(self):
         """
         Returns the total system transfer matrix s.
         """
-        s = self.calc_i_matrix(0, 1)
+        s = self.i_matrix(0, 1)
         for j in range(1, self.num_layers - 1):
-            l = self.calc_l_matrix(j)
-            i = self.calc_i_matrix(j, j + 1)
+            l = self.l_matrix(j)
+            i = self.i_matrix(j, j + 1)
             s = s @ l @ i
         return s
 
-    def calc_s_primed_matrix(self, layer):
+    def s_primed_matrix(self, layer):
         """
         Returns the partial system transfer matrix s_prime.
         """
-        s_prime = self.calc_i_matrix(0, 1)
+        s_prime = self.i_matrix(0, 1)
         for j in range(1, layer):
-            l = self.calc_l_matrix(j)
-            i = self.calc_i_matrix(j, j + 1)
+            l = self.l_matrix(j)
+            i = self.i_matrix(j, j + 1)
             s_prime = s_prime @ l @ i
         return s_prime
 
-    def calc_s_dprimed_matrix(self, layer):
+    def s_dprimed_matrix(self, layer):
         """
         Returns the partial system transfer matrix s_dprime (doubled prime).
         """
-        s_dprime = self.calc_i_matrix(layer, layer + 1)
+        s_dprime = self.i_matrix(layer, layer + 1)
         for j in range(layer + 1, self.num_layers - 1):
-            l = self.calc_l_matrix(j)
-            i = self.calc_i_matrix(j, j + 1)
+            l = self.l_matrix(j)
+            i = self.i_matrix(j, j + 1)
             s_dprime = s_dprime @ l @ i
         return s_dprime
 
-    def calc_layer_field_amplitudes(self, layer):
+    def layer_field_amplitudes(self, layer):
         """
         Evaluate fwd and bkwd field amplitude coefficients (E or H) in a layer.
         Coefficients are in units of the fwd incoming wave amplitude for radiative modes
@@ -243,7 +253,7 @@ class TransferMatrix:
         if not self.guided:
             # Calculate radiative amplitudes
             # Transfer matrix of system
-            s = self.calc_s_matrix()
+            s = self.s_matrix()
             # Reflection for incoming wave incident of LHS of structure
             r = s[1, 0] / s[0, 0]
             # Evaluate lower cladding
@@ -256,7 +266,7 @@ class TransferMatrix:
                 field_minus = 0 + 0j
             # Evaluate field amplitudes in internal layers
             else:
-                s_prime = self.calc_s_primed_matrix(layer)
+                s_prime = self.s_primed_matrix(layer)
                 field_plus = (s_prime[1, 1] - r * s_prime[0, 1]) / det(s_prime)
                 field_minus = (r * s_prime[0, 0] - s_prime[1, 0]) / det(s_prime)
         else:
@@ -267,12 +277,12 @@ class TransferMatrix:
                 field_minus = 1 + 0j
             # Evaluate upper cladding
             elif layer == self.num_layers - 1:
-                s = self.calc_s_matrix()
+                s = self.s_matrix()
                 field_plus = 1 / s[0, 1]
                 field_minus = 0 + 0j
             # Evaluate field amplitudes in internal layers
             else:
-                s_prime = self.calc_s_primed_matrix(layer)
+                s_prime = self.s_primed_matrix(layer)
                 field_plus = - s_prime[0, 1] / det(s_prime)
                 field_minus = s_prime[0, 0] / det(s_prime)
         return field_plus, field_minus
@@ -294,7 +304,7 @@ class TransferMatrix:
             z = -z[::-1]
 
         # field(z) field in terms of incident field amplitude (A_0^+)
-        field_plus, field_minus = self.calc_layer_field_amplitudes(layer)
+        field_plus, field_minus = self.layer_field_amplitudes(layer)
         field = field_plus * exp(1j * q * z) + field_minus * exp(-1j * q * z)
         field_squared = abs(field) ** 2
         if self.d_list[layer] != 0:
@@ -323,7 +333,7 @@ class TransferMatrix:
 
     def _s11(self, n_11):
         self.n_11 = n_11
-        s = self.calc_s_matrix()
+        s = self.s_matrix()
         return s[0, 0].real
 
     def s11_guided(self):
@@ -342,34 +352,59 @@ class TransferMatrix:
 
     def calc_guided_modes(self, verbose=True):
         """
-        Evaluate beta at S_11=0 as a function of k_ll in the guided regime.
-        Guided regime:  n_clad < k_ll/k < max(n), k_11/k = n_11
+        Return the guided normalised parallel wave vectors (k_ll/k_vac = n_11) of any guided
+        modes that the structure supports. Array returned is arranged from lowest mode to
+        highest mode.
+
+        Method: Evaluates the poles of the transfer matrix (S_11=0) as a function of n_11 in the
+        guided regime:  n_clad < k_ll/k < max(n), k_11/k = n_11
         """
         assert self.guided, \
             ValueError('"self.guided" must be set to true before running this function.')
         n = self.n_list.real
-        alphas = roots(self._s11, n[0], max(n), verbose=verbose)
-        return alphas
+        # Find supported guiding modes
+        n_11 = roots(self._s11, n[0], max(n), verbose=verbose)
+        # Need to flip array to arrange from lowest to highest mode
+        n_11 = n_11[::-1]
+        return n_11
 
     def calc_group_velocity(self):
-        # Take 1% either side of the emission wavelength (using meters)
-        lam0 = self.lam_vac
-        lam_upper = int(1.01 * self.lam_vac)
-        lam_lower = int(0.99 * self.lam_vac)
-        omega_lower = lambda2omega(lam_upper * 1E-9)
-        omega_upper = lambda2omega(lam_lower * 1E-9)
-        d_omega = omega_upper - omega_lower
+        lam_vac = self.lam_vac
 
-        self.set_vacuum_wavelength(lam_upper)
-        beta_lower = self.calc_guided_modes(verbose=False)
-        self.set_vacuum_wavelength(lam_lower)
+        # METHOD USING ANGULAR FREQUENCY
+        # Use central difference and v_g = d_omega/d_beta
+        # TODO: check omega units
+        h = 0.05 * self.omega
+        lam = omega2lambda(self.omega + h / 2)
+        self.set_vacuum_wavelength(int(lam))
         beta_upper = self.calc_guided_modes(verbose=False)
-        assert len(beta_lower) == len(beta_upper), \
-            ValueError('Number of guided modes must be equal when calculating the group velocity.')
+        lam = omega2lambda(self.omega - h / 2)
+        self.set_vacuum_wavelength(int(lam))
+        beta_lower = self.calc_guided_modes(verbose=False)
         d_beta = beta_upper - beta_lower
         d_beta *= 1E9
-        self.set_vacuum_wavelength(lam0)
-        return d_omega / d_beta
+        self.set_vacuum_wavelength(lam_vac)
+        vg = h / d_beta
+
+        # EQUIVALENT METHOD USING WAVELENGTH
+        # Take 1% either side of the emission wavelength (using meters)
+        # lam_upper = int(1.01 * lam_vac)
+        # lam_lower = int(0.99 * lam_vac)
+        # self.set_vacuum_wavelength(lam_upper)
+        # beta_lower = self.calc_guided_modes(verbose=False)
+        # self.set_vacuum_wavelength(lam_lower)
+        # beta_upper = self.calc_guided_modes(verbose=False)
+        # assert len(beta_lower) == len(beta_upper), \
+        #     ValueError('Number of guided modes must be equal when calculating the group velocity.')
+        # d_beta = beta_upper - beta_lower
+        # d_beta *= 1E9
+        # d_omega = lambda2omega(lam_lower * 1E-9) - lambda2omega(lam_upper * 1E-9)
+        # self.set_vacuum_wavelength(lam_vac)
+        # vg = d_omega / d_beta
+
+        # # TODO: Should i be doing this?
+        # vg *= 1E2  # Convert m/s to cm/s as in gaussian units
+        return vg
 
     def get_layer_boundaries(self):
         """
@@ -396,7 +431,7 @@ class TransferMatrix:
         """
         Return the complex reflection and transmission coefficients of the structure.
         """
-        s = self.calc_s_matrix()
+        s = self.s_matrix()
         r = s[1, 0] / s[0, 0]
         t = 1 / s[0, 0]
         return r, t
