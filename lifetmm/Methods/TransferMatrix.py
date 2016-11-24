@@ -287,7 +287,8 @@ class TransferMatrix:
             # Evaluate upper cladding
             elif layer == self.num_layers - 1:
                 s = self.s_matrix()
-                field_plus = 1 / s[0, 1]
+                # TODO: check why not [0, 1]
+                field_plus = 1 / s[1, 0]
                 field_minus = 0 + 0j
             # Evaluate field amplitudes in internal layers
             else:

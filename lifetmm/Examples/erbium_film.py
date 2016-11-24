@@ -7,31 +7,35 @@ import numpy as np
 
 from lifetmm.Methods.SpontaneousEmissionRate import LifetimeTmm
 
-SAVE = True  # Save figs and data? (bool)
-
 
 def t2_spe_vs_z():
     # Vacuum wavelength
-    lam0 = 1550
+    lam0 = 1535
 
     # Create plot
     f, ax = plt.subplots(figsize=(15, 7))
 
-    n_list = [1.2, 1.5, 2]
-    for n in n_list:
+    for n in [1.2, 1.5, 2]:
         print('Evaluating n={:g}'.format(n))
         # Create structure
         st = LifetimeTmm()
         st.set_vacuum_wavelength(lam0)
-        st.add_layer(4000, 1.45)  # 1.45 is silica glass substrate
+        st.add_layer(3 * lam0, 1.45)  # Silica glass substrate
         st.add_layer(980, 1.56)
-        st.add_layer(4000, n)
+        st.add_layer(3 * lam0, n)
 
-        # Calculate spontaneous emission over whole structure
+        # Calculate spontaneous emission for radiative modes
         result = st.calc_spe_structure_radiative()
         z = result['z']
         spe = result['spe']['total']
-        # Plot
+        # Calculate spontaneous emission for guided modes
+        try:
+            result = st.calc_spe_structure_guided()['spe']['total']
+            spe += result
+            # ax.plot(z, result, label=n, ls='--', lw=2)
+        except AssertionError:
+            pass
+        # Plot spe results
         ax.plot(z, spe, label=n, lw=2)
         ax.axhline(y=n, xmin=0.8, xmax=1, ls='dotted', color='k', lw=2)
 
@@ -52,10 +56,10 @@ def t2_spe_vs_z():
 
 def t2_spe_vs_n():
     # Vacuum wavelength
-    lam0 = 1550
+    lam0 = 1535
 
-    # n_list = np.linspace(1, 1.47, 20)
-    n_list = [1, 1.33, 1.37, 1.47]
+    n_list = np.linspace(1, 2, 30)
+    # n_list = [1, 1.33, 1.37, 1.47]
     spe_list = []
     for n in n_list:
         print('Evaluating n={:g}'.format(n))
@@ -63,19 +67,21 @@ def t2_spe_vs_n():
         st = LifetimeTmm()
         st.set_vacuum_wavelength(lam0)
         # st.add_layer(0, 1.45)
-        st.add_layer(0, 1.56)
+        st.add_layer(0, 1.45)
         st.add_layer(980, 1.56)
         st.add_layer(0, n)
         # Calculate spontaneous emission of layer 0 (1st)
-        result = st.calc_spe_layer_radiative(layer=1, emission='Lower', th_pow=13)
+        result = st.calc_spe_layer_radiative(layer=1, emission='Lower', th_pow=10)
         spe = result['spe']['total']
-        result = st.calc_spe_layer_radiative(layer=1, emission='Upper', th_pow=13)
+        result = st.calc_spe_layer_radiative(layer=1, emission='Upper', th_pow=10)
         spe += result['spe']['total']
-        # Take average
-        spe /= 2
+        try:
+            result = st.calc_spe_layer_guided(layer=1)
+            spe += result['spe']['total']
+            spe /= 3
+        except AssertionError:
+            spe /= 2
         spe = np.mean(spe)
-        # Normalise to bulk (so that spe = 1 in the doped layer)
-        spe -= 0.5
         # Append to list
         spe_list.append(spe)
 
@@ -102,5 +108,7 @@ def load_data():
 
 
 if __name__ == "__main__":
-    t2_spe_vs_z()
-    # t2_spe_vs_n()
+    SAVE = False  # Save figs and data? (bool)
+
+    # t2_spe_vs_z()
+    t2_spe_vs_n()

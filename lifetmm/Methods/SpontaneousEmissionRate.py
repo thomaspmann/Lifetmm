@@ -150,7 +150,7 @@ class LifetimeTmm(TransferMatrix):
 
         return {'z': z, 'spe': spe}
 
-    def calc_spe_structure_radiative(self):
+    def calc_spe_structure_radiative(self, th_pow=8):
         """
         Evaluate the spontaneous emission rate vs z of the structure for each dipole orientation.
         Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
@@ -201,7 +201,7 @@ class LifetimeTmm(TransferMatrix):
             ind = np.where(z_mat == layer)
 
             # Calculate lower radiative modes
-            spe_layer = self.calc_spe_layer_radiative(layer, emission='Lower')['spe']
+            spe_layer = self.calc_spe_layer_radiative(layer, emission='Lower', th_pow=th_pow)['spe']
             spe['TE_lower'][ind] += spe_layer['TE']
             spe['TM_p_lower'][ind] += spe_layer['TM_p']
             spe['TM_s_lower'][ind] += spe_layer['TM_s']
@@ -213,7 +213,7 @@ class LifetimeTmm(TransferMatrix):
             spe['TM_p_lower_partial'][ind] += spe_layer['TM_p_partial']
 
             # Calculate upper radiative modes (always radiative as n[0] > n[-1])
-            spe_layer = self.calc_spe_layer_radiative(layer, emission='Upper')['spe']
+            spe_layer = self.calc_spe_layer_radiative(layer, emission='Upper', th_pow=th_pow)['spe']
             spe['TE_upper'][ind] += spe_layer['TE']
             spe['TM_s_upper'][ind] += spe_layer['TM_s']
             spe['TM_p_upper'][ind] += spe_layer['TM_p']

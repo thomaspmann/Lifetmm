@@ -168,6 +168,104 @@ def fig6():
     plt.show()
 
 
+def fig8():
+    # Create structure
+    st = LifetimeTmm()
+    lam0 = 1550
+    st.set_vacuum_wavelength(lam0)
+    st.set_field('E')
+    sio2 = 1.45
+    si = 3.48
+    air = 1
+    st.add_layer(1.5 * lam0, sio2)
+    st.add_layer(lam0, si)
+    st.add_layer(1.5 * lam0, air)
+
+    result = st.calc_spe_structure_guided()
+    z = result['z']
+    spe = result['spe']
+    # Convert z into z/lam0 and center
+    z = st.calc_z_to_lambda(z)
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, sharex='col', sharey='none')
+
+    ax1.plot(z, spe['TE'], label='TE')
+    ax1.plot(z, spe['TM_p'], label='TM')
+    ax1.plot(z, spe['TE'] + spe['TM_p'], label='TE + TM')
+    ax2.plot(z, spe['TM_s'], label='TM')
+    for z in st.get_layer_boundaries()[:-1]:
+        z = st.calc_z_to_lambda(z)
+        ax1.axvline(x=z, color='k', lw=2, zorder=-1)
+        ax2.axvline(x=z, color='k', lw=2, zorder=-1)
+    ax1.set_ylim(0, 4)
+    ax2.set_ylim(0, 6)
+    ax1.set_title('The spatial dependence of the normalized spontaneous emission rate \n'
+                  'into guided modes for asymmetric Silicon waveguide (SiO2/Si/air).')
+    ax1.set_ylabel('$\Gamma / \Gamma_0$')
+    ax2.set_ylabel('$\Gamma /\Gamma_0$')
+    ax2.set_xlabel('z/$\lambda$')
+    ax1.legend(title='Horizontal Dipoles', fontsize='small')
+    ax2.legend(title='Vertical Dipoles', fontsize='small')
+
+    fig.tight_layout()
+    if SAVE:
+        plt.savefig('../Images/creatore_fig5.png', dpi=300)
+    plt.show()
+
+
+def fig9():
+    """ Silicon layer bounded by two semi infinite air claddings.
+    """
+    # Create structure
+    st = LifetimeTmm()
+
+    # Set vacuum wavelength
+    lam0 = 1550
+    st.set_vacuum_wavelength(lam0)
+
+    # Add layers
+    sio2 = 1.45
+    si = 3.48
+    air = 1
+    st.add_layer(1.5 * lam0, sio2)
+    st.add_layer(lam0, si)
+    st.add_layer(1.5 * lam0, air)
+    # Calculate spontaneous emission over whole structure
+    result = st.calc_spe_structure_radiative()
+    z = result['z']
+    spe = result['spe']
+
+    # Convert z into z/lam0 and center
+    z = st.calc_z_to_lambda(z)
+
+    # Plot spontaneous emission rates
+    fig = plt.figure()
+    ax1 = fig.add_subplot(211)
+    ax1.plot(z, spe['TE_total'], label='TE')
+    ax1.plot(z, spe['TM_p_total'], label='TM')
+    ax1.plot(z, spe['TE_total'] + spe['TM_p_total'], 'k', label='TE + TM')
+    ax2 = fig.add_subplot(212)
+    ax2.plot(z, spe['TM_s_total'], label='TM')
+
+    # Plot layer boundaries
+    for z in st.get_layer_boundaries()[:-1]:
+        ax1.axvline(st.calc_z_to_lambda(z), color='r', lw=2)
+        ax2.axvline(st.calc_z_to_lambda(z), color='r', lw=2)
+
+    ax1.set_ylim(0, 2)
+    ax2.set_ylim(0, 3)
+    ax1.set_title('The spatial dependence of the normalized spontaneous emission rate \n'
+                  'into radiative modes for asymmetric Silicon waveguide (SiO2/Si/air).')
+    ax1.set_ylabel('$\Gamma / \Gamma_0$')
+    ax2.set_ylabel('$\Gamma /\Gamma_0$')
+    ax2.set_xlabel('z/$\lambda$')
+    ax1.legend(title='Horizontal Dipoles', loc='upper right', fontsize='small')
+    ax2.legend(title='Vertical Dipoles', loc='upper right', fontsize='small')
+    if SAVE:
+        plt.savefig('../Images/SPE_silicon_layer_air_cladding.png', dpi=300)
+    plt.show()
+
+
 def figx():
     """ Air layer bounded by two semi infinite silicon claddings.
     """
@@ -218,6 +316,7 @@ if __name__ == "__main__":
     SAVE = False
 
     # fig3()
-    fig5()
+    # fig5()
     # fig6()
-    # figx()
+    fig8()
+    # fig9()
