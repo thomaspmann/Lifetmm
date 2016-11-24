@@ -8,7 +8,7 @@ from lifetmm.Methods.HelperFunctions import roots, snell, lambda2omega
 
 class TransferMatrix:
     def __init__(self):
-        self.d_list = np.array([], dtype=float)
+        self.d_list = np.array([], dtype=int)
         self.n_list = np.array([], dtype=complex)
         self.d_cumulative = np.array([], dtype=float)
         self.num_layers = 0
@@ -27,8 +27,11 @@ class TransferMatrix:
         """
         Add layer of thickness d and refractive index n to the structure.
         """
-        d = float(d)
-        assert d.is_integer() or d == 0, ValueError('Thickness must be a whole number (integer).')
+        assert d >= 0, ValueError('Thickness must >= 0.')
+        if not float(d).is_integer():
+            print('WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. '
+                  'CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.')
+            d = round(d)
         self.d_list = np.append(self.d_list, d)
         self.n_list = np.append(self.n_list, n)
         # Recalculate structure info
@@ -40,10 +43,13 @@ class TransferMatrix:
         Set the vacuum wavelength to be simulated.
         Note to ensure that dimensions must be consistent with layer thicknesses.
         """
-        assert type(lam_vac) == int, ValueError('The wavelength must be an integer.')
-        if hasattr(lam_vac, 'size') and lam_vac.size > 1:
-            raise ValueError('This function is not vectorized; you need to run one '
-                             'calculation for each wavelength at a time')
+        assert not hasattr(lam_vac, 'size'), ValueError('This function is not vectorized; you need to run one '
+                                                        'calculation for each wavelength at a time')
+        assert lam_vac > 0, ValueError('Wavelength must > 0.')
+        if not float(lam_vac).is_integer():
+            print('WARNING: ROUNDING WAVELENGTH TO THE NEAREST INTEGER. '
+                  'CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.')
+            lam_vac = round(lam_vac)
         self.lam_vac = lam_vac
         self.k_vac = 2 * pi / lam_vac
         self.omega = lambda2omega(lam_vac)
@@ -53,18 +59,21 @@ class TransferMatrix:
         Set the resolution in z (perpendicular to the multilayer) of the simulation.
         Default is set to 1 if not called explicitly
         """
-        if type(step) != int:
-            raise ValueError('z_step must be an integer. Reduce SI unit'
-                             'inputs for thicknesses and wavelengths for greater resolution ')
+        if not float(step).is_integer():
+            print('WARNING: ROUNDING STEP TO THE NEAREST INTEGER. '
+                  'CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.')
+            step = round(step)
         self.z_step = step
 
     def set_polarization(self, pol):
         """
         Set the mode polarisation to be simulated ('s' or 'TE' and 'p' or 'TM')
         """
-        if pol not in ['s', 'p', 'TE', 'TM'] and self.th != 0:
-            raise ValueError("Polarisation must be defined when angle of incidence is"
-                             " not 0$\degree$s")
+        assert pol in ['s', 'p', 'TE', 'TM'], \
+            ValueError("Polarisation must one of; 's', 'p', 'TE', 'TM'")
+        if self.th != 0:
+            assert pol in ['s', 'p', 'TE', 'TM'], \
+                ValueError("Polarisation must be defined when angle of incidence is not 0$\degree$s")
         self.pol = pol
 
     def set_field(self, field):
@@ -350,11 +359,12 @@ class TransferMatrix:
             s_11 = np.append(s_11, self._s11(n_11))
         return n_11_range, s_11.real
 
-    def calc_guided_modes(self, verbose=True):
+    def calc_guided_modes(self, verbose=True, normalised=False):
         """
-        Return the guided normalised parallel wave vectors (k_ll/k_vac = n_11) of any guided
-        modes that the structure supports. Array returned is arranged from lowest mode to
-        highest mode.
+        Return the parallel wave vectors (k_11 or beta) of all guided modes that the structure
+        supports. Array returned is arranged from lowest mode to highest mode.
+
+        If normalised=True return (k_ll/k_vac = n_11)
 
         Method: Evaluates the poles of the transfer matrix (S_11=0) as a function of n_11 in the
         guided regime:  n_clad < k_ll/k < max(n), k_11/k = n_11
@@ -366,22 +376,26 @@ class TransferMatrix:
         n_11 = roots(self._s11, n[0], max(n), verbose=verbose)
         # Need to flip array to arrange from lowest to highest mode
         n_11 = n_11[::-1]
+
+        if not normalised:
+            n_11 *= self.k_vac
         return n_11
 
     def calc_group_velocity(self):
         lam_vac = self.lam_vac
 
         # Take 1% either side of the emission wavelength (using meters)
-        lam_upper = int(1.01 * lam_vac)
-        lam_lower = int(0.99 * lam_vac)
-        self.set_vacuum_wavelength(lam_upper)
+        self.set_vacuum_wavelength(int(1.01 * lam_vac))
         omega1 = self.omega
-        beta_lower = self.calc_guided_modes(verbose=False) * self.k_vac
-        self.set_vacuum_wavelength(lam_lower)
+        beta_lower = self.calc_guided_modes(verbose=False, normalised=False)
+
+        self.set_vacuum_wavelength(int(0.99 * lam_vac))
         omega2 = self.omega
-        beta_upper = self.calc_guided_modes(verbose=False) * self.k_vac
+        beta_upper = self.calc_guided_modes(verbose=False, normalised=False)
+
         assert len(beta_lower) == len(beta_upper), \
             ValueError('Number of guided modes must be equal when calculating the group velocity.')
+
         d_beta = beta_upper - beta_lower
         d_omega = abs(omega1 - omega2)
         vg = d_omega / d_beta
@@ -423,13 +437,13 @@ class TransferMatrix:
     def calc_reflection_and_transmission(self, correction=True):
         """
         Return the reflectance and transmittance of the structure.
+        Correction option for transmission due to beam expansion:
+            https://en.wikipedia.org/wiki/Fresnel_equations
         """
         r, t = self.calc_r_and_t()
         reflection = abs(r) ** 2
         transmission = abs(t) ** 2
         if correction:
-            # note correction for transmission due to beam expansion
-            # https://en.wikipedia.org/wiki/Fresnel_equations
             n_1 = self.n_list[0].real
             n_2 = self.n_list[-1].real
             th_out = snell(n_1, n_2, self.th)

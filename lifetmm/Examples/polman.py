@@ -11,8 +11,6 @@ from numpy import pi
 
 from lifetmm.Methods.SpontaneousEmissionRate import LifetimeTmm
 
-SAVE = False  # Save figs and data? (bool)
-
 
 def fig3():
     """ Plot the average decay rate of layer(normalised to bulk n) vs n of semi-infinite
@@ -22,67 +20,65 @@ def fig3():
          * we use the spe_layer function as we only care about the Er-doped layer.
          * th_num option is specified to give a higher accuracy on the integration.
     """
-    # Vacuum wavelength
-    lam0 = 1550
+    # Vacuum emission wavelength
+    lam_vac = 1550
 
+    results = []
     n_list = np.linspace(1, 2, 10)
-    spe_list = []
     for n in n_list:
         print('Evaluating n={:g}'.format(n))
         # Create structure
         st = LifetimeTmm()
-        st.set_vacuum_wavelength(lam0)
+        st.set_vacuum_wavelength(lam_vac)
         st.add_layer(1550, 1.5)
         st.add_layer(0, n)
-        # Calculate spontaneous emission of layer 0 (1st)
-        result = st.calc_spe_layer_radiative(layer=0, emission='Lower', th_num=13)
+        # Calculate average total spontaneous emission of layer 0 (1st)
+        result = st.calc_spe_layer_radiative(layer=0, emission='Lower', th_pow=11)
         spe = result['spe']['total']
-        result = st.calc_spe_layer_radiative(layer=0, emission='Upper', th_num=13)
+        result = st.calc_spe_layer_radiative(layer=0, emission='Upper', th_pow=11)
         spe += result['spe']['total']
-        # Take average
         spe /= 2
         spe = np.mean(spe)
-        # Normalise to bulk
+        # Normalise to bulk refractive index
         spe -= 1.5
         # Append to list
-        spe_list.append(spe)
-    spe_list = np.array(spe_list)
+        results.append(spe)
+    results = np.array(results)
 
-    # Plot
+    # Plot results
     f, ax = plt.subplots(figsize=(15, 7))
-    ax.plot(n_list, spe_list)
+    ax.plot(n_list, results)
     ax.set_title('Average spontaneous emission rate over doped layer (d=1550nm) '
-                 'compared to bulk.')
+                 'normalised to emission rate in bulk medium.')
     ax.set_ylabel('$\Gamma / \Gamma_1.5$')
     ax.set_xlabel('n')
     plt.tight_layout()
     if SAVE:
         plt.savefig('../Images/spe_vs_n.png', dpi=300)
-        np.savez('../Data/spe_vs_n', n=n_list, spe=spe_list)
+        np.savez('../Data/spe_vs_n', n=n_list, spe=results)
     plt.show()
 
 
 def fig4():
-    """ n=3 or n=1 (air) to n=1.5 (Erbium deopsition) semi-infinite half spaces.
-    Plot the average otal spontaneous emission rate of dipoles as a function of
+    """ n=3 or n=1 (air) to n=1.5 (Erbium deposition) semi-infinite half spaces.
+    Plot the average total spontaneous emission rate of dipoles as a function of
     distance from the interface.
     """
     # Vacuum wavelength
-    lam0 = 1550
+    lam_vac = 1550
     # Plotting units
-    units = lam0 / (2 * pi)
+    units = lam_vac / (2 * pi)
 
     # Create plot
     f, ax = plt.subplots(figsize=(15, 7))
 
-    n_list = [1, 3]
-    for n in n_list:
+    for n in [1, 3]:
         print('Evaluating n={:g}'.format(n))
         # Create structure
         st = LifetimeTmm()
-        st.set_vacuum_wavelength(lam0)
-        st.add_layer(int(4 * units), n)
-        st.add_layer(int(4 * units), 1.5)
+        st.set_vacuum_wavelength(lam_vac)
+        st.add_layer(4 * units, n)
+        st.add_layer(4 * units, 1.5)
         st.print_info()
         # Calculate spontaneous emission over whole structure
         result = st.calc_spe_structure_radiative()
@@ -112,5 +108,7 @@ def fig4():
 
 
 if __name__ == "__main__":
+    SAVE = False
+
     # fig3()
     fig4()

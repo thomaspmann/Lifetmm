@@ -244,20 +244,18 @@ class LifetimeTmm(TransferMatrix):
             print('Finding TE modes')
             self.set_polarization('TE')
             self.set_field('E')
-            roots_te = self.calc_guided_modes()
+            roots_te = self.calc_guided_modes(normalised=True)
             # Calculate group velocity for each mode
             print('Calculating group velocity for each mode...')
             vg_te = self.calc_group_velocity()
-            vg_te *= 1E2  # Convert m/s to cm/s as in gaussian units
             print('Done!')
             print('Finding TM modes')
             self.set_polarization('TM')
             self.set_field('H')
-            roots_tm = self.calc_guided_modes()
+            roots_tm = self.calc_guided_modes(normalised=True)
             # Calculate group velocity for each mode
             print('Calculating group velocity for each mode...')
             vg_tm = self.calc_group_velocity()
-            vg_tm *= 1E2  # Convert m/s to cm/s as in gaussian units
             print('Done!')
 
         # z positions to evaluate E at
@@ -394,7 +392,7 @@ class LifetimeTmm(TransferMatrix):
         print('Finding TE modes')
         self.set_polarization('TE')
         self.set_field('E')
-        roots_te = self.calc_guided_modes()
+        roots_te = self.calc_guided_modes(normalised=True)
         # Calculate group velocity for each mode
         print('Calculating group velocity for each mode...')
         vg_te = self.calc_group_velocity()
@@ -402,7 +400,7 @@ class LifetimeTmm(TransferMatrix):
         print('Finding TM modes')
         self.set_polarization('TM')
         self.set_field('H')
-        roots_tm = self.calc_guided_modes()
+        roots_tm = self.calc_guided_modes(normalised=True)
         # Calculate group velocity for each mode
         print('Calculating group velocity for each mode...')
         vg_tm = self.calc_group_velocity()
@@ -437,7 +435,7 @@ class LifetimeTmm(TransferMatrix):
 # Helper Functions
 def flip_spe_results(spe):
     """
-    Flip the spe result
+    Flip the array containing the spe result
     """
     for key in spe.dtype.names:
         spe[key] = spe[key][::-1]
