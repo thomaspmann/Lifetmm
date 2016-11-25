@@ -63,14 +63,63 @@ def fig3():
     ax3.set_ylabel('$\Gamma /\Gamma_0$')
     ax3.set_xlabel('z/$\lambda$')
     ax4.set_xlabel('z/$\lambda$')
-    size = 12
-    ax1.legend(title='Horizontal Dipoles', prop={'size': size})
-    ax2.legend(title='Horizontal Dipoles', prop={'size': size})
-    ax3.legend(title='Vertical Dipoles', prop={'size': size})
-    ax4.legend(title='Vertical Dipoles', prop={'size': size})
+    ax1.legend(title='Horizontal Dipoles', fontsize='small')
+    ax2.legend(title='Horizontal Dipoles', fontsize='small')
+    ax3.legend(title='Vertical Dipoles', fontsize='small')
+    ax4.legend(title='Vertical Dipoles', fontsize='small')
     fig.tight_layout()
     if SAVE:
-        plt.savefig('../Images/spe_vs_n.png', dpi=300)
+        plt.savefig('../Images/creatore_fig3.png', dpi=300)
+    plt.show()
+
+
+def fig4():
+    """ Silicon to air semi-infinite half spaces.
+    """
+    # Create structure
+    st = LifetimeTmm()
+    st.add_layer(1550, 3.48)
+    st.add_layer(1550, 1)
+
+    # Set vacuum wavelength
+    lam0 = 1550
+    st.set_vacuum_wavelength(lam0)
+
+    # Feedback to user the structure being simulated
+    st.print_info()
+
+    # Calculate spontaneous emission over whole structure
+    result = st.calc_spe_structure_radiative(th_pow=10)
+    z = result['z']
+    spe = result['spe']
+
+    # Convert z into z/lam0 and center
+    z = st.calc_z_to_lambda(z)
+
+    # Plot spontaneous emission rates
+    fig, (ax1, ax2) = plt.subplots(1, 2, sharey='row', figsize=(15, 5))
+    ax1.plot(z, (spe['TM_p_lower'] + spe['TE_lower']) / (spe['TE_total'] + spe['TM_p_total']), label='Lower')
+    ax1.plot(z, (spe['TM_p_upper'] + spe['TE_upper']) / (spe['TE_total'] + spe['TM_p_total']), label='Upper')
+
+    ax2.plot(z, (spe['TM_s_lower']) / spe['TM_s_total'], label='Lower')
+    ax2.plot(z, (spe['TM_s_upper']) / spe['TM_s_total'], label='Upper')
+
+    # Plot internal layer boundaries
+    for z in st.get_layer_boundaries()[:-1]:
+        ax1.axvline(st.calc_z_to_lambda(z), color='k', lw=2)
+        ax2.axvline(st.calc_z_to_lambda(z), color='k', lw=2)
+
+    ax1.set_ylim(0, 1.1)
+
+    ax1.set_title('Spontaneous Emission Rate. LHS n=3.48, RHS n=1.')
+    ax1.set_ylabel('$\Gamma / \Gamma_0$')
+    ax2.set_xlabel('z/$\lambda$')
+    ax1.legend(title='Horizontal Dipoles', fontsize='small')
+    ax2.legend(title='Vertical Dipoles', fontsize='small')
+
+    fig.tight_layout()
+    if SAVE:
+        plt.savefig('../Images/creatore_fig4.png', dpi=300)
     plt.show()
 
 
@@ -227,9 +276,9 @@ def fig9():
     sio2 = 1.45
     si = 3.48
     air = 1
-    st.add_layer(1.5 * lam0, sio2)
+    st.add_layer(2.5 * lam0, sio2)
     st.add_layer(lam0, si)
-    st.add_layer(1.5 * lam0, air)
+    st.add_layer(2.5 * lam0, air)
     # Calculate spontaneous emission over whole structure
     result = st.calc_spe_structure_radiative()
     z = result['z']
@@ -316,7 +365,8 @@ if __name__ == "__main__":
     SAVE = False
 
     # fig3()
+    fig4()
     # fig5()
     # fig6()
-    fig8()
+    # fig8()
     # fig9()

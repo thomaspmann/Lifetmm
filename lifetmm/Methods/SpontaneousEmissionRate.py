@@ -215,13 +215,13 @@ class LifetimeTmm(TransferMatrix):
             # Calculate upper radiative modes (always radiative as n[0] > n[-1])
             spe_layer = self.calc_spe_layer_radiative(layer, emission='Upper', th_pow=th_pow)['spe']
             spe['TE_upper'][ind] += spe_layer['TE']
-            spe['TM_s_upper'][ind] += spe_layer['TM_s']
             spe['TM_p_upper'][ind] += spe_layer['TM_p']
+            spe['TM_s_upper'][ind] += spe_layer['TM_s']
 
         # Totals
         spe['TE_total'] = spe['TE_lower'] + spe['TE_upper']
-        spe['TM_s_total'] = spe['TM_s_lower'] + spe['TM_s_upper']
         spe['TM_p_total'] = spe['TM_p_lower'] + spe['TM_p_upper']
+        spe['TM_s_total'] = spe['TM_s_lower'] + spe['TM_s_upper']
         spe['total_lower'] = spe['TE_lower'] + spe['TM_p_lower'] + spe['TM_s_lower']
         spe['total_upper'] = spe['TE_upper'] + spe['TM_p_upper'] + spe['TM_s_upper']
         spe['total'] = (spe['total_lower'] + spe['total_upper']) / 2
