@@ -26,7 +26,7 @@ def fig3():
     st.print_info()
 
     # Calculate spontaneous emission over whole structure
-    result = st.calc_spe_structure_radiative()
+    result = st.calc_spe_structure_leaky()
     z = result['z']
     spe = result['spe']
 
@@ -35,19 +35,19 @@ def fig3():
 
     # Plot spontaneous emission rates
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row', figsize=(15, 7))
-    ax1.plot(z, spe['TE_total'], label='TE')
-    ax1.plot(z, spe['TM_p_total'], label='TM')
-    ax1.plot(z, spe['TE_total']+spe['TM_p_total'], label='TE + TM')
+    ax1.plot(z, spe['TE'], label='TE')
+    ax1.plot(z, spe['TM_p'], label='TM')
+    ax1.plot(z, spe['TE'] + spe['TM_p'], label='TE + TM')
 
-    ax2.plot(z, spe['TE_lower_full'] + spe['TM_p_lower_full'], label='Fully radiative lower outgoing')
-    ax2.plot(z, spe['TE_lower_partial'] + spe['TM_p_lower_partial'], label='Partially radiative lower outgoing')
-    ax2.plot(z, spe['TE_upper'] + spe['TM_p_upper'], label='Fully radiative upper outgoing')
+    ax2.plot(z, spe['TE_lower_full'] + spe['TM_p_lower_full'], label='Fully leaky lower outgoing')
+    ax2.plot(z, spe['TE_lower_partial'] + spe['TM_p_lower_partial'], label='Partially leaky lower outgoing')
+    ax2.plot(z, spe['TE_upper'] + spe['TM_p_upper'], label='Fully leaky upper outgoing')
 
-    ax3.plot(z, spe['TM_s_total'], label='TM')
+    ax3.plot(z, spe['TM_s'], label='TM')
 
-    ax4.plot(z, spe['TM_s_lower_full'], label='Fully radiative lower outgoing')
-    ax4.plot(z, spe['TM_s_lower_partial'], label='Partially radiative lower outgoing')
-    ax4.plot(z, spe['TM_s_upper'], label='Fully radiative upper outgoing')
+    ax4.plot(z, spe['TM_s_lower_full'], label='Fully leaky lower outgoing')
+    ax4.plot(z, spe['TM_s_lower_partial'], label='Partially leaky lower outgoing')
+    ax4.plot(z, spe['TM_s_upper'], label='Fully leaky upper outgoing')
 
     # Plot internal layer boundaries
     for z in st.get_layer_boundaries()[:-1]:
@@ -89,7 +89,7 @@ def fig4():
     st.print_info()
 
     # Calculate spontaneous emission over whole structure
-    result = st.calc_spe_structure_radiative(th_pow=10)
+    result = st.calc_spe_structure_leaky(th_pow=10)
     z = result['z']
     spe = result['spe']
 
@@ -98,11 +98,11 @@ def fig4():
 
     # Plot spontaneous emission rates
     fig, (ax1, ax2) = plt.subplots(1, 2, sharey='row', figsize=(15, 5))
-    ax1.plot(z, (spe['TM_p_lower'] + spe['TE_lower']) / (spe['TE_total'] + spe['TM_p_total']), label='Lower')
-    ax1.plot(z, (spe['TM_p_upper'] + spe['TE_upper']) / (spe['TE_total'] + spe['TM_p_total']), label='Upper')
+    ax1.plot(z, (spe['TM_p_lower'] + spe['TE_lower']) / (spe['TE'] + spe['TM_p']), label='Lower')
+    ax1.plot(z, (spe['TM_p_upper'] + spe['TE_upper']) / (spe['TE'] + spe['TM_p']), label='Upper')
 
-    ax2.plot(z, (spe['TM_s_lower']) / spe['TM_s_total'], label='Lower')
-    ax2.plot(z, (spe['TM_s_upper']) / spe['TM_s_total'], label='Upper')
+    ax2.plot(z, (spe['TM_s_lower']) / spe['TM_s'], label='Lower')
+    ax2.plot(z, (spe['TM_s_upper']) / spe['TM_s'], label='Upper')
 
     # Plot internal layer boundaries
     for z in st.get_layer_boundaries()[:-1]:
@@ -183,7 +183,7 @@ def fig6():
     st.add_layer(2.5*lam0, 1)
 
     # Calculate spontaneous emission over whole structure
-    result = st.calc_spe_structure_radiative()
+    result = st.calc_spe_structure_leaky()
     z = result['z']
     spe = result['spe']
 
@@ -193,11 +193,11 @@ def fig6():
     # Plot spontaneous emission rates
     fig = plt.figure()
     ax1 = fig.add_subplot(211)
-    ax1.plot(z, spe['TE_total'], label='TE')
-    ax1.plot(z, spe['TM_p_total'], label='TM')
-    ax1.plot(z, spe['TE_total']+spe['TM_p_total'], 'k', label='TE + TM')
+    ax1.plot(z, spe['TE'], label='TE')
+    ax1.plot(z, spe['TM_p'], label='TM')
+    ax1.plot(z, spe['TE'] + spe['TM_p'], 'k', label='TE + TM')
     ax2 = fig.add_subplot(212)
-    ax2.plot(z, spe['TM_s_total'], label='TM')
+    ax2.plot(z, spe['TM_s'], label='TM')
 
     # Plot layer boundaries
     for z in st.get_layer_boundaries()[:-1]:
@@ -280,7 +280,7 @@ def fig9():
     st.add_layer(lam0, si)
     st.add_layer(2.5 * lam0, air)
     # Calculate spontaneous emission over whole structure
-    result = st.calc_spe_structure_radiative()
+    result = st.calc_spe_structure_leaky()
     z = result['z']
     spe = result['spe']
 
@@ -290,11 +290,11 @@ def fig9():
     # Plot spontaneous emission rates
     fig = plt.figure()
     ax1 = fig.add_subplot(211)
-    ax1.plot(z, spe['TE_total'], label='TE')
-    ax1.plot(z, spe['TM_p_total'], label='TM')
-    ax1.plot(z, spe['TE_total'] + spe['TM_p_total'], 'k', label='TE + TM')
+    ax1.plot(z, spe['TE'], label='TE')
+    ax1.plot(z, spe['TM_p'], label='TM')
+    ax1.plot(z, spe['TE'] + spe['TM_p'], 'k', label='TE + TM')
     ax2 = fig.add_subplot(212)
-    ax2.plot(z, spe['TM_s_total'], label='TM')
+    ax2.plot(z, spe['TM_s'], label='TM')
 
     # Plot layer boundaries
     for z in st.get_layer_boundaries()[:-1]:
@@ -304,19 +304,19 @@ def fig9():
     ax1.set_ylim(0, 2)
     ax2.set_ylim(0, 3)
     ax1.set_title('The spatial dependence of the normalized spontaneous emission rate \n'
-                  'into radiative modes for asymmetric Silicon waveguide (SiO2/Si/air).')
+                  'into leaky modes for asymmetric Silicon waveguide (SiO2/Si/air).')
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax2.set_ylabel('$\Gamma /\Gamma_0$')
     ax2.set_xlabel('z/$\lambda$')
     ax1.legend(title='Horizontal Dipoles', loc='upper right', fontsize='small')
     ax2.legend(title='Vertical Dipoles', loc='upper right', fontsize='small')
     if SAVE:
-        plt.savefig('../Images/SPE_silicon_layer_air_cladding.png', dpi=300)
+        plt.savefig('../Images/creatore_fig9.png', dpi=300)
     plt.show()
 
 
-def figx():
-    """ Air layer bounded by two semi infinite silicon claddings.
+def fig13():
+    """ Silicon layer bounded by two semi infinite air claddings.
     """
     # Create structure
     st = LifetimeTmm()
@@ -325,13 +325,22 @@ def figx():
     lam0 = 1550
     st.set_vacuum_wavelength(lam0)
 
-    # Add layers
-    st.add_layer(lam0, 3.48)
-    st.add_layer(lam0, 1)
-    st.add_layer(lam0, 3.48)
+    # Material refractive index at lam0
+    sio2 = 1.45
+    si = 3.48
+    air = 1
 
+    # Add layers
+    # st.add_layer(1E3, si)
+    st.add_layer(1000, sio2)
+    st.add_layer(100, si)
+    st.add_layer(20, sio2)
+    st.add_layer(100, si)
+    st.add_layer(1E3, air)
+    st.print_info()
     # Calculate spontaneous emission over whole structure
-    result = st.calc_spe_structure_radiative()
+    # result = st.calc_spe_structure_leaky(th_pow=8)
+    result = st.calc_spe_structure_guided()
     z = result['z']
     spe = result['spe']
 
@@ -340,33 +349,34 @@ def figx():
 
     # Plot spontaneous emission rates
     fig = plt.figure()
-    ax1 = fig.add_subplot(211)
-    ax1.plot(z, spe['TE_total'], label='TE')
-    ax1.plot(z, spe['TM_p_total'], label='TM')
-    ax1.plot(z, spe['TE_total']+spe['TM_p_total'], 'k', label='TE + TM')
-    ax2 = fig.add_subplot(212)
-    ax2.plot(z, spe['TM_s_total'], label='TM')
+    ax1 = fig.add_subplot(111)
+    ax1.plot(z, spe['TE'], label=r'$\Gamma^{\mathrm{TE}}$')
+    ax1.plot(z, spe['TM_p'], label=r'$\Gamma^{\mathrm{TM}}_∥$')
+    ax1.plot(z, spe['TM_s'], label=r'$\Gamma^{\mathrm{TM}}_⊥$')
+    ax1.plot(z, spe['avg'], label=r'total')
+    ax1.legend()
 
     # Plot layer boundaries
     for z in st.get_layer_boundaries()[:-1]:
-        ax1.axvline(st.calc_z_to_lambda(z), color='r', lw=2)
-        ax2.axvline(st.calc_z_to_lambda(z), color='r', lw=2)
+        ax1.axvline(st.calc_z_to_lambda(z), color='k', lw=1, ls='--')
 
-    ax1.set_title('Spontaneous Emission Rate. Air (n=1) with silicon cladding (n=3.48).')
+    ax1.set_ylim(0, 16)
+    # ax1.set_title('The spatial dependence of the normalized spontaneous emission rate \n'
+    #               'into leaky modes for asymmetric Silicon waveguide (SiO2/Si/air).')
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
-    ax2.set_ylabel('$\Gamma /\Gamma_0$')
-    ax2.set_xlabel('z/$\lambda$')
-    ax1.legend(title='Horizontal Dipoles', loc='lower right', fontsize='medium')
-    ax2.legend(title='Vertical Dipoles', loc='lower right', fontsize='medium')
-    plt.savefig('../Images/SPE_air_layer_silicon_cladding.png', dpi=300)
+    ax1.set_xlabel('z/$\lambda$')
+
+    if SAVE:
+        plt.savefig('../Images/creatore_fig13.png', dpi=300)
     plt.show()
 
 if __name__ == "__main__":
     SAVE = False
 
-    # fig3()
-    fig4()
+    fig3()
+    # fig4()
     # fig5()
     # fig6()
     # fig8()
-    # fig9()
+    fig9()
+    # fig13()

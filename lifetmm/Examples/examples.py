@@ -26,7 +26,7 @@ def example1():
         st.add_layer(1550, 1.5)
         st.add_layer(1550, n)
         # Calculate spontaneous emission over whole structure
-        result = st.calc_spe_structure_radiative()
+        result = st.calc_spe_structure_leaky()
         z = result['z']
         spe = result['spe']['total']
 

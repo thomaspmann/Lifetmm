@@ -1,9 +1,8 @@
 import numpy as np
 from numpy import pi, sqrt, sin, exp
-from numpy.linalg import det
 from scipy.constants import c
 
-from lifetmm.Methods.HelperFunctions import roots, snell, lambda2omega
+from lifetmm.Methods.HelperFunctions import roots, snell, lambda2omega, det
 
 
 class TransferMatrix:
@@ -84,23 +83,22 @@ class TransferMatrix:
             raise ValueError("The field must be either 'E' of 'H'.")
         self.field = field
 
-    def set_radiative_or_guiding(self, mode='radiative'):
+    def set_leaky_or_guiding(self, mode='leaky'):
         """
-        Determines whether simulation will solve for a guiding mode or radiative mode.
+        Determines whether simulation will solve for a guiding mode or leaky mode.
         """
-        if mode == 'radiative':
+        if mode == 'leaky':
             self.guided = False
         elif mode == 'guiding':
             self.guided = True
         else:
-            ValueError('options for mode must be either "radiative" or "guiding"')
+            ValueError('options for mode must be either "leaky" or "guiding"')
 
     def set_incident_angle(self, th, units='radians'):
         """
-        Set the incident angle of the plane wave for a radiative mode.
+        Set the incident angle of the plane wave for a leaky mode.
         """
-        assert not self.guided, \
-            ValueError('Run set_radiative_or_guiding(radiative=True) first to evaluate radiative modes.')
+        assert not self.guided, ValueError('Run set_leaky_or_guiding(leaky=True) first to evaluate leaky modes.')
         if hasattr(th, 'size') and th.size > 1:
             raise ValueError('This function is not vectorized; you need to run one '
                              'calculation for each angle at a time')
@@ -120,7 +118,7 @@ class TransferMatrix:
         Set the normalised parallel wave vector, n_11, for the guided mode to be evaluated.
         """
         assert self.guided, \
-            ValueError('Run set_radiative_or_guiding(radiative=False) first to evaluate guided modes.')
+            ValueError('Run set_leaky_or_guiding(leaky=False) first to evaluate guided modes.')
         n = self.n_list
         # See Quantum Electronics by Yariv pg.603
         assert max(n) >= n_11 > max(n[0], n[-1]), ValueError('Input n_11 is not valid for a guided mode.')
@@ -135,7 +133,7 @@ class TransferMatrix:
     def calc_n_11(self):
         if not self.guided:
             # Continuous across layers, so can evaluate from input theta
-            # and medium for incoming wave (hence radiative mode)
+            # and medium for incoming wave (hence leaky mode)
             n0 = self.n_list[0].real
             return n0 * sin(self.th)
         else:
@@ -205,9 +203,10 @@ class TransferMatrix:
             # Convert transmission coefficient for E field to that of the H field.
             # The reflection coefficient is the same as the medium does not change.
             t *= n_k / n_j
+        # TODO: need to sort this out
         if t == 0:
-            # Can't evaluate I_mat when transmission t==0 as 1/t == inf
             t = np.nan
+        assert t != 0, ValueError("Can't evaluate I_mat when transmission t==0 as 1/t == inf")
         return (1 / t) * np.array([[1, r], [r, 1]], dtype=complex)
 
     def l_matrix(self, j):
@@ -216,8 +215,7 @@ class TransferMatrix:
         """
         qj = self.calc_q(j)
         dj = self.d_list[j]
-        assert -1j * qj * dj < 25, \
-            ValueError('L_matrix is unstable for such a large thickness with a growing field.')
+        assert exp(-1j * qj * dj) < np.finfo(np.complex).max, ValueError('l_matrix is unstable.')
         return np.array([[exp(-1j * qj * dj), 0], [0, exp(1j * qj * dj)]], dtype=complex)
 
     def s_matrix(self):
@@ -256,11 +254,11 @@ class TransferMatrix:
     def layer_field_amplitudes(self, layer):
         """
         Evaluate fwd and bkwd field amplitude coefficients (E or H) in a layer.
-        Coefficients are in units of the fwd incoming wave amplitude for radiative modes
+        Coefficients are in units of the fwd incoming wave amplitude for leaky modes
         and in terms of the superstrate (j=0) outgoing wave amplitude for guided modes.
         """
         if not self.guided:
-            # Calculate radiative amplitudes
+            # Calculate leaky amplitudes
             # Transfer matrix of system
             s = self.s_matrix()
             # Reflection for incoming wave incident of LHS of structure
@@ -276,6 +274,10 @@ class TransferMatrix:
             # Evaluate field amplitudes in internal layers
             else:
                 s_prime = self.s_primed_matrix(layer)
+                # TODO: remove
+                if det(s_prime) == 0:
+                    return 0, 0
+                assert det(s_prime) != 0, ValueError('Determinant == 0 will give inf for field coefficient.')
                 field_plus = (s_prime[1, 1] - r * s_prime[0, 1]) / det(s_prime)
                 field_minus = (r * s_prime[0, 0] - s_prime[1, 0]) / det(s_prime)
         else:
@@ -293,6 +295,7 @@ class TransferMatrix:
             # Evaluate field amplitudes in internal layers
             else:
                 s_prime = self.s_primed_matrix(layer)
+                assert det(s_prime) != 0, ValueError('Determinant == 0 will give inf for field coefficient.')
                 field_plus = - s_prime[0, 1] / det(s_prime)
                 field_minus = s_prime[0, 0] / det(s_prime)
         return field_plus, field_minus
@@ -303,6 +306,8 @@ class TransferMatrix:
         field_plus is the forward component of the field (e.g. E_j^+)
         field_minus is the backward component of the field (e.g. E_j^-)
         """
+        assert self.d_list[layer] > 0, ValueError('Layer must have a thickness to use this function.')
+
         # Wave vector components in layer
         k, q, k_11 = self.calc_wave_vector_components(layer)
 
@@ -334,7 +339,8 @@ class TransferMatrix:
         z_mat = sum(comp1 > comp2, 0)
 
         field = np.zeros(len(z), dtype=complex)
-        for layer in range(self.num_layers):
+        # Loop through all layers with a thickness (claddings with 0 thickness will not show in z_mat)
+        for layer in range(min(z_mat), max(z_mat) + 1):
             # Calculate z indices inside structure for the layer
             z_indices = np.where(z_mat == layer)
             field[z_indices] = self.calc_layer_field(layer)['field']
@@ -351,8 +357,7 @@ class TransferMatrix:
         Evaluate S_11=(1/t) as a function of beta (k_ll) in the guided regime.
         When S_11 = 0 the corresponding beta is a guided mode.
         """
-        assert self.guided, \
-            ValueError('"self.guided" must be set to true before running this function.')
+        assert self.guided, ValueError('"self.guided" must be set to true before running this function.')
         n = self.n_list.real
         n_11_range = np.linspace(n[0], max(n), num=1000, endpoint=False)[1:]
         s_11 = np.array([])
@@ -370,11 +375,14 @@ class TransferMatrix:
         Method: Evaluates the poles of the transfer matrix (S_11=0) as a function of n_11 in the
         guided regime:  n_clad < k_ll/k < max(n), k_11/k = n_11
         """
-        assert self.guided, \
-            ValueError('"self.guided" must be set to true before running this function.')
+        # Eq (11)
+        # TODO: check whether comma means and/or corresponding to  max()/min()
         n = self.n_list.real
+        assert np.any(n[1:-1] > max(n[0], n[-1])), ValueError('This structure does not support wave guiding.')
+        assert self.guided, ValueError('"self.guided" must be set to true before running this function.')
         # Find supported guiding modes
-        n_11 = roots(self._s11, n[0], max(n), verbose=verbose)
+        n_clad = max(n[0], n[-1])
+        n_11 = roots(self._s11, n_clad, max(n), verbose=verbose)
         # Need to flip array to arrange from lowest to highest mode
         n_11 = n_11[::-1]
 
@@ -478,7 +486,7 @@ class TransferMatrix:
         print('Multi-layered Structure:')
         print('d\t\tn')
         for n, d in zip(self.n_list, self.d_list):
-            print('{0:g}\t{1:g}'.format(d, n))
+            print('{0:4g}\t{1:g}'.format(d, n))
         print('\nFree space wavelength: {:g}\n'.format(self.lam_vac))
 
     def show_structure(self):

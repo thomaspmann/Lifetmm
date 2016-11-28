@@ -10,7 +10,7 @@ def root_search(f, a, b, dx):
     [a,b] that contains a root. Starting at x1=a and x2=a+dx keep incrementing
     x1 and x2 by dx until a sign change in f is observed or x1>=b is reached.
     """
-    assert a < b, ValueError('a must be less than b')
+    assert a <= b, ValueError('a must be less than b')
     x1 = a
     f1 = f(x1)
     x2 = a + dx
@@ -85,3 +85,9 @@ def omega2lambda(omega):
     from math import pi
     nu = omega / (2 * pi)
     return nu2lambda(nu)
+
+
+#####################################################################
+# 2x2 Matrix Determinant - can be complex unlike: from numpy.linalg import det
+def det(matrix):
+    return matrix[0, 0] * matrix[1, 1] - matrix[1, 0] * matrix[0, 1]

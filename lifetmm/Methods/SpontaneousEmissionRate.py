@@ -10,19 +10,19 @@ from lifetmm.Methods.TransferMatrix import TransferMatrix
 
 
 class LifetimeTmm(TransferMatrix):
-    def calc_spe_layer_radiative(self, layer, emission='Lower', th_pow=8):
+    def calc_spe_layer_leaky(self, layer, emission='Lower', th_pow=8):
         """
         Evaluate the spontaneous emission rates for dipoles in a layer radiating into 'Lower' or 'Upper' modes.
         Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
         """
-        self.set_radiative_or_guiding('radiative')
-        # Option checks
-        assert emission in ['Lower', 'Upper'], \
-            ValueError('Emission option must be either "Upper" or "Lower".')
-        assert isinstance(th_pow, int), ValueError('pow must be an integer.')
-        assert self.d_list[layer] != 0, ValueError('The layer must have a thickness to use this function.)')
+        self.set_leaky_or_guiding('leaky')
 
-        # Flip the structure and solve using lower radiative equations for upper radiative modes.
+        # Option checks
+        assert emission in ['Lower', 'Upper'], ValueError('Emission option must be either "Upper" or "Lower".')
+        assert isinstance(th_pow, int), ValueError('th_pow must be an integer.')
+        assert self.d_list[layer] > 0, ValueError('Layer must have a thickness to use this function.')
+
+        # Flip the structure and solve using lower leaky equations for upper leaky modes.
         # Results are flipped back at the end of this function to give the correct orientation again.
         if emission == 'Upper':
             self.flip()
@@ -39,6 +39,7 @@ class LifetimeTmm(TransferMatrix):
         # Note: don't include pi/2 as then transmission and reflection do not make sense.
         # res for linspace must have this form for the simpsons integration later. Can change the power.
         res = 2 ** th_pow + 1
+
         th_in, dth = np.linspace(0, pi / 2, num=res, endpoint=False, retstep=True)
 
         # Structure to hold field E(z) components of each mode for each dipole orientation for a given theta
@@ -79,7 +80,7 @@ class LifetimeTmm(TransferMatrix):
             # Check that the mode exists
             assert k_11 ** 2 <= self.calc_k(0) ** 2, ValueError('k_11 can not be larger than k0!')
 
-            # !* TE radiative modes *!
+            # !* TE leaky modes *!
             self.set_polarization('TE')
             # Calculate E field within layer
             self.set_field('E')
@@ -89,7 +90,7 @@ class LifetimeTmm(TransferMatrix):
             # Orthonormality condition: Normalise outgoing TE wave to medium refractive index.
             E['TE'] /= self.n_list[0]
 
-            # !* TM radiative modes *!
+            # !* TM leaky modes *!
             self.set_polarization('TM')
             # Calculate H field within layer
             self.set_field('H')
@@ -111,7 +112,7 @@ class LifetimeTmm(TransferMatrix):
 
             # Wave vector components in upper cladding
             q_clad = self.calc_q(self.num_layers - 1)
-            # Split solutions into partial and fully radiative modes
+            # Split solutions into partial and fully leaky modes
             if np.iscomplex(q_clad):
                 E2_z_th['TE_partial'][i, :] += E['TE'].real
                 E2_z_th['TM_p_partial'][i, :] += E['TM_p'].real
@@ -150,12 +151,12 @@ class LifetimeTmm(TransferMatrix):
 
         return {'z': z, 'spe': spe}
 
-    def calc_spe_structure_radiative(self, th_pow=8):
+    def calc_spe_structure_leaky(self, th_pow=8):
         """
         Evaluate the spontaneous emission rate vs z of the structure for each dipole orientation.
         Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
         """
-        self.set_radiative_or_guiding('radiative')
+        self.set_leaky_or_guiding('leaky')
 
         # z positions to evaluate E field at over entire structure
         z_pos = np.arange((self.z_step / 2.0), self.d_cumulative[-1], self.z_step)
@@ -169,9 +170,9 @@ class LifetimeTmm(TransferMatrix):
         spe = np.zeros(len(z_pos), dtype=[('total', 'float64'),
                                           ('total_lower', 'float64'),
                                           ('total_upper', 'float64'),
-                                          ('TE_total', 'float64'),
-                                          ('TM_p_total', 'float64'),
-                                          ('TM_s_total', 'float64'),
+                                          ('TE', 'float64'),
+                                          ('TM_p', 'float64'),
+                                          ('TM_s', 'float64'),
                                           ('TE_lower', 'float64'),
                                           ('TM_p_lower', 'float64'),
                                           ('TM_s_lower', 'float64'),
@@ -185,9 +186,9 @@ class LifetimeTmm(TransferMatrix):
                                           ('TM_p_upper', 'float64'),
                                           ('TM_s_upper', 'float64')])
 
-        # Calculate emission rates for radiative modes in each layer
-        print('Evaluating lower and upper radiative modes for each layer:')
-        for layer in range(self.num_layers):
+        # Calculate emission rates for leaky modes in each layer
+        print('Evaluating lower and upper leaky modes for each layer:')
+        for layer in range(min(z_mat), max(z_mat) + 1):
             # Print simulation information to command line
             if layer == 0:
                 print('\tLayer -> lower cladding...')
@@ -200,8 +201,8 @@ class LifetimeTmm(TransferMatrix):
             # Find indices corresponding to the layer we are evaluating
             ind = np.where(z_mat == layer)
 
-            # Calculate lower radiative modes
-            spe_layer = self.calc_spe_layer_radiative(layer, emission='Lower', th_pow=th_pow)['spe']
+            # Calculate lower leaky modes
+            spe_layer = self.calc_spe_layer_leaky(layer, emission='Lower', th_pow=th_pow)['spe']
             spe['TE_lower'][ind] += spe_layer['TE']
             spe['TM_p_lower'][ind] += spe_layer['TM_p']
             spe['TM_s_lower'][ind] += spe_layer['TM_s']
@@ -212,34 +213,29 @@ class LifetimeTmm(TransferMatrix):
             spe['TM_s_lower_partial'][ind] += spe_layer['TM_s_partial']
             spe['TM_p_lower_partial'][ind] += spe_layer['TM_p_partial']
 
-            # Calculate upper radiative modes (always radiative as n[0] > n[-1])
-            spe_layer = self.calc_spe_layer_radiative(layer, emission='Upper', th_pow=th_pow)['spe']
+            # Calculate upper leaky modes (always leaky as n[0] > n[-1])
+            spe_layer = self.calc_spe_layer_leaky(layer, emission='Upper', th_pow=th_pow)['spe']
             spe['TE_upper'][ind] += spe_layer['TE']
             spe['TM_p_upper'][ind] += spe_layer['TM_p']
             spe['TM_s_upper'][ind] += spe_layer['TM_s']
 
         # Totals
-        spe['TE_total'] = spe['TE_lower'] + spe['TE_upper']
-        spe['TM_p_total'] = spe['TM_p_lower'] + spe['TM_p_upper']
-        spe['TM_s_total'] = spe['TM_s_lower'] + spe['TM_s_upper']
+        spe['TE'] = spe['TE_lower'] + spe['TE_upper']
+        spe['TM_p'] = spe['TM_p_lower'] + spe['TM_p_upper']
+        spe['TM_s'] = spe['TM_s_lower'] + spe['TM_s_upper']
         spe['total_lower'] = spe['TE_lower'] + spe['TM_p_lower'] + spe['TM_s_lower']
         spe['total_upper'] = spe['TE_upper'] + spe['TM_p_upper'] + spe['TM_s_upper']
-        spe['total'] = (spe['total_lower'] + spe['total_upper']) / 2
+        spe['total'] = spe['TE'] + spe['TM_p'] + spe['TM_s']
 
         return {'z': z_pos, 'spe': spe}
 
     def calc_spe_layer_guided(self, layer, roots_te=None, roots_tm=None, vg_te=None, vg_tm=None):
-        assert self.d_list[layer] != 0, ValueError('The layer must have a thickness to use this function.)')
-        self.set_radiative_or_guiding('guiding')
-
-        # Evaluate guiding layer in structure (one with highest refractive index)
-        n = self.n_list.real
-        layer_guiding = np.where(n == max(n))[0][0]
-        assert layer_guiding not in [0, self.num_layers-1], ValueError('This structure does not support wave guiding.')
+        assert self.d_list[layer] > 0, ValueError('Layer must have a thickness to use this function.')
+        self.set_leaky_or_guiding('guiding')
 
         # Only re-evaluate the guided roots and v_g if not passed to function. Computationally intensive.
         # Will only be required if the function is not called from self.spe_structure_guided()
-        if all(v is None for v in (roots_te, roots_tm, vg_te, vg_tm)):
+        if all(arg is None for arg in (roots_te, roots_tm, vg_te, vg_tm)):
             print('Evaluating guided modes (k_11/k) and group velocity for each polarisation:')
             print('Finding TE modes')
             self.set_polarization('TE')
@@ -299,7 +295,7 @@ class LifetimeTmm(TransferMatrix):
                     w1 = (k_11 ** 2 + q * conj(q)) * sinc((q - conj(q)) * dj / 2)
                     w2 = (k_11 ** 2 - q * conj(q)) * sinc((q + conj(q)) * dj / 2)
                     norm += dj * (w1 * (abs(a) ** 2 + abs(b) ** 2) + w2 * (conj(a) * b + conj(b) * a))
-            assert np.isreal(norm), ValueError('Check Normalisation - should be real')
+            assert np.isreal(norm) and norm > 0, ValueError('Check Normalisation - should be real and > 0')
             norm = 1 / np.sqrt(np.real(norm))
 
             # E field coefficients in terms of layer 0 (superstrate) outgoing field amplitude
@@ -373,7 +369,8 @@ class LifetimeTmm(TransferMatrix):
         return {'z': z, 'spe': spe}
 
     def calc_spe_structure_guided(self):
-        self.set_radiative_or_guiding('guiding')
+        self.set_leaky_or_guiding('guiding')
+
         # z positions to evaluate E field at over entire structure
         z_pos = np.arange((self.z_step / 2.0), self.d_cumulative[-1], self.z_step)
 
@@ -383,10 +380,12 @@ class LifetimeTmm(TransferMatrix):
         z_mat = sum(comp1 > comp2, 0)
 
         # Structure to hold field spontaneous emission rate components over z
-        spe = np.zeros(len(z_pos), dtype=[('total', 'float64'),
-                                          ('TE', 'float64'),
+        spe = np.zeros(len(z_pos), dtype=[('TE', 'float64'),
                                           ('TM_p', 'float64'),
-                                          ('TM_s', 'float64')])
+                                          ('TM_s', 'float64'),
+                                          ('parallel', 'float64'),
+                                          ('perpendicular', 'float64'),
+                                          ('avg', 'float64')])
 
         print('Evaluating guided modes (k_11/k) and group velocity for each polarisation:')
         print('Finding TE modes')
@@ -406,8 +405,8 @@ class LifetimeTmm(TransferMatrix):
         vg_tm = self.calc_group_velocity()
         print('Done!')
 
-        print('Evaluating guided modes for each layer:')
-        for layer in range(self.num_layers):
+        print('Evaluating guided mode spontaneous emission profiles:')
+        for layer in range(min(z_mat), max(z_mat) + 1):
             # Print simulation information to command line
             if layer == 0:
                 print('\tLayer -> lower cladding...')
@@ -420,16 +419,25 @@ class LifetimeTmm(TransferMatrix):
             # Find indices corresponding to the layer we are evaluating
             ind = np.where(z_mat == layer)
 
-            # Calculate lower radiative modes
+            # Calculate lower leaky modes
             spe_layer = self.calc_spe_layer_guided(layer, roots_te, roots_tm, vg_te, vg_tm)['spe']
             spe['TE'][ind] += spe_layer['TE']
             spe['TM_p'][ind] += spe_layer['TM_p']
             spe['TM_s'][ind] += spe_layer['TM_s']
 
         # Totals
-        spe['total'] = spe['TE'] + spe['TM_p'] + spe['TM_s']
+        spe['parallel'] = spe['TE'] + spe['TM_p']
+        spe['perpendicular'] = spe['TM_s']
+
+        # Average for a randomly orientated dipole
+        spe['avg'] = (2 / 3) * spe['parallel'] + (1 / 3) * spe['perpendicular']
 
         return {'z': z_pos, 'spe': spe}
+
+    def calc_spe_structure(self):
+        leaky = self.calc_spe_structure_leaky()
+        guided = self.calc_spe_structure_guided()
+        spe_radiative = leaky['avg'] + guided['avg']
 
 
 # Helper Functions

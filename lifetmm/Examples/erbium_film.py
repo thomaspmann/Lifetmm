@@ -24,8 +24,8 @@ def t2_spe_vs_z():
         st.add_layer(980, 1.56)
         st.add_layer(3 * lam0, n)
 
-        # Calculate spontaneous emission for radiative modes
-        result = st.calc_spe_structure_radiative()
+        # Calculate spontaneous emission for leaky modes
+        result = st.calc_spe_structure_leaky()
         z = result['z']
         spe = result['spe']['total']
         # Calculate spontaneous emission for guided modes
@@ -71,9 +71,9 @@ def t2_spe_vs_n():
         st.add_layer(980, 1.56)
         st.add_layer(0, n)
         # Calculate spontaneous emission of layer 0 (1st)
-        result = st.calc_spe_layer_radiative(layer=1, emission='Lower', th_pow=10)
+        result = st.calc_spe_layer_leaky(layer=1, emission='Lower', th_pow=10)
         spe = result['spe']['total']
-        result = st.calc_spe_layer_radiative(layer=1, emission='Upper', th_pow=10)
+        result = st.calc_spe_layer_leaky(layer=1, emission='Upper', th_pow=10)
         spe += result['spe']['total']
         try:
             result = st.calc_spe_layer_guided(layer=1)

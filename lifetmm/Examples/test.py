@@ -51,7 +51,7 @@ def spe():
     # st.add_layer(lam0, 1)
 
     # Get results
-    result = st.calc_spe_structure_radiative()
+    result = st.calc_spe_structure_leaky()
     z = result['z']
     spe = result['spe']
     spe_TE = spe['TE_total']
@@ -95,7 +95,7 @@ def guiding_plot():
     lam0 = 1550
     st.set_vacuum_wavelength(lam0)
     st.set_field('E')
-    st.set_radiative_or_guiding('guiding')
+    st.set_leaky_or_guiding('guiding')
     # st.guided = True
     air = 1
     sio2 = 3.48
@@ -148,7 +148,7 @@ def guiding_electric_field():
     st.add_layer(1 * lam0, sio2)
     st.add_layer(1 * lam0, air)
     st.set_polarization('TE')
-    st.set_radiative_or_guiding('guiding')
+    st.set_leaky_or_guiding('guiding')
     alpha = st.calc_guided_modes()
     plt.figure()
     for i, a in enumerate(alpha):
@@ -169,6 +169,46 @@ def guiding_electric_field():
     plt.show()
 
 
+def test():
+    st = TransferMatrix()
+    # Set vacuum wavelength
+    lam0 = 1550
+    st.set_vacuum_wavelength(lam0)
+
+    # Material refractive index at lam0
+    sio2 = 1.45
+    si = 3.48
+    air = 1
+
+    # Add layers
+    st.add_layer(1E3, si)
+    st.add_layer(1900, sio2)
+    st.add_layer(100, si)
+    st.add_layer(20, sio2)
+    st.add_layer(100, si)
+    st.add_layer(1E3, air)
+
+    st.set_polarization('s')
+    st.set_field('E')
+    st.set_incident_angle(80, units='degrees')
+    st.print_info()
+
+    # Do calculations
+    result = st.calc_field_structure()
+    z = result['z']
+    y = result['field_squared']
+
+    # Plot results
+    plt.figure()
+    plt.plot(z, y)
+    for z in st.get_layer_boundaries()[:-1]:
+        plt.axvline(x=z, color='k', lw=2)
+    plt.xlabel('Position in Device (nm)')
+    plt.ylabel('Normalized |E|$^2$ Intensity ($|E(z)/E_0(0)|^2$)')
+    if SAVE:
+        plt.savefig('../Images/McGehee structure.png', dpi=300)
+    plt.show()
+
 if __name__ == "__main__":
     SAVE = False
 
@@ -176,3 +216,4 @@ if __name__ == "__main__":
     # spe()
     # guiding_plot()
     # guiding_electric_field()
+    test()

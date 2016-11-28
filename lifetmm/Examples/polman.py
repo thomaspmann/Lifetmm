@@ -33,9 +33,9 @@ def fig3():
         st.add_layer(1550, 1.5)
         st.add_layer(0, n)
         # Calculate average total spontaneous emission of layer 0 (1st)
-        result = st.calc_spe_layer_radiative(layer=0, emission='Lower', th_pow=11)
+        result = st.calc_spe_layer_leaky(layer=0, emission='Lower', th_pow=11)
         spe = result['spe']['total']
-        result = st.calc_spe_layer_radiative(layer=0, emission='Upper', th_pow=11)
+        result = st.calc_spe_layer_leaky(layer=0, emission='Upper', th_pow=11)
         spe += result['spe']['total']
         spe /= 2
         spe = np.mean(spe)
@@ -81,7 +81,7 @@ def fig4():
         st.add_layer(4 * units, 1.5)
         st.print_info()
         # Calculate spontaneous emission over whole structure
-        result = st.calc_spe_structure_radiative()
+        result = st.calc_spe_structure_leaky()
         z = result['z']
         # Shift so centre of structure at z=0
         z -= st.get_structure_thickness() / 2
