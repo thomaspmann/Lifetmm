@@ -11,18 +11,14 @@ from lifetmm.Methods.SpontaneousEmissionRate import *
 
 
 def fig3():
-    """ Silicon to air semi-infinite half spaces.
+    """
+    Silicon to air semi-infinite half spaces.
     """
     # Create structure
     st = LifetimeTmm()
-    st.add_layer(1550, 3.48)
-    st.add_layer(1550, 1)
-
-    # Set vacuum wavelength
-    lam0 = 1550
     st.set_vacuum_wavelength(lam0)
-
-    # Feedback to user the structure being simulated
+    st.add_layer(lam0, si)
+    st.add_layer(lam0, air)
     st.print_info()
 
     # Calculate spontaneous emission over whole structure
@@ -78,14 +74,9 @@ def fig4():
     """
     # Create structure
     st = LifetimeTmm()
-    st.add_layer(1550, 3.48)
-    st.add_layer(1550, 1)
-
-    # Set vacuum wavelength
-    lam0 = 1550
     st.set_vacuum_wavelength(lam0)
-
-    # Feedback to user the structure being simulated
+    st.add_layer(lam0, si)
+    st.add_layer(lam0, air)
     st.print_info()
 
     # Calculate spontaneous emission over whole structure
@@ -126,14 +117,12 @@ def fig4():
 def fig5():
     # Create structure
     st = LifetimeTmm()
-    lam0 = 1550
     st.set_vacuum_wavelength(lam0)
     st.set_field('E')
-    air = 1
-    sio2 = 3.48
     st.add_layer(1.5 * lam0, air)
-    st.add_layer(lam0, sio2)
+    st.add_layer(lam0, si)
     st.add_layer(1.5 * lam0, air)
+    st.print_info()
 
     result = st.calc_spe_structure_guided()
     z = result['z']
@@ -172,15 +161,11 @@ def fig6():
     """
     # Create structure
     st = LifetimeTmm()
-
-    # Set vacuum wavelength
-    lam0 = 1550
     st.set_vacuum_wavelength(lam0)
-
-    # Add layers
-    st.add_layer(2.5*lam0, 1)
-    st.add_layer(lam0, 3.48)
-    st.add_layer(2.5*lam0, 1)
+    st.add_layer(2.5 * lam0, air)
+    st.add_layer(lam0, si)
+    st.add_layer(2.5 * lam0, air)
+    st.print_info()
 
     # Calculate spontaneous emission over whole structure
     result = st.calc_spe_structure_leaky()
@@ -220,22 +205,21 @@ def fig6():
 def fig8():
     # Create structure
     st = LifetimeTmm()
-    lam0 = 1550
     st.set_vacuum_wavelength(lam0)
-    st.set_field('E')
-    sio2 = 1.45
-    si = 3.48
-    air = 1
     st.add_layer(1.5 * lam0, sio2)
     st.add_layer(lam0, si)
     st.add_layer(1.5 * lam0, air)
+    st.print_info()
 
+    # Do Simulation
     result = st.calc_spe_structure_guided()
     z = result['z']
     spe = result['spe']
+
     # Convert z into z/lam0 and center
     z = st.calc_z_to_lambda(z)
 
+    # Plot results
     fig, (ax1, ax2) = plt.subplots(2, 1, sharex='col', sharey='none')
 
     ax1.plot(z, spe['TE'], label='TE')
@@ -263,22 +247,17 @@ def fig8():
 
 
 def fig9():
-    """ Silicon layer bounded by two semi infinite air claddings.
+    """
+    Silicon layer bounded by two semi infinite air claddings.
     """
     # Create structure
     st = LifetimeTmm()
-
-    # Set vacuum wavelength
-    lam0 = 1550
     st.set_vacuum_wavelength(lam0)
-
-    # Add layers
-    sio2 = 1.45
-    si = 3.48
-    air = 1
     st.add_layer(2.5 * lam0, sio2)
     st.add_layer(lam0, si)
     st.add_layer(2.5 * lam0, air)
+    st.print_info()
+
     # Calculate spontaneous emission over whole structure
     result = st.calc_spe_structure_leaky()
     z = result['z']
@@ -316,21 +295,12 @@ def fig9():
 
 
 def fig13():
-    """ Silicon layer bounded by two semi infinite air claddings.
+    """
+    Silicon layer bounded by two semi infinite air claddings.
     """
     # Create structure
     st = LifetimeTmm()
-
-    # Set vacuum wavelength
-    lam0 = 1550
     st.set_vacuum_wavelength(lam0)
-
-    # Material refractive index at lam0
-    sio2 = 1.45
-    si = 3.48
-    air = 1
-
-    # Add layers
     # st.add_layer(1E3, si)
     st.add_layer(1000, sio2)
     st.add_layer(100, si)
@@ -338,6 +308,7 @@ def fig13():
     st.add_layer(100, si)
     st.add_layer(1E3, air)
     st.print_info()
+
     # Calculate spontaneous emission over whole structure
     # result = st.calc_spe_structure_leaky(th_pow=8)
     result = st.calc_spe_structure_guided()
@@ -373,10 +344,18 @@ def fig13():
 if __name__ == "__main__":
     SAVE = False
 
-    fig3()
+    # Set vacuum wavelength
+    lam0 = 1550
+
+    # Material refractive index at lam0
+    sio2 = 1.45
+    si = 3.48
+    air = 1
+
+    # fig3()
     # fig4()
     # fig5()
     # fig6()
     # fig8()
-    fig9()
-    # fig13()
+    # fig9()
+    fig13()

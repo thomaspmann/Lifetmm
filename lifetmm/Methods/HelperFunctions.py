@@ -6,7 +6,8 @@ import scipy as sp
 # Recursive root finding functions
 # http://stackoverflow.com/questions/13054758/python-finding-multiple-roots-of-nonlinear-equation
 def root_search(f, a, b, dx):
-    """ Find an interval f(x1) and f(x2=x1+dx) closest to a in the interval
+    """
+    Find an interval f(x1) and f(x2=x1+dx) closest to a in the interval
     [a,b] that contains a root. Starting at x1=a and x2=a+dx keep incrementing
     x1 and x2 by dx until a sign change in f is observed or x1>=b is reached.
     """
@@ -26,16 +27,16 @@ def root_search(f, a, b, dx):
 
 
 def roots(f, a, b, num=20000, verbose=True):
-    """ Find roots of f within the interval [a,b]. Interval is discretised
+    """
+    Find roots of f within the interval [a,b]. Interval is discretised
     into num equal elements, dx, and a root is searched for within each dx.
     """
     import math
     from scipy.optimize import brentq
-    if verbose:
-        print('The roots on the interval [{:f}, {:f}] are:'.format(a, b))
+    if verbose: print('The roots on the interval [{:f}, {:f}] are:'.format(a, b))
     results = []
     while 1:
-        dx = abs(a - b) / num  # alternatively use dx=eps
+        dx = abs(a - b) / num  # alternatively use dx=eps where eps is arg
         x1, x2 = root_search(f, a, b, dx)
         if x1 is not None:
             a = x2
@@ -44,17 +45,15 @@ def roots(f, a, b, num=20000, verbose=True):
                 # Root is only as accurate as the width of the
                 # element as there could be multiple roots within each dx
                 root = round(root, -int(math.log(dx, 10)))
-                if verbose:
-                    print('{:.4f}'.format(root))
+                if verbose: print('{:.4f}'.format(root))
                 results.append(root)
         else:
-            if verbose:
-                print('\nDone')
+            if verbose: print('\nDone')
             return np.array(results)
 
 
 #####################################################################
-# Snell's Law
+# Optical Functions
 def snell(n_1, n_2, th_1):
     """
     Return angle theta in layer 2 with refractive index n_2, assuming

@@ -168,8 +168,8 @@ class LifetimeTmm(TransferMatrix):
 
         # Structure to hold field spontaneous emission rate components over z
         spe = np.zeros(len(z_pos), dtype=[('total', 'float64'),
-                                          ('total_lower', 'float64'),
-                                          ('total_upper', 'float64'),
+                                          ('lower', 'float64'),
+                                          ('upper', 'float64'),
                                           ('TE', 'float64'),
                                           ('TM_p', 'float64'),
                                           ('TM_s', 'float64'),
@@ -223,8 +223,8 @@ class LifetimeTmm(TransferMatrix):
         spe['TE'] = spe['TE_lower'] + spe['TE_upper']
         spe['TM_p'] = spe['TM_p_lower'] + spe['TM_p_upper']
         spe['TM_s'] = spe['TM_s_lower'] + spe['TM_s_upper']
-        spe['total_lower'] = spe['TE_lower'] + spe['TM_p_lower'] + spe['TM_s_lower']
-        spe['total_upper'] = spe['TE_upper'] + spe['TM_p_upper'] + spe['TM_s_upper']
+        spe['lower'] = spe['TE_lower'] + spe['TM_p_lower'] + spe['TM_s_lower']
+        spe['upper'] = spe['TE_upper'] + spe['TM_p_upper'] + spe['TM_s_upper']
         spe['total'] = spe['TE'] + spe['TM_p'] + spe['TM_s']
 
         return {'z': z_pos, 'spe': spe}
@@ -274,11 +274,9 @@ class LifetimeTmm(TransferMatrix):
 
         # !* TE guided modes *!
         self.set_polarization('TE')
-        # Calculate E field within layer
         self.set_field('E')
-        for mode, v in zip(roots_te, vg_te):
-            self.n_11 = mode
-
+        for n_11, v in zip(roots_te, vg_te):
+            self.set_guided_mode(n_11)
             # Evaluate the normalisation (B4) and apply
             norm = 0
             for j in range(0, self.num_layers):
@@ -316,11 +314,10 @@ class LifetimeTmm(TransferMatrix):
 
         # !* TM guided modes *!
         self.set_polarization('TM')
-        # Calculate H field within layer
         self.set_field('H')
         # Find guided modes parallel wave vector
-        for mode, v in zip(roots_tm, vg_tm):
-            self.n_11 = mode
+        for n_11, v in zip(roots_tm, vg_tm):
+            self.set_guided_mode(n_11)
 
             # Evaluate the normalisation (B8) and apply
             norm = 0
