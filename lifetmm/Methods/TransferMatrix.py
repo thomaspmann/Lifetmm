@@ -281,7 +281,8 @@ class TransferMatrix:
                 field_minus = 0 + 0j
             else:
                 s_prime = self.s_primed_matrix(layer)
-                assert det(s_prime) != 0, ValueError('Determinant == 0 will give inf for field coefficient.')
+                assert not np.isclose(det(s_prime), 0), ValueError(
+                    'Determinant == 0 will give inf for field coefficient.')
                 field_plus = - s_prime[0, 1] / det(s_prime)
                 field_minus = s_prime[0, 0] / det(s_prime)
         return field_plus, field_minus

@@ -310,7 +310,7 @@ def fig13a():
     st.print_info()
 
     # Calculate spontaneous emission over whole structure
-    result = st.calc_spe_structure_leaky(th_pow=10)
+    result = st.calc_spe_structure_leaky(th_pow=8)
     z = result['z']
     spe = result['spe']
 
@@ -353,12 +353,11 @@ def fig13b():
     st.add_layer(100, si)
     st.add_layer(20, sio2)
     st.add_layer(100, si)
-    st.add_layer(1E3, air)
+    st.add_layer(1000, air)
     st.print_info()
 
     # Calculate spontaneous emission over whole structure
-    result = st.calc_spe_structure_leaky(th_pow=8)
-    # result = st.calc_spe_structure_guided()
+    result = st.calc_spe_structure_guided()
     z = result['z']
     spe = result['spe']
 
@@ -405,4 +404,5 @@ if __name__ == "__main__":
     # fig6()
     # fig8()
     # fig9()
-    fig13a()
+    # fig13a()
+    fig13b()
