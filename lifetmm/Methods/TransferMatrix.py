@@ -196,9 +196,6 @@ class TransferMatrix:
             # Convert transmission coefficient for E field to that of the H field.
             # The reflection coefficient is the same as the medium does not change.
             t *= n_k / n_j
-        # TODO: need to sort this out - t should never equal zero
-        if t == 0:
-            t = np.nan
         assert t != 0, ValueError("Can't evaluate I_mat when transmission t==0 as 1/t == inf")
         return (1 / t) * np.array([[1, r], [r, 1]], dtype=complex)
 
@@ -254,35 +251,34 @@ class TransferMatrix:
             s = self.s_matrix()
             # Reflection for incoming wave incident of LHS of structure
             r = s[1, 0] / s[0, 0]
-            # Evaluate lower cladding
             if layer == 0:
                 field_plus = 1 + 0j
                 field_minus = r
-            # Evaluate upper cladding
             elif layer == self.num_layers - 1:
                 field_plus = 1 / s[0, 0]
                 field_minus = 0 + 0j
-            # Evaluate field amplitudes in internal layers
             else:
+                q = self.calc_q(layer)
+                d = self.d_list[layer]
+
                 s_prime = self.s_primed_matrix(layer)
-                # TODO: remove
-                if det(s_prime) == 0:
-                    return 0, 0
-                assert det(s_prime) != 0, ValueError('Determinant == 0 will give inf for field coefficient.')
-                field_plus = (s_prime[1, 1] - r * s_prime[0, 1]) / det(s_prime)
-                field_minus = (r * s_prime[0, 0] - s_prime[1, 0]) / det(s_prime)
+                s_dprime = self.s_dprimed_matrix(layer)
+                t_prime = 1 / s_prime[0, 0]
+                r_prime_minus = -s_prime[0, 1] / s_prime[0, 0]
+                r_dprime = s_dprime[1, 0] / s_dprime[0, 0]
+
+                field_plus = t_prime / (1 - r_prime_minus * r_dprime * exp(1j * 2 * q * d))
+                field_minus = field_plus * r_dprime * exp(1j * 2 * q * d)
+
         else:  # Calculate guided amplitudes
-            # Evaluate lower cladding
             if layer == 0:
                 field_plus = 0 + 0j
                 field_minus = 1 + 0j
-            # Evaluate upper cladding
             elif layer == self.num_layers - 1:
                 s = self.s_matrix()
                 # TODO: check why not [0, 1]
                 field_plus = 1 / s[1, 0]
                 field_minus = 0 + 0j
-            # Evaluate field amplitudes in internal layers
             else:
                 s_prime = self.s_primed_matrix(layer)
                 assert det(s_prime) != 0, ValueError('Determinant == 0 will give inf for field coefficient.')
@@ -371,8 +367,8 @@ class TransferMatrix:
         # Eq (11)
         n = self.n_list.real
         assert np.any(n[1:-1] > max(n[0], n[-1])), ValueError('This structure does not support wave guiding.')
-        # Find supported guiding modes
-        n_11 = roots(self._s11, max(n[0], n[-1]), max(n), verbose=verbose)
+        # Find supported guiding modes - max(n_clad) > n_11 >= max(n)
+        n_11 = roots(self._s11, 1.0001 * max(n[0], n[-1]), max(n), verbose=verbose)
         # Flip array to arrange from lowest to highest mode (highest to lowest n_11)
         n_11 = n_11[::-1]
 

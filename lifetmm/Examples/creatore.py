@@ -294,7 +294,54 @@ def fig9():
     plt.show()
 
 
-def fig13():
+def fig13a():
+    """
+    Silicon layer bounded by two semi infinite air claddings.
+    """
+    # Create structure
+    st = LifetimeTmm()
+    st.set_vacuum_wavelength(lam0)
+    st.add_layer(1e3, si)
+    st.add_layer(1900, sio2)
+    st.add_layer(100, si)
+    st.add_layer(20, sio2)
+    st.add_layer(100, si)
+    st.add_layer(1e3, air)
+    st.print_info()
+
+    # Calculate spontaneous emission over whole structure
+    result = st.calc_spe_structure_leaky(th_pow=10)
+    z = result['z']
+    spe = result['spe']
+
+    # Convert z into z/lam0 and center
+    z = st.calc_z_to_lambda(z)
+
+    # Plot spontaneous emission rates
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    ax1.plot(z, spe['avg'])
+
+    # Plot layer boundaries
+    for z in st.get_layer_boundaries()[:-1]:
+        ax1.axvline(st.calc_z_to_lambda(z), color='k', lw=1, ls='--')
+
+    ax1.axhline(si, color='k')
+    ax1.axhline(sio2, color='k')
+    ax1.axhline(air, color='k')
+    ax1.set_xlim(-1.2, 1.2)
+    ax1.set_ylim(0, 4.5)
+    # ax1.set_title('The spatial dependence of the normalized spontaneous emission rate \n'
+    #               'into leaky modes for asymmetric Silicon waveguide (SiO2/Si/air).')
+    ax1.set_ylabel('$\Gamma / \Gamma_0$')
+    ax1.set_xlabel('z/$\lambda$')
+
+    if SAVE:
+        plt.savefig('../Images/creatore_fig13.png', dpi=300)
+    plt.show()
+
+
+def fig13b():
     """
     Silicon layer bounded by two semi infinite air claddings.
     """
@@ -310,8 +357,8 @@ def fig13():
     st.print_info()
 
     # Calculate spontaneous emission over whole structure
-    # result = st.calc_spe_structure_leaky(th_pow=8)
-    result = st.calc_spe_structure_guided()
+    result = st.calc_spe_structure_leaky(th_pow=8)
+    # result = st.calc_spe_structure_guided()
     z = result['z']
     spe = result['spe']
 
@@ -358,4 +405,4 @@ if __name__ == "__main__":
     # fig6()
     # fig8()
     # fig9()
-    fig13()
+    fig13a()

@@ -102,9 +102,9 @@ class LifetimeTmm(TransferMatrix):
             E['TM_p'] = q*(H_plus * exp(1j * q * z) - H_minus * exp(-1j * q * z))
 
             # Check that results seem reasonable - TMM can be unstable for large z with exponentially growing waves
-            assert max(E['TE']) < 100, ValueError('TMM Unstable.')
-            assert max(E['TM_s']) < 100, ValueError('TMM Unstable.')
-            assert max(E['TM_p']) < 100, ValueError('TMM Unstable.')
+            # assert max(E['TE']) < 100, ValueError('TMM Unstable.')
+            # assert max(E['TM_s']) < 100, ValueError('TMM Unstable.')
+            # assert max(E['TM_p']) < 100, ValueError('TMM Unstable.')
 
             # Take the squares of all E field components and add sin(theta) weighting
             for key in list(E.dtype.names):
@@ -168,6 +168,9 @@ class LifetimeTmm(TransferMatrix):
 
         # Structure to hold field spontaneous emission rate components over z
         spe = np.zeros(len(z_pos), dtype=[('total', 'float64'),
+                                          ('parallel', 'float64'),
+                                          ('perpendicular', 'float64'),
+                                          ('avg', 'float64'),
                                           ('lower', 'float64'),
                                           ('upper', 'float64'),
                                           ('TE', 'float64'),
@@ -226,6 +229,11 @@ class LifetimeTmm(TransferMatrix):
         spe['lower'] = spe['TE_lower'] + spe['TM_p_lower'] + spe['TM_s_lower']
         spe['upper'] = spe['TE_upper'] + spe['TM_p_upper'] + spe['TM_s_upper']
         spe['total'] = spe['TE'] + spe['TM_p'] + spe['TM_s']
+        spe['parallel'] = spe['TE'] + spe['TM_p']
+        spe['perpendicular'] = spe['TM_s']
+
+        # Average for a randomly orientated dipole
+        spe['avg'] = (2 / 3) * spe['parallel'] + (1 / 3) * spe['perpendicular']
 
         return {'z': z_pos, 'spe': spe}
 
