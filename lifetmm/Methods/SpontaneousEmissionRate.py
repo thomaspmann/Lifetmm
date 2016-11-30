@@ -101,11 +101,6 @@ class LifetimeTmm(TransferMatrix):
             # Calculate the electric field component parallel (p) to the interface
             E['TM_p'] = q*(H_plus * exp(1j * q * z) - H_minus * exp(-1j * q * z))
 
-            # Check that results seem reasonable - TMM can be unstable for large z with exponentially growing waves
-            # assert max(E['TE']) < 100, ValueError('TMM Unstable.')
-            # assert max(E['TM_s']) < 100, ValueError('TMM Unstable.')
-            # assert max(E['TM_p']) < 100, ValueError('TMM Unstable.')
-
             # Take the squares of all E field components and add sin(theta) weighting
             for key in list(E.dtype.names):
                 E[key] = abs(E[key]) ** 2 * sin(theta)
@@ -315,7 +310,6 @@ class LifetimeTmm(TransferMatrix):
 
             # Evaluate E(z)
             electric_field['TE'] = a * exp(1j * q * z) + b * exp(-1j * q * z)
-            assert max(electric_field['TE']) < 100, ValueError('TMM likely unstable.')
             spe['TE'] += abs(electric_field['TE']) ** 2 * (k_11 / v)
         # Normalise emission rates to vacuum emission rate of a randomly orientated dipole
         spe['TE'] *= 3 * pi * c / 4
@@ -344,32 +338,27 @@ class LifetimeTmm(TransferMatrix):
                     w2 = sinc((q + conj(q)) * dj / 2)
                     norm += dj * (w1 * (abs(a) ** 2 + abs(b) ** 2) + w2 * (conj(a) * b + conj(b) * a))
             assert np.isreal(norm), ValueError('Check Normalisation - should be real')
-            norm = 1 / np.sqrt(np.real(norm))
 
             # E field coefficients in terms of layer 0 (superstrate) outgoing field amplitude
             a, b = self.layer_field_amplitudes(layer)
-            a *= norm
-            b *= norm
+            a /= np.sqrt(norm)
+            b /= np.sqrt(norm)
 
             # Wave vector components in layer (q, k_11 are angle dependent)
             k, q, k_11 = self.calc_wave_vector_components(layer)
             assert k_11 == (self.n_11 * self.k_vac), ValueError('Check TM')
 
             # Calculate the electric field component perpendicular (s) and parallel (p) to the interface
-            coeff = 1j / self.n_list[layer]**2
-            electric_field['TM_s'] = coeff * (a * exp(1j * q * z) + b * exp(-1j * q * z))
-            electric_field['TM_p'] = coeff * (a * exp(1j * q * z) - b * exp(-1j * q * z))
-            if layer != 0 or layer != self.num_layers - 1:
-                electric_field['TM_s'] *= k_11
-                electric_field['TM_p'] *= q
-            assert max(electric_field['TM_s']) < 100, ValueError('TMM Unstable.')
-            assert max(electric_field['TM_p']) < 100, ValueError('TMM Unstable.')
+            eps_j = self.n_list[layer].real ** 2
+            electric_field['TM_s'] = (1j * k_11 / eps_j) * (a * exp(1j * q * z) + b * exp(-1j * q * z))
+            electric_field['TM_p'] = (1j * q / eps_j) * (-a * exp(1j * q * z) + b * exp(-1j * q * z))
 
-            spe['TM_p'] += abs(electric_field['TM_p']) ** 2 * (k_11 / v)
             spe['TM_s'] += abs(electric_field['TM_s']) ** 2 * (k_11 / v)
+            spe['TM_p'] += abs(electric_field['TM_p']) ** 2 * (k_11 / v)
+
         # Normalise emission rates to vacuum emission rate of a randomly orientated dipole
-        spe['TM_p'] *= (3 * c * self.lam_vac ** 4) / (2 ** 6 * pi ** 3)
         spe['TM_s'] *= (3 * c * self.lam_vac ** 4) / (2 ** 5 * pi ** 3)
+        spe['TM_p'] *= (3 * c * self.lam_vac ** 4) / (2 ** 6 * pi ** 3)
 
         return {'z': z, 'spe': spe}
 
@@ -439,6 +428,7 @@ class LifetimeTmm(TransferMatrix):
 
         return {'z': z_pos, 'spe': spe}
 
+    # TODO: work in progress - leaky and guided evaluate
     def calc_spe_structure(self):
         leaky = self.calc_spe_structure_leaky()
         guided = self.calc_spe_structure_guided()

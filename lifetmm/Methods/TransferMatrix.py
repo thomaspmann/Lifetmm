@@ -20,7 +20,7 @@ class TransferMatrix:
         self.pol = 'TE'
         self.guided = False
         self.th = 0  # Angle of incidence from normal to multilayer [Leaky modes only]
-        self.n_11 = 0  # Normalised parallel wave vector [Guiding modes only]
+        self.n_11 = 0  # Normalised parallel wave vector
         # Default simulation parameters
         self.z_step = 1
 
@@ -114,7 +114,6 @@ class TransferMatrix:
             self.th = th * (pi / 180)
         else:
             raise ValueError('Units of angle not recognised. Please enter \'radians\' or \'degrees\'.')
-        # TODO: Experimental can add in n_11 for radiative modes
         self.n_11 = self.calc_n_11()
 
     def set_guided_mode(self, n_11):
@@ -124,8 +123,8 @@ class TransferMatrix:
         assert self.guided, ValueError('Run set_leaky_or_guiding(leaky=False) first.')
         n = self.n_list.real
         # See Quantum Electronics by Yariv pg.603
-        assert max(n) >= n_11 >= max(n[0], n[-1]), \
-            ValueError('Input n_11 is not valid for a guided mode.', max(n), n_11, max(n[0], n[-1]))
+        assert max(n) >= n_11 >= min(n[0], n[-1]), \
+            ValueError('Input n_11 is not valid for a guided mode.', max(n), n_11, min(n[0], n[-1]))
         self.n_11 = n_11
 
     def calc_n_11(self):
@@ -270,13 +269,12 @@ class TransferMatrix:
                 field_plus = t_prime / (1 - r_prime_minus * r_dprime * exp(1j * 2 * q * d))
                 field_minus = field_plus * r_dprime * exp(1j * 2 * q * d)
 
-        else:  # Calculate guided amplitudes
+        else:  # Calculate guided amplitudes (2 incoming waves no outgoing)
             if layer == 0:
                 field_plus = 0 + 0j
                 field_minus = 1 + 0j
             elif layer == self.num_layers - 1:
                 s = self.s_matrix()
-                # TODO: check why not [0, 1]
                 field_plus = 1 / s[1, 0]
                 field_minus = 0 + 0j
             else:
@@ -348,11 +346,11 @@ class TransferMatrix:
         """
         assert self.guided, ValueError('Run set_leaky_or_guiding(leaky=False) first.')
         n = self.n_list.real
-        n_11_range = np.linspace(n[0], max(n), num=1000, endpoint=False)[1:]
+        n_11_range = np.linspace(1.01 * max(n[0], n[-1]), max(n), num=1000, endpoint=False)[1:]
         s_11 = np.array([])
         for n_11 in n_11_range:
             s_11 = np.append(s_11, self._s11(n_11))
-        return n_11_range, s_11.real
+        return n_11_range, s_11
 
     def calc_guided_modes(self, verbose=True, normalised=False):
         """
@@ -369,14 +367,14 @@ class TransferMatrix:
         n = self.n_list.real
         assert np.any(n[1:-1] > max(n[0], n[-1])), ValueError('This structure does not support wave guiding.')
         # Find supported guiding modes - max(n_clad) > n_11 >= max(n)
-        n_11 = roots(self._s11, 1.0001 * max(n[0], n[-1]), max(n), verbose=verbose)
+        n_11 = roots(self._s11, 1.01 * max(n[0], n[-1]), max(n), verbose=verbose)
         # Flip array to arrange from lowest to highest mode (highest to lowest n_11)
         n_11 = n_11[::-1]
 
-        if not normalised:
-            return n_11 * self.k_vac
-        else:
+        if normalised:
             return n_11
+        else:
+            return n_11 * self.k_vac
 
     def calc_group_velocity(self):
         """

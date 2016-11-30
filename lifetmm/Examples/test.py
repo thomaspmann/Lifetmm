@@ -39,15 +39,13 @@ def mcgehee():
 
 def spe():
     st = LifetimeTmm()
-
-    lam0 = 1550
     st.set_vacuum_wavelength(lam0)
 
     # Add layers
     # st.add_layer(lam0, 1)
-    st.add_layer(lam0, 3.48)
-    st.add_layer(lam0, 1)
-    st.add_layer(lam0, 3.48)
+    st.add_layer(lam0, si)
+    st.add_layer(lam0, air)
+    st.add_layer(lam0, si)
     # st.add_layer(lam0, 1)
 
     # Get results
@@ -85,40 +83,45 @@ def spe():
 
 def guiding_plot():
     """ Find the guiding modes (TE and TM) for a given structure.
-    First plot S_11 as a function of beta. When S_11=0 this corresponds
+    First plot s_11 as a function of beta. When s_11=0 this corresponds
     to a wave guiding mode. We then solve the roots (with scipy's brentq
     algorithm) and plot these as vertical red lines. Check that visually there
     is a red line at each pole so that none are missed.
     """
     # Create structure
     st = LifetimeTmm()
-    lam0 = 1550
     st.set_vacuum_wavelength(lam0)
     st.set_field('E')
     st.set_leaky_or_guiding('guiding')
-    # st.guided = True
-    air = 1
-    sio2 = 3.48
-    st.add_layer(0 * lam0, air)
-    st.add_layer(1 * lam0, sio2)
-    st.add_layer(0 * lam0, air)
+
+    # st.add_layer(0 * lam0, air)
+    # st.add_layer(1 * lam0, si)
+    # st.add_layer(0 * lam0, air)
+
+    st.add_layer(300, sio2)
+    st.add_layer(100, si)
+    st.add_layer(20, sio2)
+    st.add_layer(100, si)
+    st.add_layer(300, air)
+
+    st.print_info()
 
     # Prepare the figure
     fig, (ax1, ax2) = plt.subplots(2, 1, sharex='col', sharey='none')
 
     # TE modes
     st.set_polarization('TE')
-    [beta, S_11] = st.s11_guided()
-    ax1.plot(beta, S_11, label='TE')
-    roots = st.calc_guided_modes()
+    [beta, s_11] = st.s11_guided()
+    ax1.plot(beta, s_11, label='TE')
+    roots = st.calc_guided_modes(normalised=True)
     for root in roots:
         ax1.axvline(root, color='r')
 
     # TM modes
     st.set_polarization('TM')
-    [beta, S_11] = st.s11_guided()
-    ax2.plot(beta, S_11, label='TM')
-    roots = st.calc_guided_modes()
+    [beta, s_11] = st.s11_guided()
+    ax2.plot(beta, s_11, label='TM')
+    roots = st.calc_guided_modes(normalised=True)
     for root in roots:
         ax2.axvline(root, color='r')
 
@@ -139,11 +142,8 @@ def guiding_plot():
 def guiding_electric_field():
     # Create structure
     st = TransferMatrix()
-    lam0 = 1550
     st.set_vacuum_wavelength(lam0)
     st.set_field('E')
-    air = 1
-    sio2 = 3.48
     st.add_layer(1 * lam0, air)
     st.add_layer(1 * lam0, sio2)
     st.add_layer(1 * lam0, air)
@@ -171,16 +171,7 @@ def guiding_electric_field():
 
 def test():
     st = TransferMatrix()
-    # Set vacuum wavelength
-    lam0 = 1550
     st.set_vacuum_wavelength(lam0)
-
-    # Material refractive index at lam0
-    sio2 = 1.45
-    si = 3.48
-    air = 1
-
-    # Add layers
     st.add_layer(1E3, si)
     st.add_layer(1900, sio2)
     st.add_layer(100, si)
@@ -212,8 +203,16 @@ def test():
 if __name__ == "__main__":
     SAVE = False
 
+    # Set vacuum wavelength
+    lam0 = 1550
+
+    # Material refractive index at lam0
+    air = 1
+    sio2 = 1.45
+    si = 3.48
+
     # mcgehee()
     # spe()
-    # guiding_plot()
+    guiding_plot()
     # guiding_electric_field()
-    test()
+    # test()

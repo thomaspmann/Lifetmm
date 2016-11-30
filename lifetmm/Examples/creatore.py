@@ -231,7 +231,7 @@ def fig8():
         ax1.axvline(x=z, color='k', lw=2, zorder=-1)
         ax2.axvline(x=z, color='k', lw=2, zorder=-1)
     ax1.set_ylim(0, 4)
-    ax2.set_ylim(0, 6)
+    ax2.set_ylim(0, 5)
     ax1.set_title('The spatial dependence of the normalized spontaneous emission rate \n'
                   'into guided modes for asymmetric Silicon waveguide (SiO2/Si/air).')
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
@@ -348,12 +348,12 @@ def fig13b():
     # Create structure
     st = LifetimeTmm()
     st.set_vacuum_wavelength(lam0)
-    # st.add_layer(1E3, si)
-    st.add_layer(1000, sio2)
+    # st.add_layer(1e3, si)
+    st.add_layer(1900, sio2)
     st.add_layer(100, si)
     st.add_layer(20, sio2)
     st.add_layer(100, si)
-    st.add_layer(1000, air)
+    st.add_layer(1e3, air)
     st.print_info()
 
     # Calculate spontaneous emission over whole structure
