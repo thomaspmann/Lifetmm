@@ -201,7 +201,7 @@ def test():
     plt.show()
 
 if __name__ == "__main__":
-    SAVE = False
+    SAVE = True
 
     # Set vacuum wavelength
     lam0 = 1550
@@ -211,8 +211,8 @@ if __name__ == "__main__":
     sio2 = 1.45
     si = 3.48
 
-    # mcgehee()
+    mcgehee()
     # spe()
-    guiding_plot()
+    # guiding_plot()
     # guiding_electric_field()
     # test()

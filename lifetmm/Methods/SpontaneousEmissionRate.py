@@ -428,11 +428,20 @@ class LifetimeTmm(TransferMatrix):
 
         return {'z': z_pos, 'spe': spe}
 
-    # TODO: work in progress - leaky and guided evaluate
-    def calc_spe_structure(self):
-        leaky = self.calc_spe_structure_leaky()
-        guided = self.calc_spe_structure_guided()
-        spe_radiative = leaky['avg'] + guided['avg']
+    def calc_spe_structure(self, th_pow=8):
+        print("Calculating leaky modes...")
+        result = self.calc_spe_structure_leaky(th_pow=th_pow)
+        leaky = result['spe']
+        z = result['z']
+
+        n = self.n_list.real
+        if np.any(n[1:-1] > max(n[0], n[-1])):
+            print("Structure suppports waveguiding. Calculating guided modes...")
+            guided = self.calc_spe_structure_guided()['spe']
+            return {'z': z, 'leaky': leaky, 'guided': guided}
+        else:
+            print("Structure does not support waveguiding.")
+            return {'z': z, 'leaky': leaky}
 
 
 # Helper Functions

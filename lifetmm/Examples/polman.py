@@ -108,7 +108,7 @@ def fig4():
 
 
 if __name__ == "__main__":
-    SAVE = False
+    SAVE = True
 
-    # fig3()
+    fig3()
     fig4()

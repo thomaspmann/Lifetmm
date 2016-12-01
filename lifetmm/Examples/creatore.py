@@ -35,22 +35,22 @@ def fig3():
     ax1.plot(z, spe['TM_p'], label='TM')
     ax1.plot(z, spe['TE'] + spe['TM_p'], label='TE + TM')
 
-    ax2.plot(z, spe['TE_lower_full'] + spe['TM_p_lower_full'], label='Fully leaky lower outgoing')
-    ax2.plot(z, spe['TE_lower_partial'] + spe['TM_p_lower_partial'], label='Partially leaky lower outgoing')
-    ax2.plot(z, spe['TE_upper'] + spe['TM_p_upper'], label='Fully leaky upper outgoing')
+    ax2.plot(z, spe['TE_lower_full'] + spe['TM_p_lower_full'], label='Fully radiative lower outgoing')
+    ax2.plot(z, spe['TE_lower_partial'] + spe['TM_p_lower_partial'], label='Partially radiative lower outgoing')
+    ax2.plot(z, spe['TE_upper'] + spe['TM_p_upper'], label='Fully radiative upper outgoing')
 
     ax3.plot(z, spe['TM_s'], label='TM')
 
-    ax4.plot(z, spe['TM_s_lower_full'], label='Fully leaky lower outgoing')
-    ax4.plot(z, spe['TM_s_lower_partial'], label='Partially leaky lower outgoing')
-    ax4.plot(z, spe['TM_s_upper'], label='Fully leaky upper outgoing')
+    ax4.plot(z, spe['TM_s_lower_full'], label='Fully radiative lower outgoing')
+    ax4.plot(z, spe['TM_s_lower_partial'], label='Partially radiative lower outgoing')
+    ax4.plot(z, spe['TM_s_upper'], label='Fully radiative upper outgoing')
 
     # Plot internal layer boundaries
     for z in st.get_layer_boundaries()[:-1]:
-        ax1.axvline(st.calc_z_to_lambda(z), color='k', lw=2)
-        ax2.axvline(st.calc_z_to_lambda(z), color='k', lw=2)
-        ax3.axvline(st.calc_z_to_lambda(z), color='k', lw=2)
-        ax4.axvline(st.calc_z_to_lambda(z), color='k', lw=2)
+        ax1.axvline(st.calc_z_to_lambda(z), color='k', lw=1, ls='--')
+        ax2.axvline(st.calc_z_to_lambda(z), color='k', lw=1, ls='--')
+        ax3.axvline(st.calc_z_to_lambda(z), color='k', lw=1, ls='--')
+        ax4.axvline(st.calc_z_to_lambda(z), color='k', lw=1, ls='--')
 
     ax1.set_ylim(0, 4)
     ax3.set_ylim(0, 6)
@@ -70,7 +70,8 @@ def fig3():
 
 
 def fig4():
-    """ Silicon to air semi-infinite half spaces.
+    """
+    Silicon to air semi-infinite half spaces.
     """
     # Create structure
     st = LifetimeTmm()
@@ -104,6 +105,7 @@ def fig4():
 
     ax1.set_title('Spontaneous Emission Rate. LHS n=3.48, RHS n=1.')
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
+    ax1.set_xlabel('z/$\lambda$')
     ax2.set_xlabel('z/$\lambda$')
     ax1.legend(title='Horizontal Dipoles', fontsize='small')
     ax2.legend(title='Vertical Dipoles', fontsize='small')
@@ -388,7 +390,7 @@ def fig13b():
     plt.show()
 
 if __name__ == "__main__":
-    SAVE = False
+    SAVE = True
 
     # Set vacuum wavelength
     lam0 = 1550
@@ -398,11 +400,11 @@ if __name__ == "__main__":
     si = 3.48
     air = 1
 
-    # fig3()
-    # fig4()
-    # fig5()
-    # fig6()
-    # fig8()
-    # fig9()
-    # fig13a()
+    fig3()
+    fig4()
+    fig5()
+    fig6()
+    fig8()
+    fig9()
+    fig13a()
     fig13b()
