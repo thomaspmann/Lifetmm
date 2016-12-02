@@ -4,7 +4,6 @@ Script to recreate the plots in the paper
     'Quantum theory of spontaneous emission in multilayer dielectric structures'
     by Celestino Creatore and Lucio Claudio Andreani.
 """
-
 import matplotlib.pyplot as plt
 
 from lifetmm.Methods.SpontaneousEmissionRate import *
@@ -98,8 +97,8 @@ def fig4():
 
     # Plot internal layer boundaries
     for z in st.get_layer_boundaries()[:-1]:
-        ax1.axvline(st.calc_z_to_lambda(z), color='k', lw=2)
-        ax2.axvline(st.calc_z_to_lambda(z), color='k', lw=2)
+        ax1.axvline(st.calc_z_to_lambda(z), color='k', lw=1, ls='--')
+        ax2.axvline(st.calc_z_to_lambda(z), color='k', lw=1, ls='--')
 
     ax1.set_ylim(0, 1.1)
 
@@ -139,9 +138,8 @@ def fig5():
     ax1.plot(z, spe['TE'] + spe['TM_p'], label='TE + TM')
     ax2.plot(z, spe['TM_s'], label='TM')
     for z in st.get_layer_boundaries()[:-1]:
-        z = st.calc_z_to_lambda(z)
-        ax1.axvline(x=z, color='k', lw=2, zorder=-1)
-        ax2.axvline(x=z, color='k', lw=2, zorder=-1)
+        ax1.axvline(st.calc_z_to_lambda(z), color='k', lw=1, ls='--')
+        ax2.axvline(st.calc_z_to_lambda(z), color='k', lw=1, ls='--')
     ax1.set_ylim(0, 4)
     ax2.set_ylim(0, 6)
     ax1.set_title('Spontaneous Emission Rate. Core n=3.48, Cladding n=1.')
@@ -188,8 +186,8 @@ def fig6():
 
     # Plot layer boundaries
     for z in st.get_layer_boundaries()[:-1]:
-        ax1.axvline(st.calc_z_to_lambda(z), color='r', lw=2)
-        ax2.axvline(st.calc_z_to_lambda(z), color='r', lw=2)
+        ax1.axvline(st.calc_z_to_lambda(z), color='k', lw=1, ls='--')
+        ax2.axvline(st.calc_z_to_lambda(z), color='k', lw=1, ls='--')
 
     ax1.set_ylim(0, 1.4)
     ax2.set_ylim(0, 1.4)
@@ -230,8 +228,8 @@ def fig8():
     ax2.plot(z, spe['TM_s'], label='TM')
     for z in st.get_layer_boundaries()[:-1]:
         z = st.calc_z_to_lambda(z)
-        ax1.axvline(x=z, color='k', lw=2, zorder=-1)
-        ax2.axvline(x=z, color='k', lw=2, zorder=-1)
+        ax1.axvline(x=z, color='k', lw=1, ls='--')
+        ax2.axvline(x=z, color='k', lw=1, ls='--')
     ax1.set_ylim(0, 4)
     ax2.set_ylim(0, 5)
     ax1.set_title('The spatial dependence of the normalized spontaneous emission rate \n'
@@ -279,8 +277,8 @@ def fig9():
 
     # Plot layer boundaries
     for z in st.get_layer_boundaries()[:-1]:
-        ax1.axvline(st.calc_z_to_lambda(z), color='r', lw=2)
-        ax2.axvline(st.calc_z_to_lambda(z), color='r', lw=2)
+        ax1.axvline(st.calc_z_to_lambda(z), color='k', lw=1, ls='--')
+        ax2.axvline(st.calc_z_to_lambda(z), color='k', lw=1, ls='--')
 
     ax1.set_ylim(0, 2)
     ax2.set_ylim(0, 3)
@@ -312,7 +310,7 @@ def fig13a():
     st.print_info()
 
     # Calculate spontaneous emission over whole structure
-    result = st.calc_spe_structure_leaky(th_pow=8)
+    result = st.calc_spe_structure_leaky(th_pow=15)
     z = result['z']
     spe = result['spe']
 
@@ -380,6 +378,7 @@ def fig13b():
         ax1.axvline(st.calc_z_to_lambda(z), color='k', lw=1, ls='--')
 
     ax1.set_ylim(0, 16)
+    ax1.set_xlim(0, 0.5)
     # ax1.set_title('The spatial dependence of the normalized spontaneous emission rate \n'
     #               'into leaky modes for asymmetric Silicon waveguide (SiO2/Si/air).')
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
@@ -390,7 +389,7 @@ def fig13b():
     plt.show()
 
 if __name__ == "__main__":
-    SAVE = True
+    SAVE = False
 
     # Set vacuum wavelength
     lam0 = 1550
@@ -400,11 +399,11 @@ if __name__ == "__main__":
     si = 3.48
     air = 1
 
-    fig3()
-    fig4()
-    fig5()
-    fig6()
+    # fig3()
+    # fig4()
+    # fig5()
+    # fig6()
     fig8()
-    fig9()
-    fig13a()
-    fig13b()
+    # fig9()
+    # fig13a()
+    # fig13b()

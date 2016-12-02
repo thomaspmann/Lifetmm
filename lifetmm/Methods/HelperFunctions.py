@@ -1,5 +1,9 @@
+import logging
+
 import numpy as np
 import scipy as sp
+
+log = logging.getLogger(__name__)
 
 
 #####################################################################
@@ -33,22 +37,32 @@ def roots(f, a, b, num=20000, verbose=True):
     """
     import math
     from scipy.optimize import brentq
-    if verbose: print('The roots on the interval [{:f}, {:f}] are:'.format(a, b))
+
+    if verbose:
+        print('The roots on the interval [{:f}, {:f}] are:'.format(a, b))
+    else:
+        logging.debug('The roots on the interval [{:f}, {:f}] are:'.format(a, b))
+
     results = []
     while 1:
         dx = abs(a - b) / num  # alternatively use dx=eps where eps is arg
         x1, x2 = root_search(f, a, b, dx)
         if x1 is not None:
             a = x2
-            root = brentq(f, x1, x2, rtol=1e-9)
+            root = brentq(f, x1, x2, rtol=1e-5)
             if root != 0:
                 # Root is only as accurate as the width of the
                 # element as there could be multiple roots within each dx
                 root = round(root, -int(math.log(dx, 10)))
-                if verbose: print('{:.4f}'.format(root))
                 results.append(root)
+
+                if verbose:
+                    print('{:.4f}'.format(root))
+                else:
+                    logging.debug('{:.4f}'.format(root))
         else:
-            if verbose: print('\nDone')
+            if verbose:
+                print('\nDone')
             return np.array(results)
 
 

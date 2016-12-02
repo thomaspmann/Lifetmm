@@ -1,8 +1,12 @@
+import logging
+
 import numpy as np
 from numpy import pi, sqrt, sin, exp
 from scipy.constants import c
 
 from lifetmm.Methods.HelperFunctions import roots, snell, det
+
+log = logging.getLogger(__name__)
 
 
 class TransferMatrix:
@@ -30,8 +34,8 @@ class TransferMatrix:
         """
         assert d >= 0, ValueError('Thickness must >= 0.')
         if not float(d).is_integer():
-            print('WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. '
-                  'CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.')
+            logging.WARNING('WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. '
+                            'CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.')
             d = round(d)
         self.d_list = np.append(self.d_list, d)
         self.n_list = np.append(self.n_list, n)
@@ -48,8 +52,8 @@ class TransferMatrix:
                                                         'calculation for each wavelength at a time')
         assert lam_vac > 0, ValueError('Wavelength must > 0.')
         if not float(lam_vac).is_integer():
-            print('WARNING: ROUNDING WAVELENGTH TO THE NEAREST INTEGER. '
-                  'CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.')
+            logging.WARNING('WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. '
+                            'CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.')
             lam_vac = round(lam_vac)
         self.lam_vac = lam_vac
         self.k_vac = 2 * pi / lam_vac
@@ -61,8 +65,8 @@ class TransferMatrix:
         Default is set to 1 if not called explicitly
         """
         if not float(step).is_integer():
-            print('WARNING: ROUNDING STEP TO THE NEAREST INTEGER. '
-                  'CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.')
+            logging.WARNING('WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. '
+                            'CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.')
             step = round(step)
         self.z_step = step
 
@@ -70,19 +74,14 @@ class TransferMatrix:
         """
         Set the mode polarisation to be simulated ('s' or 'TE' and 'p' or 'TM')
         """
-        assert pol in ['s', 'p', 'TE', 'TM'], \
-            ValueError("Polarisation must one of; 's', 'p', 'TE', 'TM'")
-        if self.th != 0:
-            assert pol in ['s', 'p', 'TE', 'TM'], \
-                ValueError("Polarisation must be defined when angle of incidence is not 0$\degree$s")
+        assert pol in ['s', 'p', 'TE', 'TM'], ValueError("Polarisation must one of; 's', 'p', 'TE', 'TM'")
         self.pol = pol
 
     def set_field(self, field):
         """
         Set the field to be evaluated. Either 'E' (default) or 'H' field.
         """
-        if field not in ['E', 'H']:
-            raise ValueError("The field must be either 'E' of 'H'.")
+        assert field in ['E', 'H'], ValueError("The field must be either 'E' of 'H'.")
         self.field = field
 
     def set_leaky_or_guiding(self, mode='leaky'):
@@ -114,7 +113,7 @@ class TransferMatrix:
             self.th = th * (pi / 180)
         else:
             raise ValueError('Units of angle not recognised. Please enter \'radians\' or \'degrees\'.')
-        self.n_11 = self.calc_n_11()
+        self.n_11 = self.n_list[0].real * sin(self.th)
 
     def set_guided_mode(self, n_11):
         """
@@ -127,21 +126,21 @@ class TransferMatrix:
             ValueError('Input n_11 is not valid for a guided mode.', max(n), n_11, min(n[0], n[-1]))
         self.n_11 = n_11
 
-    def calc_n_11(self):
-        if not self.guided:
-            # Continuous across layers, so can evaluate from input theta
-            # and medium for incoming wave (hence leaky mode)
-            return self.n_list[0].real * sin(self.th)
-        else:
-            return self.n_11
+    # def calc_n_11(self):
+    #     if not self.guided:
+    #         # Continuous across layers, so can evaluate from input theta
+    #         # and medium for incoming wave (hence leaky mode)
+    #         return self.n_list[0].real * sin(self.th)
+    #     else:
+    #         return self.n_11
 
     def calc_xi(self, j):
         """
         Normalised perpendicular wave-vector in layer j.
         """
         n = self.n_list[j]  # Normalised layer wave-vector magnitude (k(j)/k_vac)
-        n_11 = self.calc_n_11()  # Normalised layer parallel wave-vector magnitude
-        return sqrt(n ** 2 - n_11 ** 2)
+        # n_11 = self.calc_n_11()  # Normalised layer parallel wave-vector magnitude
+        return sqrt(n ** 2 - self.n_11 ** 2)
 
     def calc_k(self, j):
         """
@@ -161,8 +160,8 @@ class TransferMatrix:
         """
         Parallel wave vector (same in all layers).
         """
-        n_11 = self.calc_n_11()
-        return n_11 * self.k_vac
+        # n_11 = self.calc_n_11()
+        return self.n_11 * self.k_vac
 
     def calc_wave_vector_components(self, j):
         """
@@ -195,8 +194,11 @@ class TransferMatrix:
             # Convert transmission coefficient for E field to that of the H field.
             # The reflection coefficient is the same as the medium does not change.
             t *= n_k / n_j
-        assert t != 0, ValueError("Can't evaluate I_mat when transmission t==0 as 1/t == inf")
-        return (1 / t) * np.array([[1, r], [r, 1]], dtype=complex)
+        # assert t != 0, ValueError("Can't evaluate I_mat when transmission t==0 as 1/t == inf")
+        if t == 0:
+            return np.array([[np.inf, np.inf], [np.inf, np.inf]], dtype=complex)
+        else:
+            return (1 / t) * np.array([[1, r], [r, 1]], dtype=complex)
 
     def l_matrix(self, j):
         """
@@ -269,7 +271,7 @@ class TransferMatrix:
                 field_plus = t_prime / (1 - r_prime_minus * r_dprime * exp(1j * 2 * q * d))
                 field_minus = field_plus * r_dprime * exp(1j * 2 * q * d)
 
-        else:  # Calculate guided amplitudes (2 incoming waves no outgoing)
+        else:  # Calculate guided amplitudes (2 outgoing waves no incoming)
             if layer == 0:
                 field_plus = 0 + 0j
                 field_minus = 1 + 0j
@@ -279,8 +281,7 @@ class TransferMatrix:
                 field_minus = 0 + 0j
             else:
                 s_prime = self.s_primed_matrix(layer)
-                assert not np.isclose(det(s_prime), 0), ValueError(
-                    'Determinant == 0 will give inf for field coefficient.')
+                assert not np.isclose(det(s_prime), 0), ValueError('Det=0 will give inf for field coefficient.')
                 field_plus = - s_prime[0, 1] / det(s_prime)
                 field_minus = s_prime[0, 0] / det(s_prime)
         return field_plus, field_minus
@@ -367,7 +368,7 @@ class TransferMatrix:
         n = self.n_list.real
         assert np.any(n[1:-1] > max(n[0], n[-1])), ValueError('This structure does not support wave guiding.')
         # Find supported guiding modes - max(n_clad) > n_11 >= max(n)
-        n_11 = roots(self._s11, 1.0001 * max(n[0], n[-1]), max(n), verbose=verbose)
+        n_11 = roots(self._s11, 1 * max(n[0], n[-1]), max(n), verbose=verbose)
         # Flip array to arrange from lowest to highest mode (highest to lowest n_11)
         n_11 = n_11[::-1]
 

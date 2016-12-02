@@ -1,3 +1,4 @@
+import logging
 import time
 
 import numpy as np
@@ -7,6 +8,8 @@ from scipy.constants import c
 from tqdm import *
 
 from lifetmm.Methods.TransferMatrix import TransferMatrix
+
+log = logging.getLogger(__name__)
 
 
 class LifetimeTmm(TransferMatrix):
