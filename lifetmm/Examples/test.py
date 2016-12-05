@@ -185,8 +185,8 @@ def test():
     st.add_layer(1e3, air)
     st.info()
 
-    st.set_polarization('TE')
-    st.set_field('E')
+    st.set_polarization('TM')
+    st.set_field('H')
     st.set_leaky_or_guiding('guiding')
     alpha = st.calc_guided_modes(normalised=True)
     st.set_guided_mode(alpha[0])

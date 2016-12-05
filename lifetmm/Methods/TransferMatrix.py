@@ -133,7 +133,6 @@ class TransferMatrix:
         Normalised perpendicular wave-vector in layer j.
         """
         n = self.n_list[j]  # Normalised layer wave-vector magnitude (k(j)/k_vac)
-        # n_11 = self.calc_n_11()  # Normalised layer parallel wave-vector magnitude
         return sqrt(n ** 2 - self.n_11 ** 2)
 
     def calc_k(self, j):
@@ -154,7 +153,6 @@ class TransferMatrix:
         """
         Parallel wave vector (same in all layers).
         """
-        # n_11 = self.calc_n_11()
         return self.n_11 * self.k_vac
 
     def calc_wave_vector_components(self, j):
@@ -171,10 +169,10 @@ class TransferMatrix:
         """
         Returns the interference matrix between layers j and k.
         """
-        xi_j = self.calc_xi(j)
-        xi_k = self.calc_xi(k)
         n_j = self.n_list[j]
         n_k = self.n_list[k]
+        xi_j = self.calc_xi(j)
+        xi_k = self.calc_xi(k)
         # Evaluate reflection and transmission coefficients for E field
         if self.pol in ['p', 'TM']:
             r = (xi_j * n_k ** 2 - xi_k * n_j ** 2) / (xi_j * n_k ** 2 + xi_k * n_j ** 2)
@@ -188,8 +186,8 @@ class TransferMatrix:
             # Convert transmission coefficient for E field to that of the H field.
             # The reflection coefficient is the same as the medium does not change.
             t *= n_k / n_j
-        # assert t != 0, ValueError("Can't evaluate I_mat when transmission t==0 as 1/t == inf")
         if t == 0:
+            logging.warning('Transmission of i_matrix = 0. Returning nan.')
             return np.array([[np.inf, np.inf], [np.inf, np.inf]], dtype=complex)
         else:
             return (1 / t) * np.array([[1, r], [r, 1]], dtype=complex)
