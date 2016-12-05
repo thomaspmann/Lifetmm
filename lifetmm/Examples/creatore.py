@@ -18,7 +18,7 @@ def fig3():
     st.set_vacuum_wavelength(lam0)
     st.add_layer(lam0, si)
     st.add_layer(lam0, air)
-    st.print_info()
+    st.info()
 
     # Calculate spontaneous emission over whole structure
     result = st.calc_spe_structure_leaky()
@@ -77,7 +77,7 @@ def fig4():
     st.set_vacuum_wavelength(lam0)
     st.add_layer(lam0, si)
     st.add_layer(lam0, air)
-    st.print_info()
+    st.info()
 
     # Calculate spontaneous emission over whole structure
     result = st.calc_spe_structure_leaky(th_pow=10)
@@ -119,11 +119,10 @@ def fig5():
     # Create structure
     st = LifetimeTmm()
     st.set_vacuum_wavelength(lam0)
-    st.set_field('E')
     st.add_layer(1.5 * lam0, air)
     st.add_layer(lam0, si)
     st.add_layer(1.5 * lam0, air)
-    st.print_info()
+    st.info()
 
     result = st.calc_spe_structure_guided()
     z = result['z']
@@ -165,7 +164,7 @@ def fig6():
     st.add_layer(2.5 * lam0, air)
     st.add_layer(lam0, si)
     st.add_layer(2.5 * lam0, air)
-    st.print_info()
+    st.info()
 
     # Calculate spontaneous emission over whole structure
     result = st.calc_spe_structure_leaky()
@@ -198,7 +197,7 @@ def fig6():
     ax1.legend(title='Horizontal Dipoles', loc='lower right', fontsize='medium')
     ax2.legend(title='Vertical Dipoles', loc='lower right', fontsize='medium')
     if SAVE:
-        plt.savefig('../Images/SPE_silicon_layer_air_cladding.png', dpi=300)
+        plt.savefig('../Images/creatore_fig6.png', dpi=300)
     plt.show()
 
 
@@ -209,7 +208,7 @@ def fig8():
     st.add_layer(1.5 * lam0, sio2)
     st.add_layer(lam0, si)
     st.add_layer(1.5 * lam0, air)
-    st.print_info()
+    st.info()
 
     # Do Simulation
     result = st.calc_spe_structure_guided()
@@ -242,7 +241,7 @@ def fig8():
 
     fig.tight_layout()
     if SAVE:
-        plt.savefig('../Images/creatore_fig5.png', dpi=300)
+        plt.savefig('../Images/creatore_fig8.png', dpi=300)
     plt.show()
 
 
@@ -256,7 +255,7 @@ def fig9():
     st.add_layer(2.5 * lam0, sio2)
     st.add_layer(lam0, si)
     st.add_layer(2.5 * lam0, air)
-    st.print_info()
+    st.info()
 
     # Calculate spontaneous emission over whole structure
     result = st.calc_spe_structure_leaky()
@@ -307,10 +306,10 @@ def fig13a():
     st.add_layer(20, sio2)
     st.add_layer(100, si)
     st.add_layer(1e3, air)
-    st.print_info()
+    st.info()
 
     # Calculate spontaneous emission over whole structure
-    result = st.calc_spe_structure_leaky(th_pow=15)
+    result = st.calc_spe_structure_leaky(th_pow=12)
     z = result['z']
     spe = result['spe']
 
@@ -337,7 +336,7 @@ def fig13a():
     ax1.set_xlabel('z/$\lambda$')
 
     if SAVE:
-        plt.savefig('../Images/creatore_fig13.png', dpi=300)
+        plt.savefig('../Images/creatore_fig13a.png', dpi=300)
     plt.show()
 
 
@@ -354,7 +353,7 @@ def fig13b():
     st.add_layer(20, sio2)
     st.add_layer(100, si)
     st.add_layer(1e3, air)
-    st.print_info()
+    st.info()
 
     # Calculate spontaneous emission over whole structure
     result = st.calc_spe_structure_guided()
@@ -385,11 +384,11 @@ def fig13b():
     ax1.set_xlabel('z/$\lambda$')
 
     if SAVE:
-        plt.savefig('../Images/creatore_fig13.png', dpi=300)
+        plt.savefig('../Images/creatore_fig13b.png', dpi=300)
     plt.show()
 
 if __name__ == "__main__":
-    SAVE = False
+    SAVE = True
 
     # Set vacuum wavelength
     lam0 = 1550
@@ -399,11 +398,11 @@ if __name__ == "__main__":
     si = 3.48
     air = 1
 
-    # fig3()
-    # fig4()
-    # fig5()
-    # fig6()
+    fig3()
+    fig4()
+    fig5()
+    fig6()
     fig8()
-    # fig9()
-    # fig13a()
-    # fig13b()
+    fig9()
+    fig13a()
+    fig13b()

@@ -18,7 +18,7 @@ def t2():
     st.add_layer(2 * lam0, sio2)
     st.add_layer(d_etds, edts)
     st.add_layer(2 * lam0, air)
-    st.print_info()
+    st.info()
 
     # Calculate spontaneous emission for leaky and guided modes
     result = st.calc_spe_structure(th_pow=9)
@@ -61,7 +61,7 @@ def t2_leaky():
     st.add_layer(2 * lam0, sio2)
     st.add_layer(d_etds, edts)
     st.add_layer(2 * lam0, air)
-    st.print_info()
+    st.info()
 
     # Calculate spontaneous emission for leaky and guided modes
     result = st.calc_spe_structure_leaky(th_pow=9)
@@ -119,7 +119,7 @@ def t2_fig4():
     st.add_layer(2 * lam0, sio2)
     st.add_layer(d_etds, edts)
     st.add_layer(2 * lam0, air)
-    st.print_info()
+    st.info()
 
     # Calculate spontaneous emission over whole structure
     result = st.calc_spe_structure_leaky(th_pow=9)
@@ -164,7 +164,7 @@ def t2_guided():
     st.add_layer(2 * lam0, sio2)
     st.add_layer(d_etds, edts)
     st.add_layer(2 * lam0, air)
-    st.print_info()
+    st.info()
 
     result = st.calc_spe_structure_guided()
     z = result['z']
@@ -214,7 +214,7 @@ def t2_spe_vs_n():
         st.add_layer(0, sio2)
         st.add_layer(d_etds, edts)
         st.add_layer(0, n)
-        st.print_info()
+        st.info()
 
         # Calculate spontaneous emission of layer 0 (1st)
         result = st.calc_spe_structure()

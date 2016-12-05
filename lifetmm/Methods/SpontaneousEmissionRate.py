@@ -188,15 +188,15 @@ class LifetimeTmm(TransferMatrix):
                                           ('TM_s_upper', 'float64')])
 
         # Calculate emission rates for leaky modes in each layer
-        print('Evaluating lower and upper leaky modes for each layer:')
+        logging.info('Evaluating lower and upper leaky modes for each layer:')
         for layer in range(min(z_mat), max(z_mat) + 1):
-            # Print simulation information to command line
+            # logging.info simulation information to command line
             if layer == 0:
-                print('\tLayer -> lower cladding...')
+                logging.info('\tLayer -> lower cladding...')
             elif layer == self.num_layers - 1:
-                print('\tLayer -> upper cladding...')
+                logging.info('\tLayer -> upper cladding...')
             else:
-                print('\tLayer -> internal {0:d} / {1:d}...'.format(layer, self.num_layers-2))
+                logging.info('\tLayer -> internal {0:d} / {1:d}...'.format(layer, self.num_layers - 2))
             time.sleep(0.2)  # Fixes progress bar occurring before text
 
             # Find indices corresponding to the layer we are evaluating
@@ -242,23 +242,23 @@ class LifetimeTmm(TransferMatrix):
         # Only re-evaluate the guided roots and v_g if not passed to function. Computationally intensive.
         # Will only be required if the function is not called from self.spe_structure_guided()
         if all(arg is None for arg in (roots_te, roots_tm, vg_te, vg_tm)):
-            print('Evaluating guided modes (k_11/k) and group velocity for each polarisation:')
-            print('Finding TE modes')
+            logging.info('Evaluating guided modes (k_11/k) and group velocity for each polarisation:')
+            logging.info('Finding TE modes')
             self.set_polarization('TE')
             self.set_field('E')
             roots_te = self.calc_guided_modes(normalised=True)
             # Calculate group velocity for each mode
-            print('Calculating group velocity for each mode...')
+            logging.info('Calculating group velocity for each mode...')
             vg_te = self.calc_group_velocity()
-            print('Done!')
-            print('Finding TM modes')
+            logging.info('Done!')
+            logging.info('Finding TM modes')
             self.set_polarization('TM')
             self.set_field('H')
             roots_tm = self.calc_guided_modes(normalised=True)
             # Calculate group velocity for each mode
-            print('Calculating group velocity for each mode...')
+            logging.info('Calculating group velocity for each mode...')
             vg_tm = self.calc_group_velocity()
-            print('Done!')
+            logging.info('Done!')
 
         # z positions to evaluate E at
         z = np.arange((self.z_step / 2.0), self.d_list[layer], self.z_step)
@@ -384,33 +384,33 @@ class LifetimeTmm(TransferMatrix):
                                           ('perpendicular', 'float64'),
                                           ('avg', 'float64')])
 
-        print('Evaluating guided modes (k_11/k) and group velocity for each polarisation:')
-        print('Finding TE modes')
+        logging.info('Evaluating guided modes (k_11/k) and group velocity for each polarisation:')
+        logging.info('Finding TE modes')
         self.set_polarization('TE')
         self.set_field('E')
         roots_te = self.calc_guided_modes(normalised=True)
         # Calculate group velocity for each mode
-        print('Calculating group velocity for each mode...')
+        logging.info('Calculating group velocity for each mode...')
         vg_te = self.calc_group_velocity()
-        print('Done!')
-        print('Finding TM modes')
+        logging.info('Done!')
+        logging.info('Finding TM modes')
         self.set_polarization('TM')
         self.set_field('H')
         roots_tm = self.calc_guided_modes(normalised=True)
         # Calculate group velocity for each mode
-        print('Calculating group velocity for each mode...')
+        logging.info('Calculating group velocity for each mode...')
         vg_tm = self.calc_group_velocity()
-        print('Done!')
+        logging.info('Done!')
 
-        print('Evaluating guided mode spontaneous emission profiles:')
+        logging.info('Evaluating guided mode spontaneous emission profiles:')
         for layer in range(min(z_mat), max(z_mat) + 1):
-            # Print simulation information to command line
+            # logging.info simulation information to command line
             if layer == 0:
-                print('\tLayer -> lower cladding...')
+                logging.info('\tLayer -> lower cladding...')
             elif layer == self.num_layers - 1:
-                print('\tLayer -> upper cladding...')
+                logging.info('\tLayer -> upper cladding...')
             else:
-                print('\tLayer -> internal {0:d} / {1:d}...'.format(layer, self.num_layers - 2))
+                logging.info('\tLayer -> internal {0:d} / {1:d}...'.format(layer, self.num_layers - 2))
             time.sleep(0.2)  # Fixes progress bar occurring before text
 
             # Find indices corresponding to the layer we are evaluating
@@ -431,19 +431,19 @@ class LifetimeTmm(TransferMatrix):
 
         return {'z': z_pos, 'spe': spe}
 
-    def calc_spe_structure(self, th_pow=8):
-        print("Calculating leaky modes...")
+    def calc_spe_structure(self, th_pow=10):
+        logging.info("Calculating leaky modes...")
         result = self.calc_spe_structure_leaky(th_pow=th_pow)
         leaky = result['spe']
         z = result['z']
 
         n = self.n_list.real
         if np.any(n[1:-1] > max(n[0], n[-1])):
-            print("Structure suppports waveguiding. Calculating guided modes...")
+            logging.info("Structure suppports waveguiding. Calculating guided modes...")
             guided = self.calc_spe_structure_guided()['spe']
             return {'z': z, 'leaky': leaky, 'guided': guided}
         else:
-            print("Structure does not support waveguiding.")
+            logging.info("Structure does not support waveguiding.")
             return {'z': z, 'leaky': leaky}
 
 

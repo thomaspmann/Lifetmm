@@ -79,7 +79,7 @@ def fig4():
         st.set_vacuum_wavelength(lam_vac)
         st.add_layer(4 * units, n)
         st.add_layer(4 * units, 1.5)
-        st.print_info()
+        st.info()
         # Calculate spontaneous emission over whole structure
         result = st.calc_spe_structure_leaky()
         z = result['z']

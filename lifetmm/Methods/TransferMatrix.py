@@ -1,4 +1,5 @@
 import logging
+import time
 
 import numpy as np
 from numpy import pi, sqrt, sin, exp
@@ -119,20 +120,13 @@ class TransferMatrix:
         """
         Set the normalised parallel wave vector, n_11, for the guided mode to be evaluated.
         """
+        assert not isinstance(n_11, (list, np.ndarray)), ValueError('n_11 must be a number and not array/list.')
         assert self.guided, ValueError('Run set_leaky_or_guiding(leaky=False) first.')
         n = self.n_list.real
         # See Quantum Electronics by Yariv pg.603
         assert max(n) >= n_11 >= min(n[0], n[-1]), \
             ValueError('Input n_11 is not valid for a guided mode.', max(n), n_11, min(n[0], n[-1]))
         self.n_11 = n_11
-
-    # def calc_n_11(self):
-    #     if not self.guided:
-    #         # Continuous across layers, so can evaluate from input theta
-    #         # and medium for incoming wave (hence leaky mode)
-    #         return self.n_list[0].real * sin(self.th)
-    #     else:
-    #         return self.n_11
 
     def calc_xi(self, j):
         """
@@ -327,6 +321,15 @@ class TransferMatrix:
         field = np.zeros(len(z), dtype=complex)
         # Loop through all layers with a thickness (claddings with 0 thickness will not show in z_mat)
         for layer in range(min(z_mat), max(z_mat) + 1):
+            # logging.info simulation information to command line
+            if layer == 0:
+                logging.info('\tLayer -> lower cladding...')
+            elif layer == self.num_layers - 1:
+                logging.info('\tLayer -> upper cladding...')
+            else:
+                logging.info('\tLayer -> internal {0:d} / {1:d}...'.format(layer, self.num_layers - 2))
+            time.sleep(0.2)  # Fixes progress bar occurring before text
+
             # Calculate z indices inside structure for the layer
             z_indices = np.where(z_mat == layer)
             field[z_indices] = self.calc_layer_field(layer)['field']
@@ -467,17 +470,17 @@ class TransferMatrix:
         self.n_list = self.n_list[::-1]
         self.d_cumulative = np.cumsum(self.d_list)
 
-    def print_info(self):
+    def info(self):
         """
         Command line verbose feedback of the structure.
         """
-        print('Simulation info.\n')
+        logging.info('Simulation info.\n')
 
-        print('Multi-layered Structure:')
-        print('d\t\tn')
+        logging.info('Multi-layered Structure:')
+        logging.info('d\t\tn')
         for n, d in zip(self.n_list, self.d_list):
-            print('{0:4g}\t{1:g}'.format(d, n))
-        print('\nFree space wavelength: {:g}\n'.format(self.lam_vac))
+            logging.info('{0:4g}\t{1:g}'.format(d, n))
+        logging.info('\nFree space wavelength: {:g}\n'.format(self.lam_vac))
 
     def show_structure(self):
         """

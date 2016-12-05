@@ -18,7 +18,7 @@ def mcgehee():
     st.set_polarization('s')
     st.set_field('E')
     st.set_incident_angle(0, units='degrees')
-    st.print_info()
+    st.info()
 
     # Do calculations
     result = st.calc_field_structure()
@@ -104,7 +104,7 @@ def guiding_plot():
     st.add_layer(100, si)
     st.add_layer(300, air)
 
-    st.print_info()
+    st.info()
 
     # Prepare the figure
     fig, (ax1, ax2) = plt.subplots(2, 1, sharex='col', sharey='none')
@@ -143,26 +143,29 @@ def guiding_electric_field():
     # Create structure
     st = TransferMatrix()
     st.set_vacuum_wavelength(lam0)
-    st.set_field('E')
-    st.add_layer(1 * lam0, air)
-    st.add_layer(1 * lam0, sio2)
-    st.add_layer(1 * lam0, air)
-    st.set_polarization('TE')
+    st.add_layer(1.5 * lam0, air)
+    st.add_layer(lam0, si)
+    st.add_layer(1.5 * lam0, air)
+    st.info()
+
+    st.set_polarization('TM')
+    st.set_field('H')
     st.set_leaky_or_guiding('guiding')
-    alpha = st.calc_guided_modes()
+    alpha = st.calc_guided_modes(normalised=True)
     plt.figure()
     for i, a in enumerate(alpha):
         st.set_guided_mode(a)
         result = st.calc_field_structure()
         z = result['z']
-        z = st.calc_z_to_lambda(z)
+        # z = st.calc_z_to_lambda(z)
         E = result['field']
         # Normalise fields
         # E /= max(E)
         plt.plot(z, abs(E) ** 2, label=i)
+
     for z in st.get_layer_boundaries()[:-1]:
-        z = st.calc_z_to_lambda(z)
-        plt.axvline(x=z, color='k', lw=2)
+        # z = st.calc_z_to_lambda(z)
+        plt.axvline(x=z, color='k', lw=1, ls='--')
     plt.legend(title='Mode index')
     if SAVE:
         plt.savefig('../Images/guided fields.png', dpi=300)
@@ -170,38 +173,39 @@ def guiding_electric_field():
 
 
 def test():
-    st = TransferMatrix()
+    # Create structure
+    st = LifetimeTmm()
     st.set_vacuum_wavelength(lam0)
-    st.add_layer(1E3, si)
+    # st.add_layer(1e3, si)
     st.add_layer(1900, sio2)
     st.add_layer(100, si)
     st.add_layer(20, sio2)
     st.add_layer(100, si)
-    st.add_layer(1E3, air)
+    # st.add_layer(1900, sio2)
+    st.add_layer(1e3, air)
+    st.info()
 
-    st.set_polarization('s')
+    st.set_polarization('TE')
     st.set_field('E')
-    st.set_incident_angle(80, units='degrees')
-    st.print_info()
-
-    # Do calculations
+    st.set_leaky_or_guiding('guiding')
+    alpha = st.calc_guided_modes(normalised=True)
+    st.set_guided_mode(alpha[0])
     result = st.calc_field_structure()
     z = result['z']
-    y = result['field_squared']
+    z = st.calc_z_to_lambda(z)
+    E = result['field']
+    # Normalise fields
+    # E /= max(E)
 
-    # Plot results
     plt.figure()
-    plt.plot(z, y)
+    plt.plot(z, abs(E) ** 2)
     for z in st.get_layer_boundaries()[:-1]:
-        plt.axvline(x=z, color='k', lw=2)
-    plt.xlabel('Position in Device (nm)')
-    plt.ylabel('Normalized |E|$^2$ Intensity ($|E(z)/E_0(0)|^2$)')
-    if SAVE:
-        plt.savefig('../Images/McGehee structure.png', dpi=300)
+        z = st.calc_z_to_lambda(z)
+        plt.axvline(x=z, color='k', lw=1, ls='--')
     plt.show()
 
 if __name__ == "__main__":
-    SAVE = True
+    SAVE = False
 
     # Set vacuum wavelength
     lam0 = 1550
@@ -211,8 +215,8 @@ if __name__ == "__main__":
     sio2 = 1.45
     si = 3.48
 
-    mcgehee()
+    # mcgehee()
     # spe()
     # guiding_plot()
     # guiding_electric_field()
-    # test()
+    test()

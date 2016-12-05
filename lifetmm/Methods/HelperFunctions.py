@@ -39,7 +39,7 @@ def roots(f, a, b, num=20000, verbose=True):
     from scipy.optimize import brentq
 
     if verbose:
-        print('The roots on the interval [{:f}, {:f}] are:'.format(a, b))
+        logging.info('The roots on the interval [{:f}, {:f}] are:'.format(a, b))
     else:
         logging.debug('The roots on the interval [{:f}, {:f}] are:'.format(a, b))
 
@@ -57,12 +57,12 @@ def roots(f, a, b, num=20000, verbose=True):
                 results.append(root)
 
                 if verbose:
-                    print('{:.4f}'.format(root))
+                    logging.info('{:.4f}'.format(root))
                 else:
                     logging.debug('{:.4f}'.format(root))
         else:
             if verbose:
-                print('\nDone')
+                logging.info('\nDone')
             return np.array(results)
 
 
