@@ -271,7 +271,7 @@ if __name__ == "__main__":
     lam0 = 1540
 
     # Film thickness
-    d_etds = 980
+    d_etds = lam0  # 980
 
     # Material refractive index at lam0
     sio2 = 1.45
@@ -281,5 +281,5 @@ if __name__ == "__main__":
     # t2()
     # t2_leaky()
     # t2_fig4()
-    t2_guided()
-    # t2_spe_vs_n()
+    # t2_guided()
+    t2_spe_vs_n()

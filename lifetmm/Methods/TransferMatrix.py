@@ -386,11 +386,11 @@ class TransferMatrix:
         lam_vac = self.lam_vac
 
         # Take 1% either side of the emission wavelength
-        self.set_vacuum_wavelength(int(0.995 * lam_vac))
+        self.set_vacuum_wavelength(int(1 + lam_vac))
         omega1 = self.omega
         beta_lower = self.calc_guided_modes(verbose=False, normalised=False)
 
-        self.set_vacuum_wavelength(int(1.005 * lam_vac))
+        self.set_vacuum_wavelength(int(-1 + lam_vac))
         omega2 = self.omega
         beta_upper = self.calc_guided_modes(verbose=False, normalised=False)
 
@@ -400,7 +400,7 @@ class TransferMatrix:
         d_beta = beta_upper - beta_lower
         d_omega = omega2 - omega1
         vg = d_omega / d_beta
-
+        logging.debug(vg)
         # Reset the vacuum emission wavelength to start of function
         self.set_vacuum_wavelength(lam_vac)
         return vg
