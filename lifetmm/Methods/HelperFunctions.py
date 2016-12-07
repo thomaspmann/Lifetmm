@@ -30,7 +30,7 @@ def root_search(f, a, b, dx):
     return x1, x2
 
 
-def roots(f, a, b, num=20000, verbose=True):
+def roots(f, a, b, num=20e3, verbose=True):
     """
     Find roots of f within the interval [a,b]. Interval is discretised
     into num equal elements, dx, and a root is searched for within each dx.
@@ -101,6 +101,19 @@ def omega2lambda(omega):
 
 
 #####################################################################
-# 2x2 Matrix Determinant - can be complex unlike: from numpy.linalg import det
+# Math helper functions
 def det(matrix):
+    """
+    2x2 Matrix Determinant - can be complex unlike: from numpy.linalg import det
+    """
     return matrix[0, 0] * matrix[1, 1] - matrix[1, 0] * matrix[0, 1]
+
+
+def sinc(x):
+    """
+    Un-normalised sinc function: sinc(x) = sin(x) / x
+    """
+    if x == 0:
+        return 1
+    else:
+        return sp.sin(x) / x

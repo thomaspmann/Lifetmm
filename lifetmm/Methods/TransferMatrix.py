@@ -25,7 +25,7 @@ class TransferMatrix:
         self.pol = 'TE'
         self.guided = False
         self.th = 0  # Angle of incidence from normal to multilayer [Leaky modes only]
-        self.n_11 = 0  # Normalised parallel wave vector
+        self.n_11 = 0  # Normalised parallel wave vector (or n_eff as used with guided modes )
         # Default simulation parameters
         self.z_step = 1
 
@@ -35,7 +35,7 @@ class TransferMatrix:
         """
         assert d >= 0, ValueError('Thickness must >= 0.')
         if not float(d).is_integer():
-            logging.WARNING('WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. '
+            logging.warning('WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. '
                             'CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.')
             d = round(d)
         self.d_list = np.append(self.d_list, d)
@@ -53,9 +53,10 @@ class TransferMatrix:
                                                         'calculation for each wavelength at a time')
         assert lam_vac > 0, ValueError('Wavelength must > 0.')
         if not float(lam_vac).is_integer():
-            logging.WARNING('WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. '
+            logging.warning('WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. '
                             'CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.')
             lam_vac = round(lam_vac)
+        logging.debug('Lam_vac = %d nm', lam_vac)
         self.lam_vac = lam_vac
         self.k_vac = 2 * pi / lam_vac
         self.omega = c * self.k_vac
@@ -66,7 +67,7 @@ class TransferMatrix:
         Default is set to 1 if not called explicitly
         """
         if not float(step).is_integer():
-            logging.WARNING('WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. '
+            logging.warning('WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. '
                             'CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.')
             step = round(step)
         self.z_step = step
@@ -187,7 +188,7 @@ class TransferMatrix:
             # The reflection coefficient is the same as the medium does not change.
             t *= n_k / n_j
         if t == 0:
-            logging.warning('Transmission of i_matrix = 0. Returning nan.')
+            logging.debug('Transmission of i_matrix = 0. Returning nan.')
             return np.array([[np.inf, np.inf], [np.inf, np.inf]], dtype=complex)
         else:
             return (1 / t) * np.array([[1, r], [r, 1]], dtype=complex)
@@ -385,11 +386,11 @@ class TransferMatrix:
         lam_vac = self.lam_vac
 
         # Take 1% either side of the emission wavelength
-        self.set_vacuum_wavelength(int(1.01 * lam_vac))
+        self.set_vacuum_wavelength(int(0.995 * lam_vac))
         omega1 = self.omega
         beta_lower = self.calc_guided_modes(verbose=False, normalised=False)
 
-        self.set_vacuum_wavelength(int(0.99 * lam_vac))
+        self.set_vacuum_wavelength(int(1.005 * lam_vac))
         omega2 = self.omega
         beta_upper = self.calc_guided_modes(verbose=False, normalised=False)
 
@@ -397,7 +398,7 @@ class TransferMatrix:
             ValueError('Number of guided modes must be equal when calculating the group velocity.')
 
         d_beta = beta_upper - beta_lower
-        d_omega = abs(omega1 - omega2)
+        d_omega = omega2 - omega1
         vg = d_omega / d_beta
 
         # Reset the vacuum emission wavelength to start of function

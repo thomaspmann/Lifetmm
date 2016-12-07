@@ -165,7 +165,7 @@ def t2_guided():
     st.add_layer(d_etds, edts)
     st.add_layer(2 * lam0, air)
     st.info()
-
+    st.show_structure()
     result = st.calc_spe_structure_guided()
     z = result['z']
     spe = result['spe']
@@ -199,8 +199,8 @@ def t2_guided():
 
 
 def t2_spe_vs_n():
-    n_list = np.append(np.linspace(1, 1.45, num=25), np.linspace(1.45, 1.55, num=50))
-    n_list = np.append(n_list, np.linspace(1.55, 2, num=25))
+    n_list = np.append(np.linspace(1, 1.45, num=50), np.linspace(1.45, 1.55, num=50))
+    n_list = np.append(n_list, np.linspace(1.55, 2, num=50))
     # n_list = [1, 1.33, 1.37, 1.47]
     spe_list = []
     leaky_list = []
@@ -217,7 +217,7 @@ def t2_spe_vs_n():
         st.info()
 
         # Calculate spontaneous emission of layer 0 (1st)
-        result = st.calc_spe_structure()
+        result = st.calc_spe_structure(th_pow=11)
         leaky = result['leaky']['avg']
         try:
             guided = result['guided']['avg']
@@ -239,14 +239,15 @@ def t2_spe_vs_n():
     spe_list = np.array(spe_list)
 
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex='col', sharey='none')
-    ax1.plot(n_list, spe_list, '.-', label='leaky + guided')
-    ax2.plot(n_list, leaky_list, '.-', label='leaky')
-    ax3.plot(n_list, guided_list, '.-', label='guided')
+    ax1.plot(n_list, spe_list, '-', label='leaky + guided')
+    ax2.plot(n_list, leaky_list, '-', label='leaky')
+    ax3.plot(n_list, guided_list, '-', label='guided')
     ax3.set_xlim(1, 2)
-    ax1.set_title('Average Spontaneous Emission Rate for Random Orientated Dipole in T2.')
+    # ax1.set_title('Average Spontaneous Emission Rate for Random Orientated Dipole in T2.')
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax2.set_ylabel('$\Gamma / \Gamma_0$')
-    ax2.set_xlabel('n')
+    ax3.set_ylabel('$\Gamma / \Gamma_0$')
+    ax3.set_xlabel('n of superstrate')
     ax1.legend()
     ax2.legend()
     ax3.legend()
@@ -267,7 +268,7 @@ if __name__ == "__main__":
     SAVE = True  # Save figs and data? (bool)
 
     # Set vacuum wavelength
-    lam0 = 1535
+    lam0 = 1540
 
     # Film thickness
     d_etds = 980
@@ -277,8 +278,8 @@ if __name__ == "__main__":
     edts = 1.56
     air = 1
 
-    t2()
-    t2_leaky()
-    t2_fig4()
+    # t2()
+    # t2_leaky()
+    # t2_fig4()
     t2_guided()
     # t2_spe_vs_n()

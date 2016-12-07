@@ -139,8 +139,8 @@ def fig5():
     for z in st.get_layer_boundaries()[:-1]:
         ax1.axvline(st.calc_z_to_lambda(z), color='k', lw=1, ls='--')
         ax2.axvline(st.calc_z_to_lambda(z), color='k', lw=1, ls='--')
-    ax1.set_ylim(0, 4)
-    ax2.set_ylim(0, 6)
+    # ax1.set_ylim(0, 4)
+    # ax2.set_ylim(0, 6)
     ax1.set_title('Spontaneous Emission Rate. Core n=3.48, Cladding n=1.')
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax2.set_ylabel('$\Gamma /\Gamma_0$')
@@ -156,7 +156,8 @@ def fig5():
 
 
 def fig6():
-    """ Silicon layer bounded by two semi infinite air claddings.
+    """
+    Silicon layer bounded by two semi infinite air claddings.
     """
     # Create structure
     st = LifetimeTmm()
@@ -194,6 +195,84 @@ def fig6():
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax2.set_ylabel('$\Gamma /\Gamma_0$')
     ax2.set_xlabel('z/$\lambda$')
+    ax1.legend(title='Horizontal Dipoles', loc='lower right', fontsize='medium')
+    ax2.legend(title='Vertical Dipoles', loc='lower right', fontsize='medium')
+    if SAVE:
+        plt.savefig('../Images/creatore_fig6.png', dpi=300)
+    plt.show()
+
+
+def fig7():
+    """
+    Silicon layer bounded by two semi infinite air claddings.
+    """
+    d_list = np.arange(start=11, stop=2511, step=5)
+    te_guided = []
+    tm_guided_p = []
+    te_leaky = []
+    tm_leaky_p = []
+    tm_guided_s = []
+    tm_leaky_s = []
+
+    k0 = 2 * np.pi / lam0
+    for d in d_list:
+
+        # Create structure
+        st = LifetimeTmm()
+        st.set_vacuum_wavelength(lam0)
+        st.add_layer(0, air)
+        st.add_layer(d, si)
+        st.add_layer(0, air)
+        st.info()
+
+        # Calculate spontaneous emission of layer
+        result = st.calc_spe_structure(th_pow=9)
+        z = result['z']
+        iloc = int((len(z) - 1) / 2)
+        leaky = result['leaky']
+        try:
+            guided = result['guided']
+            te_guided.append(guided['TE'][iloc])
+            tm_guided_p.append(guided['TM_p'][iloc])
+            tm_guided_s.append(guided['TM_s'][iloc])
+        except KeyError:
+            te_guided.append(0)
+            tm_guided_p.append(0)
+            tm_guided_s.append(0)
+
+        te_leaky.append(leaky['TE'][iloc])
+        tm_leaky_p.append(leaky['TM_p'][iloc])
+        tm_leaky_s.append(leaky['TM_s'][iloc])
+
+    # Convert lists to arrays
+    d_list = np.array(d_list)
+    te_guided = np.array(te_guided)
+    tm_guided_p = np.array(tm_guided_p)
+    tm_guided_s = np.array(tm_guided_s)
+    te_leaky = np.array(te_leaky)
+    tm_leaky_p = np.array(tm_leaky_p)
+    tm_leaky_s = np.array(tm_leaky_s)
+
+    # Plot spontaneous emission rates
+    fig = plt.figure()
+    ax1 = fig.add_subplot(211)
+    ax1.plot(d_list * k0, te_guided, label='TE guided')
+    ax1.plot(d_list * k0, tm_guided_p, label='TM guided')
+    ax1.plot(d_list * k0, te_leaky, 'k', label='TE leaky')
+    ax1.plot(d_list * k0, tm_leaky_p, 'k', label='TM leaky')
+    total = tm_leaky_p + te_leaky + tm_guided_p + te_guided
+    ax1.plot(d_list * k0, total, 'k', label='total')
+
+    ax2 = fig.add_subplot(212)
+    ax2.plot(d_list * k0, tm_guided_s, 'k', label='TM guided')
+    ax2.plot(d_list * k0, tm_leaky_s * 20, 'k', label='TM leaky')
+
+    # ax1.set_ylim(0, 1.4)
+    # ax2.set_ylim(0, 1.4)
+    # ax1.set_title('Spontaneous Emission Rate. Silicon (n=3.48) with air cladding (n=1.)')
+    ax1.set_ylabel('$\Gamma / \Gamma_0$')
+    ax2.set_ylabel('$\Gamma /\Gamma_0$')
+    # ax2.set_xlabel('z/$\lambda$')
     ax1.legend(title='Horizontal Dipoles', loc='lower right', fontsize='medium')
     ax2.legend(title='Vertical Dipoles', loc='lower right', fontsize='medium')
     if SAVE:
@@ -388,7 +467,7 @@ def fig13b():
     plt.show()
 
 if __name__ == "__main__":
-    SAVE = True
+    SAVE = False
 
     # Set vacuum wavelength
     lam0 = 1550
@@ -398,11 +477,12 @@ if __name__ == "__main__":
     si = 3.48
     air = 1
 
-    fig3()
-    fig4()
+    # fig3()
+    # fig4()
     fig5()
-    fig6()
-    fig8()
-    fig9()
-    fig13a()
-    fig13b()
+    # fig6()
+    # fig7()
+    # fig8()
+    # fig9()
+    # fig13a()
+    # fig13b()

@@ -3,10 +3,11 @@ import time
 
 import numpy as np
 import scipy.integrate as integrate
-from numpy import pi, sin, sum, exp, sinc, conj
+from numpy import pi, sin, sum, exp, conj
 from scipy.constants import c
 from tqdm import *
 
+from lifetmm.Methods.HelperFunctions import sinc
 from lifetmm.Methods.TransferMatrix import TransferMatrix
 
 log = logging.getLogger(__name__)
@@ -245,15 +246,12 @@ class LifetimeTmm(TransferMatrix):
             logging.info('Evaluating guided modes (k_11/k) and group velocity for each polarisation:')
             logging.info('Finding TE modes')
             self.set_polarization('TE')
-            self.set_field('E')
             roots_te = self.calc_guided_modes(normalised=True)
             # Calculate group velocity for each mode
             logging.info('Calculating group velocity for each mode...')
             vg_te = self.calc_group_velocity()
-            logging.info('Done!')
             logging.info('Finding TM modes')
             self.set_polarization('TM')
-            self.set_field('H')
             roots_tm = self.calc_guided_modes(normalised=True)
             # Calculate group velocity for each mode
             logging.info('Calculating group velocity for each mode...')
@@ -295,17 +293,16 @@ class LifetimeTmm(TransferMatrix):
                     chi = np.imag(q)
                     norm += abs(a) ** 2 * (chi ** 2 + k_11 ** 2) / (2 * chi)
                 else:
-                    dj = self.d_list[j]
-                    w1 = (k_11 ** 2 + q * conj(q)) * sinc((q - conj(q)) * dj / 2)
-                    w2 = (k_11 ** 2 - q * conj(q)) * sinc((q + conj(q)) * dj / 2)
-                    norm += dj * (w1 * (abs(a) ** 2 + abs(b) ** 2) + w2 * (conj(a) * b + conj(b) * a))
-            assert np.isreal(norm) and norm > 0, ValueError('Check Normalisation - should be real and > 0')
-            norm = 1 / np.sqrt(np.real(norm))
+                    d = self.d_list[j]
+                    w1 = (k_11 ** 2 + q * conj(q)) * sinc((q - conj(q)) * d / 2)
+                    w2 = (k_11 ** 2 - q * conj(q)) * sinc((q + conj(q)) * d / 2)
+                    norm += d * (w1 * (abs(a) ** 2 + abs(b) ** 2) + w2 * (conj(a) * b + conj(b) * a))
+            assert np.isreal(norm) and norm > 0, ValueError('TE: Check Normalisation - should be real and > 0')
 
             # E field coefficients in terms of layer 0 (superstrate) outgoing field amplitude
             a, b = self.layer_field_amplitudes(layer)
-            a *= norm
-            b *= norm
+            a /= np.sqrt(norm)
+            b /= np.sqrt(norm)
 
             # Wave vector components in layer
             k, q, k_11 = self.calc_wave_vector_components(layer)
@@ -336,11 +333,11 @@ class LifetimeTmm(TransferMatrix):
                     chi = np.imag(q)
                     norm += abs(a) ** 2 / (2 * chi)
                 else:
-                    dj = self.d_list[j]
-                    w1 = sinc((q - conj(q)) * dj / 2)
-                    w2 = sinc((q + conj(q)) * dj / 2)
-                    norm += dj * (w1 * (abs(a) ** 2 + abs(b) ** 2) + w2 * (conj(a) * b + conj(b) * a))
-            assert np.isreal(norm), ValueError('Check Normalisation - should be real')
+                    d = self.d_list[j]
+                    w1 = (abs(a) ** 2 + abs(b) ** 2) * sinc((q - conj(q)) * d / 2)
+                    w2 = (conj(a) * b + conj(b) * a) * sinc((q + conj(q)) * d / 2)
+                    norm += d * (w1 + w2)
+            assert np.isreal(norm), ValueError('TM: Check Normalisation - should be real')
 
             # E field coefficients in terms of layer 0 (superstrate) outgoing field amplitude
             a, b = self.layer_field_amplitudes(layer)
@@ -352,9 +349,9 @@ class LifetimeTmm(TransferMatrix):
             assert k_11 == (self.n_11 * self.k_vac), ValueError('Check TM')
 
             # Calculate the electric field component perpendicular (s) and parallel (p) to the interface
-            eps_j = self.n_list[layer].real ** 2
-            electric_field['TM_s'] = (1j * k_11 / eps_j) * (a * exp(1j * q * z) + b * exp(-1j * q * z))
-            electric_field['TM_p'] = (1j * q / eps_j) * (-a * exp(1j * q * z) + b * exp(-1j * q * z))
+            eps = self.n_list[layer].real ** 2
+            electric_field['TM_s'] = (1j * k_11 / eps) * (a * exp(1j * q * z) + b * exp(-1j * q * z))
+            electric_field['TM_p'] = (1j * q / eps) * (-a * exp(1j * q * z) + b * exp(-1j * q * z))
 
             spe['TM_s'] += abs(electric_field['TM_s']) ** 2 * (k_11 / v)
             spe['TM_p'] += abs(electric_field['TM_p']) ** 2 * (k_11 / v)
@@ -385,22 +382,18 @@ class LifetimeTmm(TransferMatrix):
                                           ('avg', 'float64')])
 
         logging.info('Evaluating guided modes (k_11/k) and group velocity for each polarisation:')
-        logging.info('Finding TE modes')
+
+        logging.info('Finding TE modes...')
         self.set_polarization('TE')
-        self.set_field('E')
         roots_te = self.calc_guided_modes(normalised=True)
-        # Calculate group velocity for each mode
         logging.info('Calculating group velocity for each mode...')
         vg_te = self.calc_group_velocity()
-        logging.info('Done!')
+
         logging.info('Finding TM modes')
         self.set_polarization('TM')
-        self.set_field('H')
         roots_tm = self.calc_guided_modes(normalised=True)
-        # Calculate group velocity for each mode
         logging.info('Calculating group velocity for each mode...')
         vg_tm = self.calc_group_velocity()
-        logging.info('Done!')
 
         logging.info('Evaluating guided mode spontaneous emission profiles:')
         for layer in range(min(z_mat), max(z_mat) + 1):
@@ -411,7 +404,6 @@ class LifetimeTmm(TransferMatrix):
                 logging.info('\tLayer -> upper cladding...')
             else:
                 logging.info('\tLayer -> internal {0:d} / {1:d}...'.format(layer, self.num_layers - 2))
-            time.sleep(0.2)  # Fixes progress bar occurring before text
 
             # Find indices corresponding to the layer we are evaluating
             ind = np.where(z_mat == layer)
@@ -441,9 +433,10 @@ class LifetimeTmm(TransferMatrix):
         if np.any(n[1:-1] > max(n[0], n[-1])):
             logging.info("Structure suppports waveguiding. Calculating guided modes...")
             guided = self.calc_spe_structure_guided()['spe']
+            logging.info('Done!')
             return {'z': z, 'leaky': leaky, 'guided': guided}
         else:
-            logging.info("Structure does not support waveguiding.")
+            logging.info("Structure does not support waveguiding. Done!")
             return {'z': z, 'leaky': leaky}
 
 
