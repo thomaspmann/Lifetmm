@@ -205,48 +205,6 @@ def test():
     plt.show()
 
 
-def test2():
-    # Create structure
-    st = LifetimeTmm()
-    st.set_vacuum_wavelength(lam0)
-    # st.add_layer(1e3, si)
-    st.add_layer(1900, sio2)
-    st.add_layer(100, si)
-    st.add_layer(20, sio2)
-    st.add_layer(100, si)
-    st.add_layer(1e3, air)
-    st.info()
-
-    result = st.calc_spe_structure_guided()
-    z = result['z']
-    spe = result['spe']
-    # Convert z into z/lam0 and center
-    z = st.calc_z_to_lambda(z)
-
-    fig, (ax1, ax2) = plt.subplots(2, 1, sharex='col', sharey='none')
-
-    ax1.plot(z, spe['TE'], label='TE')
-    ax1.plot(z, spe['TM_p'], label='TM')
-    ax1.plot(z, spe['TE'] + spe['TM_p'], label='TE + TM')
-    ax2.plot(z, spe['TM_s'], label='TM')
-    for z in st.get_layer_boundaries()[:-1]:
-        ax1.axvline(st.calc_z_to_lambda(z), color='k', lw=1, ls='--')
-        ax2.axvline(st.calc_z_to_lambda(z), color='k', lw=1, ls='--')
-    # ax1.set_ylim(0, 4)
-    # ax2.set_ylim(0, 6)
-    ax1.set_title('Spontaneous Emission Rate. Core n=3.48, Cladding n=1.')
-    ax1.set_ylabel('$\Gamma / \Gamma_0$')
-    ax2.set_ylabel('$\Gamma /\Gamma_0$')
-    ax2.set_xlabel('z/$\lambda$')
-    size = 12
-    ax1.legend(title='Horizontal Dipoles', prop={'size': size})
-    ax2.legend(title='Vertical Dipoles', prop={'size': size})
-
-    fig.tight_layout()
-    if SAVE:
-        plt.savefig('../Images/creatore_fig5.png', dpi=300)
-    plt.show()
-
 if __name__ == "__main__":
     SAVE = False
 
@@ -263,4 +221,3 @@ if __name__ == "__main__":
     # guiding_plot()
     # guiding_electric_field()
     # test()
-    test2()

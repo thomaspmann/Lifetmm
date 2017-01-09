@@ -199,9 +199,9 @@ def t2_guided():
 
 
 def t2_spe_vs_n():
-    n_list = np.append(np.linspace(1, 1.45, num=25), np.linspace(1.45, 1.55, num=50))
-    n_list = np.append(n_list, np.linspace(1.55, 2, num=25))
-    # n_list = [1, 1.33, 1.37, 1.47]
+    # n_list = np.append(np.linspace(1, 1.45, num=25), np.linspace(1.45, 1.55, num=50))
+    # n_list = np.append(n_list, np.linspace(1.55, 2, num=25))
+    n_list = [air, water, 1.3675, 1.47]
     spe_list = []
     leaky_list = []
     guided_list = []
@@ -217,7 +217,7 @@ def t2_spe_vs_n():
         st.info()
 
         # Calculate spontaneous emission of layer 0 (1st)
-        result = st.calc_spe_structure()
+        result = st.calc_spe_structure(th_pow=15)
         leaky = result['leaky']['avg']
         try:
             guided = result['guided']['avg']
@@ -237,6 +237,7 @@ def t2_spe_vs_n():
     leaky_list = np.array(leaky_list)
     guided_list = np.array(guided_list)
     spe_list = np.array(spe_list)
+    print(n_list, spe_list)
 
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex='col', sharey='none')
     ax1.plot(n_list, spe_list, '.-', label='leaky + guided')
@@ -265,7 +266,7 @@ def load_data():
 
 def purcell_factor():
     """
-    T2 next to two mediums.
+    Photonic chip next to two mediums.
     Leaky and guided separate plots.
     Evaluate purcell factor for randomly orientated dipole averaged over film thickness.
     """
@@ -273,9 +274,9 @@ def purcell_factor():
     # Create structure
     st = LifetimeTmm()
     st.set_vacuum_wavelength(lam0)
-    st.add_layer(2 * lam0, sio2)
+    st.add_layer(1.5 * lam0, sio2)
     st.add_layer(d_etds, edts)
-    st.add_layer(2 * lam0, air)
+    st.add_layer(1.5 * lam0, air)
     st.info()
 
     # Calculate spontaneous emission for leaky and guided modes
@@ -296,9 +297,9 @@ def purcell_factor():
     # Create structure
     st = LifetimeTmm()
     st.set_vacuum_wavelength(lam0)
-    st.add_layer(2 * lam0, sio2)
+    st.add_layer(1.5 * lam0, sio2)
     st.add_layer(d_etds, edts)
-    st.add_layer(2 * lam0, water)
+    st.add_layer(1.5 * lam0, water)
     st.info()
 
     # Calculate spontaneous emission for leaky and guided modes
@@ -331,7 +332,7 @@ def purcell_factor():
     plt.tight_layout()
 
     if SAVE:
-        plt.savefig('../Images/T2_purcell_factor.png', dpi=300)
+        plt.savefig('../Images/T2_purcell_factor')
 
     fig, ax1 = plt.subplots()
     z = result['z']
@@ -344,28 +345,32 @@ def purcell_factor():
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax1.set_xlabel('Position z ($\lambda$)')
     # ax1.get_xaxis().get_major_formatter().set_useOffset(False)
-    ax1.legend()
+    ax1.legend(fontsize='small')
     plt.tight_layout()
 
     if SAVE:
-        plt.savefig('../Images/T2_purcell_factor_total.png', dpi=300)
+        plt.savefig('../Images/T2_purcell_factor_total')
 
     plt.show()
 
 if __name__ == "__main__":
     SAVE = True  # Save figs and data? (bool)
 
+    import lifetmm.Methods.journalPlotting
+
+    lifetmm.Methods.journalPlotting.update()
+
     # Set vacuum wavelength
-    lam0 = 1535
+    lam0 = 1550
 
     # Film thickness
     d_etds = 980
 
     # Material refractive index at lam0
-    sio2 = 1.45
+    sio2 = 1.442
     edts = 1.56
     air = 1
-    water = 1.33
+    water = 1.3183
 
     # t2()
     # t2_leaky()
