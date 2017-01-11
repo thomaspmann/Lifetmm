@@ -266,102 +266,90 @@ def load_data():
 
 def purcell_factor():
     """
-    Photonic chip next to two mediums.
+    Two structures.
     Leaky and guided separate plots.
     Evaluate purcell factor for randomly orientated dipole averaged over film thickness.
     """
-    # Medium 1
-    # Create structure
-    st = LifetimeTmm()
-    st.set_vacuum_wavelength(lam0)
-    st.add_layer(1.5 * lam0, sio2)
-    st.add_layer(d_etds, edts)
-    st.add_layer(1.5 * lam0, air)
-    st.info()
+    # Structure 1
+    st1 = LifetimeTmm()
+    st1.set_vacuum_wavelength(lam0)
+    st1.add_layer(1.5 * lam0, sio2)
+    st1.add_layer(d_etds, edts)
+    st1.add_layer(1.5 * lam0, air)
+    st1.info()
 
+    # Structure 2
+    st2 = LifetimeTmm()
+    st2.set_vacuum_wavelength(lam0)
+    st2.add_layer(1.5 * lam0, sio2)
+    st2.add_layer(d_etds, edts)
+    st2.add_layer(1.5 * lam0, water)
+    st2.info()
+
+    # ------- Calculations -------
     # Calculate spontaneous emission for leaky and guided modes
-    result = st.calc_spe_structure(th_pow=11)
-    z = result['z']
-    z = st.calc_z_to_lambda(z)
+    result1 = st1.calc_spe_structure(th_pow=11)
+    spe1 = result1['leaky']['avg'] + result1['guided']['avg']
 
-    # Plot results
-    fig, (ax1, ax2) = plt.subplots(2, 1, sharex='col', sharey='none')
-    ax1.plot(z, result['leaky']['avg'], label='leaky, air')
-    try:
-        ax2.plot(z, result['guided']['avg'], label='guided, air')
-    except KeyError:
-        pass
-    spe_air = result['leaky']['avg'] + result['guided']['avg']
+    result2 = st2.calc_spe_structure(th_pow=11)
+    spe2 = result2['leaky']['avg'] + result2['guided']['avg']
 
-    # Medium 2
-    # Create structure
-    st = LifetimeTmm()
-    st.set_vacuum_wavelength(lam0)
-    st.add_layer(1.5 * lam0, sio2)
-    st.add_layer(d_etds, edts)
-    st.add_layer(1.5 * lam0, water)
-    st.info()
+    z = result1['z']
+    z = st1.calc_z_to_lambda(z)
+    boundaries = [st1.calc_z_to_lambda(i) for i in st1.get_layer_boundaries()[:-1]]
 
-    # Calculate spontaneous emission for leaky and guided modes
-    result = st.calc_spe_structure(th_pow=11)
-    z = result['z']
-    z = st.calc_z_to_lambda(z)
-
-    # Plot results
-    ax1.plot(z, result['leaky']['avg'], label='leaky, water')
-    try:
-        ax2.plot(z, result['guided']['avg'], label='guided, water')
-    except KeyError:
-        pass
-    spe_water = result['leaky']['avg'] + result['guided']['avg']
-
-    fp = np.mean(spe_water) / np.mean(spe_air)
+    fp = np.mean(spe2) / np.mean(spe1)
     print('Purcell Factor: {:e}'.format(fp))
 
+    # ------- Plots -------
+    fig, (ax1, ax2) = plt.subplots(2, 1, sharex='col', sharey='none')
+    ax1.plot(z, result1['leaky']['avg'], label='Air')
+    ax1.plot(z, result2['leaky']['avg'], ls='--', label='Water')
+
+    ax2.plot(z, result1['guided']['avg'], label='Air')
+    ax2.plot(z, result2['guided']['avg'], ls='--', label='Water')
+
     # Plot internal layer boundaries
-    for z in st.get_layer_boundaries()[:-1]:
-        z = st.calc_z_to_lambda(z)
-        ax1.axvline(z, color='k', lw=1, ls='--')
-        ax2.axvline(z, color='k', lw=1, ls='--')
-    # ax1.set_title('Spontaneous emission rate at boundary for semi-infinite media. LHS n=1.57.')
+    for i in boundaries:
+        ax1.axvline(i, color='k', lw=1, ls='--')
+        ax2.axvline(i, color='k', lw=1, ls='--')
+
+    # Labels
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax2.set_ylabel('$\Gamma / \Gamma_0$')
     ax2.set_xlabel('Position z ($\lambda$)')
-    ax1.legend()
-    ax2.legend()
-    plt.tight_layout()
+    ax1.legend(title='Leaky', fontsize='small')
+    ax2.legend(title='Guided', fontsize='small')
 
     if SAVE:
         plt.savefig('../Images/T2_purcell_factor')
 
     fig, ax1 = plt.subplots()
-    z = result['z']
-    ax1.plot(z, spe_air, label='Air')
-    ax1.plot(z, spe_water, label='Water')
+    ax1.plot(z, spe1, label='Air')
+    ax1.plot(z, spe2, ls='--', label='Water')
+
     # Plot internal layer boundaries
-    for z in st.get_layer_boundaries()[:-1]:
-        z = st.calc_z_to_lambda(z)
-        ax1.axvline(z, color='k', lw=1, ls='--')
+    for i in boundaries:
+        ax1.axvline(i, color='k', lw=1, ls='--')
+
+    # Labels
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax1.set_xlabel('Position z ($\lambda$)')
-    # ax1.get_xaxis().get_major_formatter().set_useOffset(False)
     ax1.legend(fontsize='small')
-    plt.tight_layout()
 
     if SAVE:
         plt.savefig('../Images/T2_purcell_factor_total')
-
     plt.show()
 
 if __name__ == "__main__":
     SAVE = True  # Save figs and data? (bool)
 
+    # Journal plotting formatting/saving setup
     import lifetmm.Methods.journalPlotting
-
     lifetmm.Methods.journalPlotting.update()
 
     # Set vacuum wavelength
-    lam0 = 1550
+    lam0 = 1535
 
     # Film thickness
     d_etds = 980

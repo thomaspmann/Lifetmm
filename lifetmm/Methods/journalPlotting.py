@@ -15,7 +15,7 @@ def update():
     golden_ratio = (np.sqrt(5) - 1.0) / 2.0  # because it looks good
 
     fig_width_in = fig_width_pt * inches_per_pt  # figure width in inches
-    fig_height_in = fig_width_in * golden_ratio  # figure height in inches
+    fig_height_in = 2 * fig_width_in * golden_ratio  # figure height in inches
     fig_dims = [fig_width_in, fig_height_in]  # fig dims as a list
 
     # Update rcParams for figure size
