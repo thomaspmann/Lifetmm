@@ -8,16 +8,16 @@ import numpy as np
 from lifetmm.Methods.SpontaneousEmissionRate import LifetimeTmm
 
 
-def t2():
+def t2(medium):
     """
-    T2 EDTS layer next to air.
+    T2 EDTS layer next to medium.
     """
     # Create structure
     st = LifetimeTmm()
     st.set_vacuum_wavelength(lam0)
-    st.add_layer(2 * lam0, sio2)
+    st.add_layer(d_clad * lam0, sio2)
     st.add_layer(d_etds, edts)
-    st.add_layer(2 * lam0, air)
+    st.add_layer(d_clad * lam0, medium)
     st.info()
 
     # Calculate spontaneous emission for leaky and guided modes
@@ -201,7 +201,7 @@ def t2_guided():
 def t2_spe_vs_n():
     # n_list = np.append(np.linspace(1, 1.45, num=25), np.linspace(1.45, 1.55, num=50))
     # n_list = np.append(n_list, np.linspace(1.55, 2, num=25))
-    n_list = [air, water, 1.3675, 1.47]
+    n_list = [air, water, glycerol]
     spe_list = []
     leaky_list = []
     guided_list = []
@@ -217,7 +217,7 @@ def t2_spe_vs_n():
         st.info()
 
         # Calculate spontaneous emission of layer 0 (1st)
-        result = st.calc_spe_structure(th_pow=15)
+        result = st.calc_spe_structure(th_pow=12)
         leaky = result['leaky']['avg']
         try:
             guided = result['guided']['avg']
@@ -254,8 +254,8 @@ def t2_spe_vs_n():
     plt.tight_layout()
 
     if SAVE:
-        plt.savefig('../Images/t2_vs_n.png', dpi=300)
-        np.savez('../Data/t2_vs_n', n=n_list, spe=spe_list, guided=guided_list, leaky=leaky_list)
+        plt.savefig('../Images/spe_vs_n.png', dpi=300)
+        np.savez('../Data/spe_vs_n', n=n_list, spe=spe_list, guided=guided_list, leaky=leaky_list)
     plt.show()
 
 
@@ -264,35 +264,42 @@ def load_data():
     print(data._files)
 
 
-def purcell_factor():
+def purcell_factor(n1, n2):
     """
     Two structures.
     Leaky and guided separate plots.
     Evaluate purcell factor for randomly orientated dipole averaged over film thickness.
     """
+
     # Structure 1
     st1 = LifetimeTmm()
     st1.set_vacuum_wavelength(lam0)
-    st1.add_layer(1.5 * lam0, sio2)
+    st1.add_layer(d_clad * lam0, sio2)
     st1.add_layer(d_etds, edts)
-    st1.add_layer(1.5 * lam0, air)
+    st1.add_layer(d_clad * lam0, n[n1])
     st1.info()
 
     # Structure 2
     st2 = LifetimeTmm()
     st2.set_vacuum_wavelength(lam0)
-    st2.add_layer(1.5 * lam0, sio2)
+    st2.add_layer(d_clad * lam0, sio2)
     st2.add_layer(d_etds, edts)
-    st2.add_layer(1.5 * lam0, water)
+    st2.add_layer(d_clad * lam0, n[n2])
     st2.info()
 
     # ------- Calculations -------
     # Calculate spontaneous emission for leaky and guided modes
     result1 = st1.calc_spe_structure(th_pow=11)
-    spe1 = result1['leaky']['avg'] + result1['guided']['avg']
+    try:
+        spe1 = result1['leaky']['avg'] + result1['guided']['avg']
+    except KeyError:
+        spe1 = result1['leaky']['avg']
 
     result2 = st2.calc_spe_structure(th_pow=11)
-    spe2 = result2['leaky']['avg'] + result2['guided']['avg']
+    try:
+        spe2 = result2['leaky']['avg'] + result2['guided']['avg']
+    except KeyError:
+        spe2 = result2['leaky']['avg']
 
     z = result1['z']
     z = st1.calc_z_to_lambda(z)
@@ -303,40 +310,46 @@ def purcell_factor():
 
     # ------- Plots -------
     fig, (ax1, ax2) = plt.subplots(2, 1, sharex='col', sharey='none')
-    ax1.plot(z, result1['leaky']['avg'], label='Air')
-    ax1.plot(z, result2['leaky']['avg'], ls='--', label='Water')
+    ax1.plot(z, result1['leaky']['avg'], label=n1)
+    ax1.plot(z, result2['leaky']['avg'], ls='--', label=n2)
 
-    ax2.plot(z, result1['guided']['avg'], label='Air')
-    ax2.plot(z, result2['guided']['avg'], ls='--', label='Water')
+    try:
+        ax2.plot(z, result1['guided']['avg'], label=n1)
+    except KeyError:
+        pass
+
+    try:
+        ax2.plot(z, result2['guided']['avg'], ls='--', label=n2)
+    except KeyError:
+        pass
 
     # Plot internal layer boundaries
     for i in boundaries:
-        ax1.axvline(i, color='k', lw=1, ls='--')
-        ax2.axvline(i, color='k', lw=1, ls='--')
-
+        ax1.axvline(i, color='k', ls='--')
+        ax2.axvline(i, color='k', ls='--')
+    # ax1.set_ylim(0.7, 2)
     # Labels
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax2.set_ylabel('$\Gamma / \Gamma_0$')
     ax2.set_xlabel('Position z ($\lambda$)')
-    ax1.legend(title='Leaky', fontsize='small')
-    ax2.legend(title='Guided', fontsize='small')
+    ax1.legend(title='Leaky')
+    ax2.legend(title='Guided')
 
     if SAVE:
         plt.savefig('../Images/T2_purcell_factor')
 
     fig, ax1 = plt.subplots()
-    ax1.plot(z, spe1, label='Air')
-    ax1.plot(z, spe2, ls='--', label='Water')
+    ax1.plot(z, spe1, label=n1)
+    ax1.plot(z, spe2, ls='--', label=n2)
 
     # Plot internal layer boundaries
     for i in boundaries:
-        ax1.axvline(i, color='k', lw=1, ls='--')
+        ax1.axvline(i, color='k', ls='--')
 
     # Labels
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax1.set_xlabel('Position z ($\lambda$)')
-    ax1.legend(fontsize='small')
-
+    ax1.legend()
     if SAVE:
         plt.savefig('../Images/T2_purcell_factor_total')
     plt.show()
@@ -353,16 +366,28 @@ if __name__ == "__main__":
 
     # Film thickness
     d_etds = 980
+    d_clad = 1.5  # (in units of lam0)
 
     # Material refractive index at lam0
     sio2 = 1.442
     edts = 1.56
     air = 1
     water = 1.3183
+    glycerol = 1.46
+    diiodomethane = 1.71
 
-    # t2()
+    n = {'Air': 1,
+         'Water': 1.3183,
+         'SiO2': 1.442,
+         'Glycerol': 1.46,
+         'EDTS': 1.56,
+         'Cassia Oil': 1.6,
+         'Diiodomethane': 1.71
+         }
+
+    # t2(water)
     # t2_leaky()
     # t2_fig4()
     # t2_guided()
     # t2_spe_vs_n()
-    purcell_factor()
+    purcell_factor('Air', 'Water')

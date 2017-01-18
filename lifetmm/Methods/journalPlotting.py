@@ -3,11 +3,8 @@ import numpy as np
 
 
 def update():
-    # Journal plotting parameters
-    plt.style.use('https://raw.githubusercontent.com/mn14tm/Notebooks/master/journalThomas.mplstyle')
-
-    # http://blog.dmcdougall.co.uk/publication-ready-the-first-time-beautiful-reproducible-plots-with-matplotlib/
-    WIDTH = 246.0  # the number latex spits out when typing: \the\linewidth
+    # Set figure size
+    WIDTH = 246.0  # the number (in pt) latex spits out when typing: \the\linewidth
     FACTOR = 0.9  # the fraction of the width you'd like the figure to occupy
     fig_width_pt = WIDTH * FACTOR
 
@@ -20,6 +17,11 @@ def update():
 
     # Update rcParams for figure size
     params = {
+        'font.size': 9.0,
+        'text.usetex': True,
+        'savefig.dpi': 1200,
+        'savefig.format': 'pdf',
+        'savefig.bbox': 'tight',
         'figure.figsize': fig_dims,
     }
     plt.rcParams.update(params)
