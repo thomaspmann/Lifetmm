@@ -90,7 +90,7 @@ def purcell_factor(chip, n1, n2):
     ax1.legend()
     if SAVE:
         plt.savefig('../Images/purcell_factor_total_' + chip['name'])
-    plt.show()
+        # plt.show()
 
 
 if __name__ == "__main__":
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     lam0 = 1535
 
     # Cladding thickness (in units of lam0)
-    d_clad = 0  # 1.6
+    d_clad = 0
 
     n = {'Air': 1,
          'Water': 1.3183,
@@ -115,4 +115,12 @@ if __name__ == "__main__":
     t12 = {'name': 'T12', 'n': 1.4914, 'd': 566}
     t13 = {'name': 'T13', 'n': 1.6235, 'd': 338}
 
-    purcell_factor(chip=t13, n1='Air', n2='Cassia Oil')
+    # Jaya's chips
+    j125 = {'name': '0p125', 'n': 1.5754, 'd': 1250}
+    j500 = {'name': '0p5', 'n': 1.5850, 'd': 1000}
+    j750 = {'name': '0p75', 'n': 1.6438, 'd': 520}
+    j1000 = {'name': '1', 'n': 1.6682, 'd': 480}
+
+    for chip in [j125, j500, j750, j1000]:
+        print(chip['name'])
+        purcell_factor(chip=chip, n1='Air', n2='Cassia Oil')
