@@ -30,7 +30,7 @@ def root_search(f, a, b, dx):
     return x1, x2
 
 
-def roots(f, a, b, num=20e4, verbose=True):
+def roots(f, a, b, eps=1e-5):
     """
     Find roots of f within the interval [a,b]. Interval is discretised
     into num equal elements, dx, and a root is searched for within each dx.
@@ -38,31 +38,22 @@ def roots(f, a, b, num=20e4, verbose=True):
     import math
     from scipy.optimize import brentq
 
-    if verbose:
-        logging.info('The roots on the interval [{:f}, {:f}] are:'.format(a, b))
-    else:
-        logging.debug('The roots on the interval [{:f}, {:f}] are:'.format(a, b))
+    logging.info('The roots on the interval [{:f}, {:f}] are:'.format(a, b))
 
     results = []
     while 1:
-        dx = abs(a - b) / num  # alternatively use dx=eps where eps is arg
-        x1, x2 = root_search(f, a, b, dx)
+        x1, x2 = root_search(f, a, b, eps)
         if x1 is not None:
             a = x2
-            root = brentq(f, x1, x2, rtol=1e-8)
+            root = brentq(f, x1, x2)
             if root != 0:
                 # Root is only as accurate as the width of the
                 # element as there could be multiple roots within each dx
-                root = round(root, -int(math.log(dx, 10)))
+                root = round(root, -int(math.log(eps, 10)))
                 results.append(root)
-
-                if verbose:
-                    logging.info('{:.4f}'.format(root))
-                else:
-                    logging.debug('{:.4f}'.format(root))
+                logging.info('{:.4f}'.format(root))
         else:
-            if verbose:
-                logging.info('\nDone')
+            logging.info('\nRoot finding done')
             return np.array(results)
 
 
@@ -82,18 +73,14 @@ def snell(n_1, n_2, th_1):
 
 
 def lambda2omega(lambda_):
-    """
-    Convert wavelength to omega
-    """
+    """Convert wavelength to omega."""
     from scipy.constants import lambda2nu
     from math import pi
     return 2 * pi * lambda2nu(lambda_)
 
 
 def omega2lambda(omega):
-    """
-    Convert omega to wavelength
-    """
+    """Convert omega to wavelength."""
     from scipy.constants import nu2lambda
     from math import pi
     nu = omega / (2 * pi)
@@ -103,16 +90,12 @@ def omega2lambda(omega):
 #####################################################################
 # Math helper functions
 def det(matrix):
-    """
-    2x2 Matrix Determinant - can be complex unlike: from numpy.linalg import det
-    """
+    """2x2 Matrix Determinant - can be complex unlike: from numpy.linalg import det."""
     return matrix[0, 0] * matrix[1, 1] - matrix[1, 0] * matrix[0, 1]
 
 
 def sinc(x):
-    """
-    Un-normalised sinc function: sinc(x) = sin(x) / x
-    """
+    """Un-normalised sinc function: sinc(x) = sin(x) / x."""
     if x == 0:
         return 1
     else:

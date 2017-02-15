@@ -64,7 +64,7 @@ def fig3():
     ax4.legend(title='Vertical Dipoles', fontsize='small')
     fig.tight_layout()
     if SAVE:
-        plt.savefig('../Images/creatore_fig3.png', dpi=300)
+        plt.savefig('../Images/creatore_fig3')
     plt.show()
 
 
@@ -111,7 +111,7 @@ def fig4():
 
     fig.tight_layout()
     if SAVE:
-        plt.savefig('../Images/creatore_fig4.png', dpi=300)
+        plt.savefig('../Images/creatore_fig4')
     plt.show()
 
 
@@ -151,7 +151,7 @@ def fig5():
 
     fig.tight_layout()
     if SAVE:
-        plt.savefig('../Images/creatore_fig5.png', dpi=300)
+        plt.savefig('../Images/creatore_fig5')
     plt.show()
 
 
@@ -198,7 +198,7 @@ def fig6():
     ax1.legend(title='Horizontal Dipoles', loc='lower right', fontsize='medium')
     ax2.legend(title='Vertical Dipoles', loc='lower right', fontsize='medium')
     if SAVE:
-        plt.savefig('../Images/creatore_fig6.png', dpi=300)
+        plt.savefig('../Images/creatore_fig6')
     plt.show()
 
 
@@ -276,7 +276,7 @@ def fig7():
     ax1.legend(title='Horizontal Dipoles', loc='lower right', fontsize='medium')
     ax2.legend(title='Vertical Dipoles', loc='lower right', fontsize='medium')
     if SAVE:
-        plt.savefig('../Images/creatore_fig6.png', dpi=300)
+        plt.savefig('../Images/creatore_fig6')
     plt.show()
 
 
@@ -320,7 +320,7 @@ def fig8():
 
     fig.tight_layout()
     if SAVE:
-        plt.savefig('../Images/creatore_fig8.png', dpi=300)
+        plt.savefig('../Images/creatore_fig8')
     plt.show()
 
 
@@ -368,7 +368,7 @@ def fig9():
     ax1.legend(title='Horizontal Dipoles', loc='upper right', fontsize='small')
     ax2.legend(title='Vertical Dipoles', loc='upper right', fontsize='small')
     if SAVE:
-        plt.savefig('../Images/creatore_fig9.png', dpi=300)
+        plt.savefig('../Images/creatore_fig9')
     plt.show()
 
 
@@ -415,7 +415,7 @@ def fig13a():
     ax1.set_xlabel('z/$\lambda$')
 
     if SAVE:
-        plt.savefig('../Images/creatore_fig13a.png', dpi=300)
+        plt.savefig('../Images/creatore_fig13a')
     plt.show()
 
 
@@ -463,7 +463,7 @@ def fig13b():
     ax1.set_xlabel('z/$\lambda$')
 
     if SAVE:
-        plt.savefig('../Images/creatore_fig13b.png', dpi=300)
+        plt.savefig('../Images/creatore_fig13b')
     plt.show()
 
 if __name__ == "__main__":
@@ -479,10 +479,10 @@ if __name__ == "__main__":
 
     # fig3()
     # fig4()
-    # fig5()
+    fig5()
     # fig6()
     # fig7()
     # fig8()
     # fig9()
     # fig13a()
-    fig13b()
+    # fig13b()

@@ -23,6 +23,8 @@ def purcell_factor(chip, n1, n2):
         spe1 = result1['leaky']['avg'] + result1['guided']['avg']
     except KeyError:
         spe1 = result1['leaky']['avg']
+    ind = st1.get_layer_indices(1)
+    fp1 = np.mean(spe1[ind])
 
     # Structure 2
     st2 = LifetimeTmm()
@@ -37,12 +39,14 @@ def purcell_factor(chip, n1, n2):
         spe2 = result2['leaky']['avg'] + result2['guided']['avg']
     except KeyError:
         spe2 = result2['leaky']['avg']
+    ind = st1.get_layer_indices(1)
+    fp2 = np.mean(spe1[ind])
 
     z = result1['z']
     z = st1.calc_z_to_lambda(z)
     boundaries = [st1.calc_z_to_lambda(i) for i in st1.get_layer_boundaries()[:-1]]
 
-    fp = np.mean(spe2) / np.mean(spe1)
+    fp = fp2 / fp1
     print('Purcell Factor: {:e}'.format(fp))
 
     # ------- Plots -------

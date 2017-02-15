@@ -335,6 +335,15 @@ class TransferMatrix:
         field_squared = abs(field) ** 2
         return {'z': z, 'field': field, 'field_squared': field_squared}
 
+    def get_layer_indices(self, layer):
+        """Return z array indices for a chosen layer."""
+        z = np.arange((self.z_step / 2.0), self.d_cumulative[-1], self.z_step)
+        # get z_mat - specifies what layer the corresponding point in z is in
+        comp1 = np.kron(np.ones((self.num_layers, 1)), z)
+        comp2 = np.transpose(np.kron(np.ones((len(z), 1)), self.d_cumulative))
+        z_mat = sum(comp1 > comp2, 0)
+        return np.where(z_mat == layer)
+
     def _s11(self, n_11):
         # Don't use self.set_guided_mode when root finding as bounds for guiding n_11
         # are already taken care of in root_search but when evaluating will go outside
@@ -370,7 +379,7 @@ class TransferMatrix:
         n = self.n_list.real
         assert np.any(n[1:-1] > max(n[0], n[-1])), ValueError('This structure does not support wave guiding.')
         # Find supported guiding modes - max(n_clad) > n_11 >= max(n)
-        n_11 = roots(self._s11, 1 * max(n[0], n[-1]), max(n), verbose=verbose)
+        n_11 = roots(self._s11, 1 * max(n[0], n[-1]), max(n))
         # Flip array to arrange from lowest to highest mode (highest to lowest n_11)
         n_11 = n_11[::-1]
 
