@@ -4,6 +4,7 @@ Thin film calculations for T-series. Purcell factor.
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 from lifetmm.Methods.SpontaneousEmissionRate import LifetimeTmm
 
@@ -17,6 +18,12 @@ def purcell_factor(chip, n1, n2):
     st1.add_layer(d_clad * lam0, n[n1])
     st1.info()
 
+    result1 = st1.calc_spe_structure(th_pow=11)
+    try:
+        spe1 = result1['leaky']['avg'] + result1['guided']['avg']
+    except KeyError:
+        spe1 = result1['leaky']['avg']
+
     # Structure 2
     st2 = LifetimeTmm()
     st2.set_vacuum_wavelength(lam0)
@@ -24,14 +31,6 @@ def purcell_factor(chip, n1, n2):
     st2.add_layer(chip['d'], chip['n'])
     st2.add_layer(d_clad * lam0, n[n2])
     st2.info()
-
-    # ------- Calculations -------
-    # Calculate spontaneous emission for leaky and guided modes
-    result1 = st1.calc_spe_structure(th_pow=11)
-    try:
-        spe1 = result1['leaky']['avg'] + result1['guided']['avg']
-    except KeyError:
-        spe1 = result1['leaky']['avg']
 
     result2 = st2.calc_spe_structure(th_pow=11)
     try:
@@ -72,9 +71,9 @@ def purcell_factor(chip, n1, n2):
     ax2.set_xlabel('Position z ($\lambda$)')
     ax1.legend(title='Leaky')
     ax2.legend(title='Guided')
-
+    plt.title('Purcell Factor: {:e}'.format(fp))
     if SAVE:
-        plt.savefig('../Images/purcell_factor_indivd_' + chip['name'])
+        plt.savefig('../Images/{}_purcell_factor_individ'.format(chip['Sample ID']))
 
     fig, ax1 = plt.subplots()
     ax1.plot(z, spe1, label=n1)
@@ -88,19 +87,66 @@ def purcell_factor(chip, n1, n2):
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax1.set_xlabel('Position z ($\lambda$)')
     ax1.legend()
+    plt.title('Purcell Factor: {:e}'.format(fp))
     if SAVE:
-        plt.savefig('../Images/purcell_factor_total_' + chip['name'])
+        plt.savefig('../Images/{}_purcell_factor_total'.format(chip['Sample ID']))
         # plt.show()
 
+    return fp
+
+
+def loop_list():
+    # Chip parameters
+    t12 = {'Sample ID': 'T12', 'n': 1.4914, 'd': 566}
+    t13 = {'Sample ID': 'T13', 'n': 1.6235, 'd': 338}
+
+    # Jaya's chips
+    j125 = {'Sample ID': '0p125', 'n': 1.5754, 'd': 1250}
+    j500 = {'Sample ID': '0p5', 'n': 1.5850, 'd': 1000}
+    j750 = {'Sample ID': '0p75', 'n': 1.6438, 'd': 520}
+    j1000 = {'Sample ID': '1', 'n': 1.6682, 'd': 480}
+
+    for chip in [j125, j500, j750, j1000]:
+        print(chip['Sample ID'])
+        purcell_factor(chip=chip, n1='Air', n2='Cassia Oil')
+
+
+def loop_csv():
+    # Load Data
+    df = pd.read_csv('../Data/Screening.csv', index_col='Sample ID')
+    df = df[['n', 'd']]
+
+    # loop through all samples
+    samples = df.index.values.tolist()
+    fp_dict = dict.fromkeys(samples)
+    for sample in samples:
+        print('Evaluating {}'.format(sample))
+        n = df.loc[sample]['n']
+        d = df.loc[sample]['d'] * 1000  # in nm not um
+        chip = {'Sample ID': sample, 'n': n, 'd': d}
+
+        # do purcell calculations
+        try:
+            fp = purcell_factor(chip=chip, n1='Air', n2='Cassia Oil')
+        except:
+            print('Error calculating sample {}'.format(sample))
+            fp = np.nan
+        fp_dict[sample] = fp
+
+    # Save results to csv (first convert to pandas series)
+    s = pd.Series(fp_dict, name='Purcell Factor')
+    s.index.name = 'Sample ID'
+    s.reset_index()
+    # s.to_csv('../Data/T-series_fp.csv', header=True)
 
 if __name__ == "__main__":
-    SAVE = False  # Save figs and data? (bool)
+    SAVE = True  # Save figs and data? (bool)
 
     # Set vacuum wavelength
     lam0 = 1535
 
     # Cladding thickness (in units of lam0)
-    d_clad = 0
+    d_clad = 1.5
 
     n = {'Air': 1,
          'Water': 1.3183,
@@ -111,16 +157,4 @@ if __name__ == "__main__":
          'Diiodomethane': 1.71
          }
 
-    # Chip parameters
-    t12 = {'name': 'T12', 'n': 1.4914, 'd': 566}
-    t13 = {'name': 'T13', 'n': 1.6235, 'd': 338}
-
-    # Jaya's chips
-    j125 = {'name': '0p125', 'n': 1.5754, 'd': 1250}
-    j500 = {'name': '0p5', 'n': 1.5850, 'd': 1000}
-    j750 = {'name': '0p75', 'n': 1.6438, 'd': 520}
-    j1000 = {'name': '1', 'n': 1.6682, 'd': 480}
-
-    for chip in [j125, j500, j750, j1000]:
-        print(chip['name'])
-        purcell_factor(chip=chip, n1='Air', n2='Cassia Oil')
+    loop_csv()

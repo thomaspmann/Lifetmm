@@ -1,0 +1,1266 @@
+﻿C:\Users\mn14tm\AppData\Local\Continuum\Anaconda3\python.exe C:/Users/mn14tm/Code/Lifetmm/lifetmm/Examples/T_series.py
+Evaluating T2
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:1082	1.5881+0j
+INFO:root:   0	1+0j
+INFO:root:
+Free space wavelength: 1535
+
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:1082	1.5881+0j
+INFO:root:   0	1.6+0j
+INFO:root:
+Free space wavelength: 1535
+
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.03K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.39K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.442000, 1.588100] are:
+INFO:root:1.5217
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.442000, 1.588100] are:
+INFO:root:1.5074
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.35K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.41K theta/s]
+INFO:root:Structure does not support waveguiding. Done!
+Purcell Factor: 9.368920e-01
+Evaluating T4
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root: 642	1.6868+0j
+INFO:root:   0	1+0j
+INFO:root:
+Free space wavelength: 1535
+
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root: 642	1.6868+0j
+INFO:root:   0	1.6+0j
+INFO:root:
+Free space wavelength: 1535
+
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.96K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.93K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.442000, 1.686800] are:
+INFO:root:1.5486
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.442000, 1.686800] are:
+INFO:root:1.5055
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.95K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.84K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.600000, 1.686800] are:
+INFO:root:1.6107
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.600000, 1.686800] are:
+INFO:root:1.6056
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+Purcell Factor: 1.042423e+00
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+Evaluating T5
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root: 735	1.5801+0j
+INFO:root:   0	1+0j
+INFO:root:
+Free space wavelength: 1535
+
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root: 735	1.5801+0j
+INFO:root:   0	1.6+0j
+INFO:root:
+Free space wavelength: 1535
+
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.80K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.80K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.442000, 1.580100] are:
+INFO:root:1.4812
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.442000, 1.580100] are:
+INFO:root:1.4622
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.35K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.69K theta/s]
+INFO:root:Structure does not support waveguiding. Done!
+Purcell Factor: 1.036739e+00
+Evaluating T6
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:1208	1.6613+0j
+INFO:root:   0	1+0j
+INFO:root:
+Free space wavelength: 1535
+
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:1208	1.6613+0j
+INFO:root:   0	1.6+0j
+INFO:root:
+Free space wavelength: 1535
+
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.21K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.18K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.442000, 1.661300] are:
+INFO:root:1.4423
+INFO:root:1.5995
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.442000, 1.661300] are:
+INFO:root:1.5842
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.25K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.28K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.600000, 1.661300] are:
+INFO:root:1.6224
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.600000, 1.661300] are:
+INFO:root:1.6193
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+Purcell Factor: 1.064595e+00
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root: 480	1.6191+0j
+INFO:root:   0	1+0j
+INFO:root:
+Free space wavelength: 1535
+
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root: 480	1.6191+0j
+INFO:root:   0	1.6+0j
+INFO:root:
+Free space wavelength: 1535
+
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+Evaluating T7
+100%|██████████| 2.05K/2.05K [00:00<00:00, 2.32K theta/s]
+100%|██████████| 2.05K/2.05K [00:00<00:00, 2.32K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.442000, 1.619100] are:
+INFO:root:1.4648
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.442000, 1.619100] are:
+INFO:root:1.4440
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:00<00:00, 2.14K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 2.01K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.600000, 1.619100] are:
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.600000, 1.619100] are:
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+Purcell Factor: 1.100267e+00
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+Evaluating T8
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:1706	1.6297+0j
+INFO:root:   0	1+0j
+INFO:root:
+Free space wavelength: 1535
+
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:1706	1.6297+0j
+INFO:root:   0	1.6+0j
+INFO:root:
+Free space wavelength: 1535
+
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:02<00:00, 975 theta/s]
+100%|██████████| 2.05K/2.05K [00:02<00:00, 967 theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.442000, 1.629700] are:
+INFO:root:1.4866
+INFO:root:1.5930
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.442000, 1.629700] are:
+INFO:root:1.4685
+INFO:root:1.5862
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:02<00:00, 926 theta/s]
+100%|██████████| 2.05K/2.05K [00:02<00:00, 910 theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.600000, 1.629700] are:
+INFO:root:1.6091
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.600000, 1.629700] are:
+INFO:root:1.6080
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+Purcell Factor: 1.010433e+00
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+Evaluating T10
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root: 699	1.6181+0j
+INFO:root:   0	1+0j
+INFO:root:
+Free space wavelength: 1535
+
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root: 699	1.6181+0j
+INFO:root:   0	1.6+0j
+INFO:root:
+Free space wavelength: 1535
+
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.69K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.64K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.442000, 1.618100] are:
+INFO:root:1.5043
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.442000, 1.618100] are:
+INFO:root:1.4771
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.58K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.64K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.600000, 1.618100] are:
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.600000, 1.618100] are:
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+Purcell Factor: 1.009899e+00
+INFO:root:Done!
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+Evaluating T11
+INFO:root:   0	1.442+0j
+INFO:root: 682	1.6158+0j
+INFO:root:   0	1+0j
+INFO:root:
+Free space wavelength: 1535
+
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root: 682	1.6158+0j
+INFO:root:   0	1.6+0j
+INFO:root:
+Free space wavelength: 1535
+
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.74K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.83K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.442000, 1.615800] are:
+INFO:root:1.4998
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.442000, 1.615800] are:
+INFO:root:1.4728
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.64K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.64K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.600000, 1.615800] are:
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.600000, 1.615800] are:
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+Purcell Factor: 1.018711e+00
+Evaluating T14
+Error calculating sample T14
+Evaluating T15
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root: 970	1.6072+0j
+INFO:root:   0	1+0j
+INFO:root:
+Free space wavelength: 1535
+
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root: 970	1.6072+0j
+INFO:root:   0	1.6+0j
+INFO:root:
+Free space wavelength: 1535
+
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.32K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.19K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.442000, 1.607200] are:
+INFO:root:1.5291
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.442000, 1.607200] are:
+INFO:root:1.5105
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.23K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.32K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.600000, 1.607200] are:
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.600000, 1.607200] are:
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+Purcell Factor: 9.407828e-01
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+Evaluating T16
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:1052	1.6119+0j
+INFO:root:   0	1+0j
+INFO:root:
+Free space wavelength: 1535
+
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:1052	1.6119+0j
+INFO:root:   0	1.6+0j
+INFO:root:
+Free space wavelength: 1535
+
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.36K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.38K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.442000, 1.611900] are:
+INFO:root:1.5407
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.442000, 1.611900] are:
+INFO:root:1.5239
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.35K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.36K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.600000, 1.611900] are:
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.600000, 1.611900] are:
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+Purcell Factor: 9.229769e-01
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+Evaluating T20
+Error calculating sample T20
+Evaluating T21
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:1197	1.6058+0j
+INFO:root:   0	1+0j
+INFO:root:
+Free space wavelength: 1535
+
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:1197	1.6058+0j
+INFO:root:   0	1.6+0j
+INFO:root:
+Free space wavelength: 1535
+
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.27K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.22K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.442000, 1.605800] are:
+INFO:root:1.5460
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.442000, 1.605800] are:
+INFO:root:1.5328
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.30K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.32K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.600000, 1.605800] are:
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.600000, 1.605800] are:
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+Purcell Factor: 9.160361e-01
+C:\Users\mn14tm\AppData\Local\Continuum\Anaconda3\lib\site-packages\matplotlib\pyplot.py:524: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  max_open_warning, RuntimeWarning)
+Evaluating T22
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:1552	1.6185+0j
+INFO:root:   0	1+0j
+INFO:root:
+Free space wavelength: 1535
+
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:1552	1.6185+0j
+INFO:root:   0	1.6+0j
+INFO:root:
+Free space wavelength: 1535
+
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.07K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.05K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.442000, 1.618500] are:
+INFO:root:1.4596
+INFO:root:1.5765
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.442000, 1.618500] are:
+INFO:root:1.4455
+INFO:root:1.5683
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.06K theta/s]
+100%|██████████| 2.05K/2.05K [00:02<00:00, 1.02K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.600000, 1.618500] are:
+INFO:root:1.6012
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.600000, 1.618500] are:
+INFO:root:1.6008
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+Purcell Factor: 9.240295e-01
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:1075	1.6132+0j
+INFO:root:   0	1+0j
+INFO:root:
+Free space wavelength: 1535
+
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+Evaluating T23
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:1075	1.6132+0j
+INFO:root:   0	1.6+0j
+INFO:root:
+Free space wavelength: 1535
+
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.37K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.37K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.442000, 1.613200] are:
+INFO:root:1.5438
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.442000, 1.613200] are:
+INFO:root:1.5275
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.36K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.28K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.600000, 1.613200] are:
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.600000, 1.613200] are:
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+Purcell Factor: 9.194278e-01
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+Evaluating T24
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:2366	1.6048+0j
+INFO:root:   0	1+0j
+INFO:root:
+Free space wavelength: 1535
+
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:2366	1.6048+0j
+INFO:root:   0	1.6+0j
+INFO:root:
+Free space wavelength: 1535
+
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:02<00:00, 762 theta/s]
+100%|██████████| 2.05K/2.05K [00:02<00:00, 767 theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.442000, 1.604800] are:
+INFO:root:1.5185
+INFO:root:1.5831
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.442000, 1.604800] are:
+INFO:root:1.5082
+INFO:root:1.5801
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:02<00:00, 769 theta/s]
+100%|██████████| 2.05K/2.05K [00:02<00:00, 784 theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.600000, 1.604800] are:
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.600000, 1.604800] are:
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+Purcell Factor: 9.313512e-01
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+Evaluating T25
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:1421	1.6791+0j
+INFO:root:   0	1+0j
+INFO:root:
+Free space wavelength: 1535
+
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:1421	1.6791+0j
+INFO:root:   0	1.6+0j
+INFO:root:
+Free space wavelength: 1535
+
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.15K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.15K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.442000, 1.679100] are:
+INFO:root:1.4873
+INFO:root:1.6298
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.442000, 1.679100] are:
+INFO:root:1.4611
+INFO:root:1.6187
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.15K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.16K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.600000, 1.679100] are:
+INFO:root:1.6437
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.600000, 1.679100] are:
+INFO:root:1.6404
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+Purcell Factor: 1.065581e+00
+INFO:root:Done!
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:2047	1.6308+0j
+INFO:root:   0	1+0j
+INFO:root:
+Free space wavelength: 1535
+
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:2047	1.6308+0j
+INFO:root:   0	1.6+0j
+INFO:root:
+Free space wavelength: 1535
+
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+Evaluating T26
+100%|██████████| 2.05K/2.05K [00:02<00:00, 876 theta/s]
+100%|██████████| 2.05K/2.05K [00:02<00:00, 874 theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.442000, 1.630800] are:
+INFO:root:1.5211
+INFO:root:1.6032
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.442000, 1.630800] are:
+INFO:root:1.5064
+INFO:root:1.5988
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:02<00:00, 875 theta/s]
+100%|██████████| 2.05K/2.05K [00:02<00:00, 881 theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.600000, 1.630800] are:
+INFO:root:1.6136
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.600000, 1.630800] are:
+INFO:root:1.6127
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+Purcell Factor: 1.046141e+00
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:1799	1.631+0j
+INFO:root:   0	1+0j
+INFO:root:
+Free space wavelength: 1535
+
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:1799	1.631+0j
+INFO:root:   0	1.6+0j
+INFO:root:
+Free space wavelength: 1535
+
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+Evaluating T27
+100%|██████████| 2.05K/2.05K [00:02<00:00, 972 theta/s]
+100%|██████████| 2.05K/2.05K [00:02<00:00, 972 theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.442000, 1.631000] are:
+INFO:root:1.4980
+INFO:root:1.5972
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.442000, 1.631000] are:
+INFO:root:1.4804
+INFO:root:1.5912
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:02<00:00, 973 theta/s]
+100%|██████████| 2.05K/2.05K [00:02<00:00, 977 theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.600000, 1.631000] are:
+INFO:root:1.6111
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.600000, 1.631000] are:
+INFO:root:1.6101
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+Purcell Factor: 1.026655e+00
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:2543	1.6308+0j
+INFO:root:   0	1+0j
+INFO:root:
+Free space wavelength: 1535
+
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root:2543	1.6308+0j
+INFO:root:   0	1.6+0j
+INFO:root:
+Free space wavelength: 1535
+
+INFO:root:Calculating leaky modes...
+Evaluating T28
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:02<00:00, 733 theta/s]
+100%|██████████| 2.05K/2.05K [00:02<00:00, 718 theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.442000, 1.630800] are:
+INFO:root:1.4601
+INFO:root:1.5532
+INFO:root:1.6114
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.442000, 1.630800] are:
+INFO:root:1.4479
+INFO:root:1.5436
+INFO:root:1.6088
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:02<00:00, 734 theta/s]
+100%|██████████| 2.05K/2.05K [00:02<00:00, 732 theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.600000, 1.630800] are:
+INFO:root:1.6176
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.600000, 1.630800] are:
+INFO:root:1.6170
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+Purcell Factor: 1.064163e+00
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root: 841	1.6026+0j
+INFO:root:   0	1+0j
+INFO:root:
+Free space wavelength: 1535
+
+WARNING:root:WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.
+INFO:root:Simulation info.
+
+INFO:root:Multi-layered Structure:
+INFO:root:d		n
+INFO:root:   0	1.442+0j
+INFO:root: 841	1.6026+0j
+INFO:root:   0	1.6+0j
+INFO:root:
+Free space wavelength: 1535
+
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+Evaluating T29
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.67K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.65K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.442000, 1.602600] are:
+INFO:root:1.5113
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.442000, 1.602600] are:
+INFO:root:1.4900
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+INFO:root:Calculating leaky modes...
+INFO:root:Evaluating lower and upper leaky modes for each layer:
+INFO:root:	Layer -> internal 1 / 1...
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.67K theta/s]
+100%|██████████| 2.05K/2.05K [00:01<00:00, 1.70K theta/s]
+INFO:root:Structure suppports waveguiding. Calculating guided modes...
+INFO:root:Evaluating guided modes (k_11/k) and group velocity for each polarisation:
+INFO:root:Finding TE modes...
+INFO:root:The roots on the interval [1.600000, 1.602600] are:
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+INFO:root:Finding TM modes
+INFO:root:The roots on the interval [1.600000, 1.602600] are:
+INFO:root:
+Done
+INFO:root:Calculating group velocity for each mode...
+Purcell Factor: 9.792195e-01
+INFO:root:Evaluating guided mode spontaneous emission profiles:
+INFO:root:	Layer -> internal 1 / 1...
+INFO:root:Done!
+
+Process finished with exit code 0

@@ -30,7 +30,7 @@ def root_search(f, a, b, dx):
     return x1, x2
 
 
-def roots(f, a, b, num=20e3, verbose=True):
+def roots(f, a, b, num=20e4, verbose=True):
     """
     Find roots of f within the interval [a,b]. Interval is discretised
     into num equal elements, dx, and a root is searched for within each dx.
@@ -49,7 +49,7 @@ def roots(f, a, b, num=20e3, verbose=True):
         x1, x2 = root_search(f, a, b, dx)
         if x1 is not None:
             a = x2
-            root = brentq(f, x1, x2, rtol=1e-5)
+            root = brentq(f, x1, x2, rtol=1e-8)
             if root != 0:
                 # Root is only as accurate as the width of the
                 # element as there could be multiple roots within each dx
