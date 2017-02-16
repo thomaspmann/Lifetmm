@@ -40,7 +40,7 @@ def purcell_factor(chip, n1, n2):
     except KeyError:
         spe2 = result2['leaky']['avg']
     ind = st1.get_layer_indices(1)
-    fp2 = np.mean(spe1[ind])
+    fp2 = np.mean(spe2[ind])
 
     z = result1['z']
     z = st1.calc_z_to_lambda(z)
@@ -68,7 +68,7 @@ def purcell_factor(chip, n1, n2):
     for i in boundaries:
         ax1.axvline(i, color='k', ls='--')
         ax2.axvline(i, color='k', ls='--')
-    # ax1.set_ylim(0.7, 2)
+
     # Labels
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax2.set_ylabel('$\Gamma / \Gamma_0$')
@@ -141,7 +141,7 @@ def loop_csv():
     s = pd.Series(fp_dict, name='Purcell Factor')
     s.index.name = 'Sample ID'
     s.reset_index()
-    # s.to_csv('../Data/T-series_fp.csv', header=True)
+    s.to_csv('../Data/fp.csv', header=True)
 
 if __name__ == "__main__":
     SAVE = True  # Save figs and data? (bool)

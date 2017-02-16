@@ -358,7 +358,7 @@ class TransferMatrix:
         """
         assert self.guided, ValueError('Run set_leaky_or_guiding(leaky=False) first.')
         n = self.n_list.real
-        n_11_range = np.linspace(1.0001 * max(n[0], n[-1]), max(n), num=1000, endpoint=False)[1:]
+        n_11_range = np.linspace(max(n[0], n[-1]), max(n), num=1000, endpoint=False)[1:]
         s_11 = np.array([])
         for n_11 in n_11_range:
             s_11 = np.append(s_11, self._s11(n_11))
@@ -379,7 +379,7 @@ class TransferMatrix:
         n = self.n_list.real
         assert np.any(n[1:-1] > max(n[0], n[-1])), ValueError('This structure does not support wave guiding.')
         # Find supported guiding modes - max(n_clad) > n_11 >= max(n)
-        n_11 = roots(self._s11, 1 * max(n[0], n[-1]), max(n))
+        n_11 = roots(self._s11, 1 * max(n[0], n[-1]), max(n), verbose=verbose)
         # Flip array to arrange from lowest to highest mode (highest to lowest n_11)
         n_11 = n_11[::-1]
 
@@ -394,7 +394,7 @@ class TransferMatrix:
         """
         lam_vac = self.lam_vac
 
-        # Take 1% either side of the emission wavelength
+        # Take lambda+-1 either side of the emission wavelength
         self.set_vacuum_wavelength(int(1 + lam_vac))
         omega1 = self.omega
         beta_lower = self.calc_guided_modes(verbose=False, normalised=False)

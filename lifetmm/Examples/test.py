@@ -202,6 +202,17 @@ def test():
     for z in st.get_layer_boundaries()[:-1]:
         z = st.calc_z_to_lambda(z)
         plt.axvline(x=z, color='k', lw=1, ls='--')
+
+    ind = st.get_layer_indices(1)
+    z = result['z']
+    z = z[ind]
+    E = E[ind]
+    plt.figure()
+    plt.plot(z, abs(E) ** 2)
+    for z in st.get_layer_boundaries()[:-1]:
+        z = st.calc_z_to_lambda(z)
+        plt.axvline(x=z, color='k', lw=1, ls='--')
+
     plt.show()
 
 
@@ -220,4 +231,4 @@ if __name__ == "__main__":
     # spe()
     # guiding_plot()
     # guiding_electric_field()
-    # test()
+    test()

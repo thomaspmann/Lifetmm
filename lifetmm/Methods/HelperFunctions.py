@@ -30,7 +30,7 @@ def root_search(f, a, b, dx):
     return x1, x2
 
 
-def roots(f, a, b, eps=1e-5):
+def roots(f, a, b, eps=1e-5, verbose=True):
     """
     Find roots of f within the interval [a,b]. Interval is discretised
     into num equal elements, dx, and a root is searched for within each dx.
@@ -38,7 +38,8 @@ def roots(f, a, b, eps=1e-5):
     import math
     from scipy.optimize import brentq
 
-    logging.info('The roots on the interval [{:f}, {:f}] are:'.format(a, b))
+    if verbose:
+        logging.info('The roots on the interval [{:f}, {:f}] are:'.format(a, b))
 
     results = []
     while 1:
@@ -51,9 +52,11 @@ def roots(f, a, b, eps=1e-5):
                 # element as there could be multiple roots within each dx
                 root = round(root, -int(math.log(eps, 10)))
                 results.append(root)
-                logging.info('{:.4f}'.format(root))
+                if verbose:
+                    logging.info(root)
         else:
-            logging.info('\nRoot finding done')
+            if verbose:
+                logging.info('\nRoot finding done')
             return np.array(results)
 
 

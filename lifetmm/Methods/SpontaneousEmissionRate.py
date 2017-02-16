@@ -250,6 +250,7 @@ class LifetimeTmm(TransferMatrix):
             # Calculate group velocity for each mode
             logging.info('Calculating group velocity for each mode...')
             vg_te = self.calc_group_velocity()
+            logging.info('Done!')
             logging.info('Finding TM modes')
             self.set_polarization('TM')
             roots_tm = self.calc_guided_modes(normalised=True)
@@ -388,13 +389,13 @@ class LifetimeTmm(TransferMatrix):
         roots_te = self.calc_guided_modes(normalised=True)
         logging.info('Calculating group velocity for each mode...')
         vg_te = self.calc_group_velocity()
-
+        logging.info('Done!')
         logging.info('Finding TM modes')
         self.set_polarization('TM')
         roots_tm = self.calc_guided_modes(normalised=True)
         logging.info('Calculating group velocity for each mode...')
         vg_tm = self.calc_group_velocity()
-
+        logging.info('Done!')
         logging.info('Evaluating guided mode spontaneous emission profiles:')
         for layer in range(min(z_mat), max(z_mat) + 1):
             # logging.info simulation information to command line
