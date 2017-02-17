@@ -7,8 +7,8 @@ from numpy import pi, sin, sum, exp, conj
 from scipy.constants import c
 from tqdm import *
 
-from lifetmm.Methods.HelperFunctions import sinc
-from lifetmm.Methods.TransferMatrix import TransferMatrix
+from lifetmm.TransferMatrix import TransferMatrix
+from lifetmm.HelperFunctions import sinc
 
 log = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class LifetimeTmm(TransferMatrix):
             z = -z[::-1]
 
         # Angles of emission to simulate over.
-        # Note: don't include pi/2 as then transmission and reflection do not make sense.
+        # Note: don't include pi/2 as then transmission and reflection do not make sense (light not incident).
         # res for linspace must have this form for the simpsons integration later. Can change the power.
         res = 2 ** th_pow + 1
 

@@ -5,7 +5,7 @@ Example scripts for the LifetimeTmm package.
 import matplotlib.pyplot as plt
 import numpy as np
 
-from lifetmm.Methods.SpontaneousEmissionRate import LifetimeTmm
+from lifetmm import LifetimeTmm
 
 SAVE = False  # Save figs? (bool)
 

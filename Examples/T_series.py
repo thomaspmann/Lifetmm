@@ -6,16 +6,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from lifetmm.Methods.SpontaneousEmissionRate import LifetimeTmm
+from lifetmm.SpontaneousEmissionRate import LifetimeTmm
 
 
-def purcell_factor(chip, n1, n2):
+def purcell_factor(chip, n1, n2, layer):
     # Structure 1
     st1 = LifetimeTmm()
     st1.set_vacuum_wavelength(lam0)
-    st1.add_layer(d_clad * lam0, n['SiO2'])
+    st1.add_layer(d_clad * lam0, n_dict['SiO2'])
     st1.add_layer(chip['d'], chip['n'])
-    st1.add_layer(d_clad * lam0, n[n1])
+    st1.add_layer(d_clad * lam0, n_dict[n1])
     st1.info()
 
     result1 = st1.calc_spe_structure(th_pow=11)
@@ -23,15 +23,15 @@ def purcell_factor(chip, n1, n2):
         spe1 = result1['leaky']['avg'] + result1['guided']['avg']
     except KeyError:
         spe1 = result1['leaky']['avg']
-    ind = st1.get_layer_indices(1)
+    ind = st1.get_layer_indices(layer)
     fp1 = np.mean(spe1[ind])
 
     # Structure 2
     st2 = LifetimeTmm()
     st2.set_vacuum_wavelength(lam0)
-    st2.add_layer(d_clad * lam0, n['SiO2'])
+    st2.add_layer(d_clad * lam0, n_dict['SiO2'])
     st2.add_layer(chip['d'], chip['n'])
-    st2.add_layer(d_clad * lam0, n[n2])
+    st2.add_layer(d_clad * lam0, n_dict[n2])
     st2.info()
 
     result2 = st2.calc_spe_structure(th_pow=11)
@@ -39,7 +39,7 @@ def purcell_factor(chip, n1, n2):
         spe2 = result2['leaky']['avg'] + result2['guided']['avg']
     except KeyError:
         spe2 = result2['leaky']['avg']
-    ind = st1.get_layer_indices(1)
+    ind = st1.get_layer_indices(layer)
     fp2 = np.mean(spe2[ind])
 
     z = result1['z']
@@ -75,7 +75,7 @@ def purcell_factor(chip, n1, n2):
     ax2.set_xlabel('Position z ($\lambda$)')
     ax1.legend(title='Leaky')
     ax2.legend(title='Guided')
-    plt.title('Purcell Factor: {:e}'.format(fp))
+    ax1.set_title('Purcell Factor: {:.3f}'.format(fp))
     if SAVE:
         plt.savefig('../Images/{}_purcell_factor_individ'.format(chip['Sample ID']))
 
@@ -91,10 +91,10 @@ def purcell_factor(chip, n1, n2):
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax1.set_xlabel('Position z ($\lambda$)')
     ax1.legend()
-    plt.title('Purcell Factor: {:e}'.format(fp))
+    plt.title('Purcell Factor: {:.3f}'.format(fp))
     if SAVE:
         plt.savefig('../Images/{}_purcell_factor_total'.format(chip['Sample ID']))
-        # plt.show()
+    # plt.show()
 
     return fp
 
@@ -110,16 +110,14 @@ def loop_list():
     j750 = {'Sample ID': '0p75', 'n': 1.6438, 'd': 520}
     j1000 = {'Sample ID': '1', 'n': 1.6682, 'd': 480}
 
-    for chip in [j125, j500, j750, j1000]:
+    for chip in [t12, t13]:
         print(chip['Sample ID'])
-        purcell_factor(chip=chip, n1='Air', n2='Cassia Oil')
+        purcell_factor(chip=chip, n1='Air', n2='Cassia Oil', layer=1)
 
 
 def loop_csv():
     # Load Data
     df = pd.read_csv('../Data/Screening.csv', index_col='Sample ID')
-    df = df[['n', 'd']]
-
     # loop through all samples
     samples = df.index.values.tolist()
     fp_dict = dict.fromkeys(samples)
@@ -131,7 +129,7 @@ def loop_csv():
 
         # do purcell calculations
         try:
-            fp = purcell_factor(chip=chip, n1='Air', n2='Cassia Oil')
+            fp = purcell_factor(chip=chip, n1='Air', n2='Cassia Oil', layer=1)
         except:
             print('Error calculating sample {}'.format(sample))
             fp = np.nan
@@ -152,13 +150,15 @@ if __name__ == "__main__":
     # Cladding thickness (in units of lam0)
     d_clad = 1.5
 
-    n = {'Air': 1,
-         'Water': 1.3183,
-         'SiO2': 1.442,
-         'Glycerol': 1.46,
-         'EDTS': 1.56,
-         'Cassia Oil': 1.6,
-         'Diiodomethane': 1.71
-         }
+    # Dictionary of material refractive indexes
+    n_dict = {'Air': 1,
+              'Water': 1.3183,
+              'SiO2': 1.442,
+              'Glycerol': 1.46,
+              'EDTS': 1.56,
+              'Cassia Oil': 1.6,
+              'Diiodomethane': 1.71
+              }
 
     loop_csv()
+    # loop_list()

@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numpy import pi
 
-from lifetmm.Methods.SpontaneousEmissionRate import LifetimeTmm
+from lifetmm import LifetimeTmm
 
 
 def fig3():

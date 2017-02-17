@@ -5,7 +5,7 @@ Thin film calculations.
 import matplotlib.pyplot as plt
 import numpy as np
 
-from lifetmm.Methods.SpontaneousEmissionRate import LifetimeTmm
+from lifetmm import LifetimeTmm
 
 
 def t2(medium):
@@ -358,7 +358,8 @@ if __name__ == "__main__":
     SAVE = True  # Save figs and data? (bool)
 
     # Journal plotting formatting/saving setup
-    import lifetmm.Methods.journalPlotting
+    import lifetmm
+
     lifetmm.Methods.journalPlotting.update()
 
     # Set vacuum wavelength

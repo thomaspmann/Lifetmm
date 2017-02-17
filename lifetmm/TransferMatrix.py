@@ -5,7 +5,7 @@ import numpy as np
 from numpy import pi, sqrt, sin, exp
 from scipy.constants import c
 
-from lifetmm.Methods.HelperFunctions import roots, snell, det
+from lifetmm.HelperFunctions import roots, snell, det
 
 log = logging.getLogger(__name__)
 
@@ -351,19 +351,6 @@ class TransferMatrix:
         s = self.s_matrix()
         return s[0, 0].real
 
-    def s11_guided(self):
-        """
-        Evaluate S_11=(1/t) as a function of beta (k_ll) in the guided regime.
-        When S_11 = 0 the corresponding beta is a guided mode.
-        """
-        assert self.guided, ValueError('Run set_leaky_or_guiding(leaky=False) first.')
-        n = self.n_list.real
-        n_11_range = np.linspace(max(n[0], n[-1]), max(n), num=1000, endpoint=False)[1:]
-        s_11 = np.array([])
-        for n_11 in n_11_range:
-            s_11 = np.append(s_11, self._s11(n_11))
-        return n_11_range, s_11
-
     def calc_guided_modes(self, verbose=True, normalised=False):
         """
         Return the parallel wave vectors (k_11 or beta) of all guided modes that the structure
@@ -482,13 +469,13 @@ class TransferMatrix:
         """
         Command line verbose feedback of the structure.
         """
-        logging.info('Simulation info.\n')
-
+        logging.info('****** Simulation info *****\n')
         logging.info('Multi-layered Structure:')
         logging.info('d\t\tn')
         for n, d in zip(self.n_list, self.d_list):
             logging.info('{0:4g}\t{1:g}'.format(d, n))
-        logging.info('\nFree space wavelength: {:g}\n'.format(self.lam_vac))
+        logging.info('Free space wavelength: {:g}'.format(self.lam_vac))
+        logging.info('****************************\n')
 
     def show_structure(self):
         """

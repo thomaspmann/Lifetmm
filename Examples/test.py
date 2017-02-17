@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
-
-from lifetmm.Methods.SpontaneousEmissionRate import LifetimeTmm
-from lifetmm.Methods.TransferMatrix import TransferMatrix
+from lifetmm.TransferMatrix import TransferMatrix
+from lifetmm.SpontaneousEmissionRate import LifetimeTmm
 
 
 def mcgehee():
@@ -33,7 +32,7 @@ def mcgehee():
     plt.xlabel('Position in Device (nm)')
     plt.ylabel('Normalized |E|$^2$ Intensity ($|E(z)/E_0(0)|^2$)')
     if SAVE:
-        plt.savefig('../Images/McGehee structure.png', dpi=300)
+        plt.savefig('../Images/McGehee structure')
     plt.show()
 
 
@@ -78,64 +77,6 @@ def spe():
         ax2.axvline(z, color='k', lw=2)
     ax1.legend(title='Horizontal Dipoles')
     ax2.legend(title='Vertical Dipoles')
-    plt.show()
-
-
-def guiding_plot():
-    """ Find the guiding modes (TE and TM) for a given structure.
-    First plot s_11 as a function of beta. When s_11=0 this corresponds
-    to a wave guiding mode. We then solve the roots (with scipy's brentq
-    algorithm) and plot these as vertical red lines. Check that visually there
-    is a red line at each pole so that none are missed.
-    """
-    # Create structure
-    st = LifetimeTmm()
-    st.set_vacuum_wavelength(lam0)
-    st.set_field('E')
-    st.set_leaky_or_guiding('guiding')
-
-    # st.add_layer(0 * lam0, air)
-    # st.add_layer(1 * lam0, si)
-    # st.add_layer(0 * lam0, air)
-
-    st.add_layer(300, sio2)
-    st.add_layer(100, si)
-    st.add_layer(20, sio2)
-    st.add_layer(100, si)
-    st.add_layer(300, air)
-
-    st.info()
-
-    # Prepare the figure
-    fig, (ax1, ax2) = plt.subplots(2, 1, sharex='col', sharey='none')
-
-    # TE modes
-    st.set_polarization('TE')
-    [beta, s_11] = st.s11_guided()
-    ax1.plot(beta, s_11, label='TE')
-    roots = st.calc_guided_modes(normalised=True)
-    for root in roots:
-        ax1.axvline(root, color='r')
-
-    # TM modes
-    st.set_polarization('TM')
-    [beta, s_11] = st.s11_guided()
-    ax2.plot(beta, s_11, label='TM')
-    roots = st.calc_guided_modes(normalised=True)
-    for root in roots:
-        ax2.axvline(root, color='r')
-
-    # Format plot
-    # fig.tight_layout()
-    ax1.set_ylabel('$S_{11}$')
-    ax1.axhline(color='k')
-    ax2.set_ylabel('$S_{11}$')
-    ax2.set_xlabel('Normalised parallel wave vector (k_11/k)')
-    ax2.axhline(color='k')
-    ax1.legend()
-    ax2.legend()
-    if SAVE:
-        plt.savefig('../Images/guided modes.png', dpi=300)
     plt.show()
 
 
@@ -227,8 +168,8 @@ if __name__ == "__main__":
     sio2 = 1.45
     si = 3.48
 
-    # mcgehee()
+    mcgehee()
     # spe()
     # guiding_plot()
     # guiding_electric_field()
-    test()
+    # test()

@@ -1,8 +1,6 @@
-import logging
-
 import numpy as np
 import scipy as sp
-
+import logging
 log = logging.getLogger(__name__)
 
 
@@ -56,7 +54,7 @@ def roots(f, a, b, eps=1e-5, verbose=True):
                     logging.info(root)
         else:
             if verbose:
-                logging.info('\nRoot finding done')
+                logging.info('Root finding done!')
             return np.array(results)
 
 
@@ -98,7 +96,7 @@ def det(matrix):
 
 
 def sinc(x):
-    """Un-normalised sinc function: sinc(x) = sin(x) / x."""
+    """Un-normalised sinc function: sinc(x) = sin(x) / x. Note numpy's function is normalised."""
     if x == 0:
         return 1
     else:

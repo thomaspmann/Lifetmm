@@ -5,8 +5,9 @@ Script to recreate the plots in the paper
     by Celestino Creatore and Lucio Claudio Andreani.
 """
 import matplotlib.pyplot as plt
+import numpy as np
 
-from lifetmm.Methods.SpontaneousEmissionRate import *
+from lifetmm import LifetimeTmm
 
 
 def fig3():
@@ -480,9 +481,9 @@ if __name__ == "__main__":
     # fig3()
     # fig4()
     fig5()
-    fig6()
-    fig7()
-    fig8()
-    fig9()
-    fig13a()
-    fig13b()
+    # fig6()
+    # fig7()
+    # fig8()
+    # fig9()
+    # fig13a()
+    # fig13b()
