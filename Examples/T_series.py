@@ -20,7 +20,7 @@ def purcell_factor(chip, n1, n2, layer):
 
     result1 = st1.calc_spe_structure(th_pow=11)
     try:
-        spe1 = result1['leaky']['avg'] + result1['guided']['avg']
+        spe1 = result1['leaky']['avg'] #+ result1['guided']['avg']
     except KeyError:
         spe1 = result1['leaky']['avg']
     ind = st1.get_layer_indices(layer)
@@ -36,7 +36,7 @@ def purcell_factor(chip, n1, n2, layer):
 
     result2 = st2.calc_spe_structure(th_pow=11)
     try:
-        spe2 = result2['leaky']['avg'] + result2['guided']['avg']
+        spe2 = result2['leaky']['avg'] #+ result2['guided']['avg']
     except KeyError:
         spe2 = result2['leaky']['avg']
     ind = st1.get_layer_indices(layer)
@@ -75,7 +75,7 @@ def purcell_factor(chip, n1, n2, layer):
     ax2.set_xlabel('Position z ($\lambda$)')
     ax1.legend(title='Leaky')
     ax2.legend(title='Guided')
-    ax1.set_title('Purcell Factor: {:.3f}'.format(fp))
+    ax1.set_title('{0}: Purcell Factor: {1:.3f}'.format(chip['Sample ID'], fp))
     if SAVE:
         plt.savefig('../Images/{}_purcell_factor_individ'.format(chip['Sample ID']))
 
@@ -91,7 +91,7 @@ def purcell_factor(chip, n1, n2, layer):
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax1.set_xlabel('Position z ($\lambda$)')
     ax1.legend()
-    plt.title('Purcell Factor: {:.3f}'.format(fp))
+    plt.title('{0}: Purcell Factor: {1:.3f}'.format(chip['Sample ID'], fp))
     if SAVE:
         plt.savefig('../Images/{}_purcell_factor_total'.format(chip['Sample ID']))
     # plt.show()
@@ -139,10 +139,10 @@ def loop_csv():
     s = pd.Series(fp_dict, name='Purcell Factor')
     s.index.name = 'Sample ID'
     s.reset_index()
-    s.to_csv('../Data/fp.csv', header=True)
+    s.to_csv('../Data/fp_nWG.csv', header=True)
 
 if __name__ == "__main__":
-    SAVE = True  # Save figs and data? (bool)
+    SAVE = False  # Save figs and data? (bool)
 
     # Set vacuum wavelength
     lam0 = 1535
