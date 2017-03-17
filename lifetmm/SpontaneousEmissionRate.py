@@ -7,8 +7,8 @@ from numpy import pi, sin, sum, exp, conj
 from scipy.constants import c
 from tqdm import *
 
-from lifetmm.TransferMatrix import TransferMatrix
 from lifetmm.HelperFunctions import sinc
+from lifetmm.TransferMatrix import TransferMatrix
 
 log = logging.getLogger(__name__)
 
@@ -91,7 +91,7 @@ class LifetimeTmm(TransferMatrix):
             # E field coefficients in terms of incoming amplitude
             E_plus, E_minus = self.layer_field_amplitudes(layer)
             E['TE'] = E_plus * exp(1j * q * z) + E_minus * exp(-1j * q * z)
-            # Orthonormality condition: Normalise outgoing TE wave to medium refractive index.
+            # Orthonormality condition (3): Normalise outgoing TE wave to medium refractive index [n=sqrt(eps)]
             E['TE'] /= self.n_list[0]
 
             # !* TM leaky modes *!

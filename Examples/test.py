@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
-from lifetmm.TransferMatrix import TransferMatrix
+
 from lifetmm.SpontaneousEmissionRate import LifetimeTmm
+from lifetmm.TransferMatrix import TransferMatrix
 
 
 def mcgehee():
@@ -166,10 +167,10 @@ if __name__ == "__main__":
     # Material refractive index at lam0
     air = 1
     sio2 = 1.45
-    si = 3.48
+    si = 3.48 - 5j
 
-    mcgehee()
+    # mcgehee()
     # spe()
     # guiding_plot()
-    # guiding_electric_field()
+    guiding_electric_field()
     # test()

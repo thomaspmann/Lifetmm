@@ -32,6 +32,7 @@ class TransferMatrix:
     def add_layer(self, d, n):
         """
         Add layer of thickness d and refractive index n to the structure.
+        Ensure that dimensions are consistent with layer thicknesses.
         """
         assert d >= 0, ValueError('Thickness must >= 0.')
         if not float(d).is_integer():
@@ -47,7 +48,7 @@ class TransferMatrix:
     def set_vacuum_wavelength(self, lam_vac):
         """
         Set the vacuum wavelength to be simulated.
-        Note to ensure that dimensions must be consistent with layer thicknesses.
+        Ensure that dimensions are consistent with layer thicknesses.
         """
         assert not hasattr(lam_vac, 'size'), ValueError('This function is not vectorized; you need to run one '
                                                         'calculation for each wavelength at a time')
@@ -119,10 +120,10 @@ class TransferMatrix:
 
     def set_guided_mode(self, n_11):
         """
-        Set the normalised parallel wave vector, n_11, for the guided mode to be evaluated.
+        Set the normalised parallel wave vector, n_11=k_11/k_0, for the guided mode to be evaluated.
         """
-        assert not isinstance(n_11, (list, np.ndarray)), ValueError('n_11 must be a number and not array/list.')
         assert self.guided, ValueError('Run set_leaky_or_guiding(leaky=False) first.')
+        assert not isinstance(n_11, (list, np.ndarray)), ValueError('n_11 must be a number and not array/list.')
         n = self.n_list.real
         # See Quantum Electronics by Yariv pg.603
         assert max(n) >= n_11 >= min(n[0], n[-1]), \
@@ -241,7 +242,8 @@ class TransferMatrix:
         Coefficients are in units of the fwd incoming wave amplitude for leaky modes
         and in terms of the superstrate (j=0) outgoing wave amplitude for guided modes.
         """
-        if not self.guided:  # Calculate leaky amplitudes
+        if not self.guided:
+            # Calculate leaky amplitudes
             s = self.s_matrix()
             # Reflection for incoming wave incident of LHS of structure
             r = s[1, 0] / s[0, 0]
@@ -263,8 +265,8 @@ class TransferMatrix:
 
                 field_plus = t_prime / (1 - r_prime_minus * r_dprime * exp(1j * 2 * q * d))
                 field_minus = field_plus * r_dprime * exp(1j * 2 * q * d)
-
-        else:  # Calculate guided amplitudes (2 outgoing waves no incoming)
+        else:
+            # Calculate guided amplitudes (2 outgoing waves no incoming)
             if layer == 0:
                 field_plus = 0 + 0j
                 field_minus = 1 + 0j
