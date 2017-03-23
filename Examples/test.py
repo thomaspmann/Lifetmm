@@ -115,46 +115,37 @@ def guiding_electric_field():
 
 
 def test():
-    # Create structure
-    st = LifetimeTmm()
-    st.set_vacuum_wavelength(lam0)
-    # st.add_layer(1e3, si)
-    st.add_layer(1900, sio2)
-    st.add_layer(100, si)
-    st.add_layer(20, sio2)
-    st.add_layer(100, si)
-    # st.add_layer(1900, sio2)
-    st.add_layer(1e3, air)
+    st = TransferMatrix()
+    st.add_layer(1.5e3, 1)
+    st.add_layer(1.1967e3, 1.6058)
+    st.add_layer(1.5e3, 1.442)
+
+    st.set_vacuum_wavelength(976)
+    st.set_field('E')
+    st.set_incident_angle(30, units='degrees')
     st.info()
 
-    st.set_polarization('TM')
-    st.set_field('H')
-    st.set_leaky_or_guiding('guiding')
-    alpha = st.calc_guided_modes(normalised=True)
-    st.set_guided_mode(alpha[0])
+    # Do calculations
+    st.set_polarization('s')
     result = st.calc_field_structure()
     z = result['z']
-    z = st.calc_z_to_lambda(z)
-    E = result['field']
-    # Normalise fields
-    # E /= max(E)
+    y_s = result['field_squared']
 
+    st.set_polarization('p')
+    result = st.calc_field_structure()
+    y_p = result['field_squared']
+
+    # Plot results
     plt.figure()
-    plt.plot(z, abs(E) ** 2)
+    plt.plot(z, y_s, label='s')
+    plt.plot(z, y_p, label='p')
     for z in st.get_layer_boundaries()[:-1]:
-        z = st.calc_z_to_lambda(z)
-        plt.axvline(x=z, color='k', lw=1, ls='--')
-
-    ind = st.get_layer_indices(1)
-    z = result['z']
-    z = z[ind]
-    E = E[ind]
-    plt.figure()
-    plt.plot(z, abs(E) ** 2)
-    for z in st.get_layer_boundaries()[:-1]:
-        z = st.calc_z_to_lambda(z)
-        plt.axvline(x=z, color='k', lw=1, ls='--')
-
+        plt.axvline(x=z, color='k', lw=2)
+    plt.xlabel('Position in Device (nm)')
+    plt.ylabel('Normalized |E|$^2$ Intensity ($|E(z)/E_0(0)|^2$)')
+    plt.legend()
+    if SAVE:
+        plt.savefig('../Images/McGehee structure')
     plt.show()
 
 
@@ -172,5 +163,5 @@ if __name__ == "__main__":
     # mcgehee()
     # spe()
     # guiding_plot()
-    guiding_electric_field()
-    # test()
+    # guiding_electric_field()
+    test()

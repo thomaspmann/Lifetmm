@@ -7,13 +7,69 @@ import numpy as np
 import pandas as pd
 
 from lifetmm.SpontaneousEmissionRate import LifetimeTmm
+from lifetmm.TransferMatrix import TransferMatrix
+
+
+def excitation_profile(sample):
+    # Load Data
+    df = pd.read_csv('../Data/Screening.csv', index_col='Sample ID')
+    n = df.loc[sample]['n']
+    d = df.loc[sample]['d'] * 1e3  # convert nm to um
+    chip = {'Sample ID': sample, 'n': n, 'd': d}
+
+    st = TransferMatrix()
+    st.add_layer(d_clad * lam0, n_dict['Air'])
+    st.add_layer(chip['d'], chip['n'])
+    st.add_layer(d_clad * lam0, n_dict['SiO2'])
+
+    # Laser Excitation Wavelength
+    st.set_vacuum_wavelength(976)
+    st.set_field('E')
+    aoi = 60  # Angle of incidence (degrees)
+    st.set_incident_angle(aoi, units='degrees')
+    st.info()
+
+    # Do calculations
+    st.set_polarization('s')
+    result = st.calc_field_structure()
+    z = result['z']
+    y_s = result['field_squared']
+
+    st.set_polarization('p')
+    result = st.calc_field_structure()
+    y_p = result['field_squared']
+
+    # Plot results
+    fig, ax1 = plt.subplots()
+    ax1.plot(z, y_s, label='s')
+    ax1.plot(z, y_p, label='p')
+    ax1.set_xlabel('Position in Device (nm)')
+    ax1.set_ylabel('Normalized |E|$^2$ Intensity ($|E(z)/E_0(0)|^2$)')
+    ax1.set_title('Angle of incidence {}°'.format(aoi))
+    ax1.legend(title='Polarization')
+
+    for z in st.get_layer_boundaries()[:-1]:
+        ax1.axvline(x=z, color='k', lw=2)
+
+    # Draw rectangles for the refractive index
+    from matplotlib.patches import Rectangle
+    ax2 = ax1.twinx()
+    for z0, dz, n in zip(st.d_cumulative, st.d_list, st.n_list):
+        rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', zorder=-1, alpha=0.2)
+        ax2.add_patch(rect)
+    ax2.set_ylabel('n')
+    ax2.set_ylim(0, 1.2 * max(st.n_list.real))
+
+    if SAVE:
+        plt.savefig('../Images/{}_excitation_profile'.format(chip['Sample ID']))
+    plt.show()
 
 
 def plot(sample):
     # Load Data
     df = pd.read_csv('../Data/Screening.csv', index_col='Sample ID')
     n = df.loc[sample]['n']
-    d = df.loc[sample]['d'] * 1000  # in nm not um
+    d = df.loc[sample]['d'] * 1e3  # in nm not um
     chip = {'Sample ID': sample, 'n': n, 'd': d}
 
     # Structure 1
@@ -53,8 +109,21 @@ def plot(sample):
     ax2.set_xlabel('Position z ($\lambda$)')
     ax1.set_title('Leaky')
     ax2.set_title('Guided')
+
+    # TODO: Fix
+    # Draw rectangles for the refractive index
+    # from matplotlib.patches import Rectangle
+    # ax2 = ax1.twinx()
+    # for z0, dz, n in zip(st1.d_cumulative, st1.d_list, st1.n_list):
+    #     z0 = st1.calc_z_to_lambda(z0, center=True)
+    #     dz = st1.calc_z_to_lambda(dz, center=False)
+    #     rect = Rectangle((2*z0-dz, 0), dz, n.real, facecolor='c', zorder=-1, alpha=0.2)
+    #     ax2.add_patch(rect)
+    # ax2.set_ylabel('n')
+    # ax2.set_ylim(0, 1.2*max(st1.n_list.real))
+
     if SAVE:
-        plt.savefig('../Images/{}_individual.pdf'.format(chip['Sample ID']))
+        plt.savefig('../Images/{}_individual'.format(chip['Sample ID']))
 
     fig, ax1 = plt.subplots()
     ax1.plot(z, spe1)
@@ -67,8 +136,9 @@ def plot(sample):
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax1.set_xlabel('Position z ($\lambda$)')
     # ax1.legend()
+
     if SAVE:
-        plt.savefig('../Images/{}_total.pdf'.format(chip['Sample ID']))
+        plt.savefig('../Images/{}_total'.format(chip['Sample ID']))
     plt.show()
 
 
@@ -223,6 +293,7 @@ if __name__ == "__main__":
               'Diiodomethane': 1.71
               }
 
+    # excitation_profile(sample='T21')
     plot(sample='T21')
     # loop_csv()
     # loop_list()
