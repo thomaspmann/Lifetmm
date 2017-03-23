@@ -223,6 +223,6 @@ if __name__ == "__main__":
               'Diiodomethane': 1.71
               }
 
-    plot(sample='T2')
+    plot(sample='T21')
     # loop_csv()
     # loop_list()
