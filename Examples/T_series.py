@@ -18,9 +18,10 @@ def excitation_profile(sample):
     chip = {'Sample ID': sample, 'n': n, 'd': d}
 
     st = TransferMatrix()
-    st.add_layer(d_clad * lam0, n_dict['Air'])
-    st.add_layer(chip['d'], chip['n'])
+    # st.add_layer(d_clad * lam0, n_dict['Air'])
     st.add_layer(d_clad * lam0, n_dict['SiO2'])
+    st.add_layer(chip['d'], chip['n'])
+    st.add_layer(d_clad * lam0, n_dict['Air'])
 
     # Laser Excitation Wavelength
     st.set_vacuum_wavelength(976)
@@ -56,7 +57,7 @@ def excitation_profile(sample):
     ax2 = ax1.twinx()
     for z0, dz, n in zip(st.d_cumulative, st.d_list, st.n_list):
         rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', zorder=-1, alpha=0.2)
-        ax2.add_patch(rect)
+        ax1.add_patch(rect)  # Note: add to ax1 so that zorder has effect
     ax2.set_ylabel('n')
     ax2.set_ylim(0, 1.2 * max(st.n_list.real))
 
@@ -293,7 +294,7 @@ if __name__ == "__main__":
               'Diiodomethane': 1.71
               }
 
-    # excitation_profile(sample='T21')
-    plot(sample='T21')
+    excitation_profile(sample='T21')
+    # plot(sample='T21')
     # loop_csv()
     # loop_list()
