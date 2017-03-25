@@ -26,8 +26,12 @@ def excitation_profile(sample):
     # Laser Excitation Wavelength
     st.set_vacuum_wavelength(976)
     st.set_field('E')
-    aoi = 60  # Angle of incidence (degrees)
-    st.set_incident_angle(aoi, units='degrees')
+
+    # Angle of incidence (degrees)
+    aoi = 60  # In air - onto chip
+    from lifetmm.HelperFunctions import snell
+    aoi_soi2 = snell(1, n_dict['SiO2'], aoi * (np.pi / 180))  # Set to aoi in silica (radians)
+    st.set_incident_angle(aoi_soi2, units='radians')
     st.info()
 
     # Do calculations
@@ -49,18 +53,19 @@ def excitation_profile(sample):
     ax1.set_title('Angle of incidence {}°'.format(aoi))
     ax1.legend(title='Polarization')
 
-    for z in st.get_layer_boundaries()[:-1]:
-        ax1.axvline(x=z, color='k', lw=2)
-
     # Draw rectangles for the refractive index
     from matplotlib.patches import Rectangle
     ax2 = ax1.twinx()
     for z0, dz, n in zip(st.d_cumulative, st.d_list, st.n_list):
-        rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', zorder=-1, alpha=0.2)
-        ax1.add_patch(rect)  # Note: add to ax1 so that zorder has effect
+        rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.2)
+        ax2.add_patch(rect)  # Note: add to ax1 so that zorder has effect
     ax2.set_ylabel('n')
-    ax2.set_ylim(0, 1.2 * max(st.n_list.real))
+    ax2.set_ylim(0, 1.5 * max(st.n_list.real))
+    ax1.set_zorder(ax2.get_zorder() + 1)  # put ax1 in front of ax2
+    ax1.patch.set_visible(False)  # hide ax1'canvas'
 
+    for z in st.get_layer_boundaries()[:-1]:
+        ax1.axvline(x=z, color='k', lw=2)
     if SAVE:
         plt.savefig('../Images/{}_excitation_profile'.format(chip['Sample ID']))
     plt.show()
@@ -99,11 +104,6 @@ def plot(sample):
     except KeyError:
         pass
 
-    # Plot internal layer boundaries
-    for i in boundaries:
-        ax1.axvline(i, color='k', ls='--')
-        ax2.axvline(i, color='k', ls='--')
-
     # Labels
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax2.set_ylabel('$\Gamma / \Gamma_0$')
@@ -111,17 +111,9 @@ def plot(sample):
     ax1.set_title('Leaky')
     ax2.set_title('Guided')
 
-    # TODO: Fix
-    # Draw rectangles for the refractive index
-    # from matplotlib.patches import Rectangle
-    # ax2 = ax1.twinx()
-    # for z0, dz, n in zip(st1.d_cumulative, st1.d_list, st1.n_list):
-    #     z0 = st1.calc_z_to_lambda(z0, center=True)
-    #     dz = st1.calc_z_to_lambda(dz, center=False)
-    #     rect = Rectangle((2*z0-dz, 0), dz, n.real, facecolor='c', zorder=-1, alpha=0.2)
-    #     ax2.add_patch(rect)
-    # ax2.set_ylabel('n')
-    # ax2.set_ylim(0, 1.2*max(st1.n_list.real))
+    for z in st1.get_layer_boundaries()[:-1]:
+        ax1.axvline(x=z, color='k', lw=2)
+        ax2.axvline(x=z, color='k', lw=2)
 
     if SAVE:
         plt.savefig('../Images/{}_individual'.format(chip['Sample ID']))
@@ -131,7 +123,7 @@ def plot(sample):
 
     # Plot internal layer boundaries
     for i in boundaries:
-        ax1.axvline(i, color='k', ls='--')
+        ax1.axvline(i, color='k', lw=2)
 
     # Labels
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
@@ -140,6 +132,59 @@ def plot(sample):
 
     if SAVE:
         plt.savefig('../Images/{}_total'.format(chip['Sample ID']))
+    plt.show()
+
+
+def fig6(sample):
+    """
+    Silicon layer bounded by two semi infinite air claddings.
+    """
+    # Load Data
+    df = pd.read_csv('../Data/Screening.csv', index_col='Sample ID')
+    n = df.loc[sample]['n']
+    d = df.loc[sample]['d'] * 1e3  # in nm not um
+    chip = {'Sample ID': sample, 'n': n, 'd': d}
+
+    # Structure 1
+    st = LifetimeTmm()
+    st.set_vacuum_wavelength(lam0)
+    st.add_layer(d_clad * lam0, n_dict['SiO2'])
+    st.add_layer(chip['d'], chip['n'])
+    st.add_layer(d_clad * lam0, n_dict['Air'])
+    st.info()
+
+    # Calculate spontaneous emission over whole structure
+    result = st.calc_spe_structure_leaky()
+    z = result['z']
+    spe = result['spe']
+
+    # Convert z into z/lam0 and center
+    z = st.calc_z_to_lambda(z)
+
+    # Plot spontaneous emission rates
+    fig = plt.figure()
+    ax1 = fig.add_subplot(211)
+    ax1.plot(z, spe['TE'], label='TE')
+    ax1.plot(z, spe['TM_p'], label='TM')
+    ax1.plot(z, spe['TE'] + spe['TM_p'], 'k', label='TE + TM')
+    ax2 = fig.add_subplot(212)
+    ax2.plot(z, spe['TM_s'], label='TM')
+
+    # Plot layer boundaries
+    for z in st.get_layer_boundaries()[:-1]:
+        ax1.axvline(st.calc_z_to_lambda(z), color='k', lw=2)
+        ax2.axvline(st.calc_z_to_lambda(z), color='k', lw=2)
+
+    # ax1.set_ylim(0, 1.4)
+    # ax2.set_ylim(0, 1.4)
+    ax1.set_title('{}: Spontaneous Emission Rate.'.format(chip['Sample ID']))
+    ax1.set_ylabel('$\Gamma / \Gamma_0$')
+    ax2.set_ylabel('$\Gamma /\Gamma_0$')
+    ax2.set_xlabel('z/$\lambda$')
+    ax1.legend(title='Horizontal Dipoles', loc='lower right', fontsize='medium')
+    ax2.legend(title='Vertical Dipoles', loc='lower right', fontsize='medium')
+    if SAVE:
+        plt.savefig('../Images/{}_fig6'.format(chip['Sample ID']))
     plt.show()
 
 
@@ -294,7 +339,8 @@ if __name__ == "__main__":
               'Diiodomethane': 1.71
               }
 
-    excitation_profile(sample='T21')
+    # excitation_profile(sample='T21')
     # plot(sample='T21')
+    fig6(sample='T21')
     # loop_csv()
     # loop_list()
