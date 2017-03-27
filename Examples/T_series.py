@@ -5,6 +5,7 @@ Thin film calculations for T-series. Purcell factor.
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.patches import Rectangle
 
 from lifetmm.SpontaneousEmissionRate import LifetimeTmm
 from lifetmm.TransferMatrix import TransferMatrix
@@ -18,7 +19,7 @@ def excitation_profile(sample):
     chip = {'Sample ID': sample, 'n': n, 'd': d}
 
     st = TransferMatrix()
-    # st.add_layer(d_clad * lam0, n_dict['Air'])
+    st.add_layer(0, n_dict['Air'])
     st.add_layer(d_clad * lam0, n_dict['SiO2'])
     st.add_layer(chip['d'], chip['n'])
     st.add_layer(d_clad * lam0, n_dict['Air'])
@@ -35,20 +36,22 @@ def excitation_profile(sample):
     st.info()
 
     # Do calculations
-    st.set_polarization('s')
+    st.set_polarization('TE')
     result = st.calc_field_structure()
     z = result['z']
+    # z = st.calc_z_to_lambda(z)
+
     y_s = result['field_squared']
 
-    st.set_polarization('p')
+    st.set_polarization('TM')
     result = st.calc_field_structure()
     y_p = result['field_squared']
 
     # Plot results
     fig, ax1 = plt.subplots()
-    ax1.plot(z, y_s, label='s')
-    ax1.plot(z, y_p, label='p')
-    ax1.set_xlabel('Position in Device (nm)')
+    ax1.plot(z, y_s, label='TE')
+    ax1.plot(z, y_p, label='TM')
+    ax1.set_xlabel('z (nm)')
     ax1.set_ylabel('Normalized |E|$^2$ Intensity ($|E(z)/E_0(0)|^2$)')
     ax1.set_title('Angle of incidence {}°'.format(aoi))
     ax1.legend(title='Polarization')
@@ -57,7 +60,9 @@ def excitation_profile(sample):
     from matplotlib.patches import Rectangle
     ax2 = ax1.twinx()
     for z0, dz, n in zip(st.d_cumulative, st.d_list, st.n_list):
-        rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.2)
+        # z0 = st.calc_z_to_lambda(z0)
+        # dz = st.calc_z_to_lambda(dz, center=False)
+        rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.15)
         ax2.add_patch(rect)  # Note: add to ax1 so that zorder has effect
     ax2.set_ylabel('n')
     ax2.set_ylim(0, 1.5 * max(st.n_list.real))
@@ -67,7 +72,7 @@ def excitation_profile(sample):
     for z in st.get_layer_boundaries()[:-1]:
         ax1.axvline(x=z, color='k', lw=2)
     if SAVE:
-        plt.savefig('../Images/{}_excitation_profile'.format(chip['Sample ID']))
+        plt.savefig('../Images/{}_excitation_profile'.format(chip['Sample ID']), dpi=300)
     plt.show()
 
 
@@ -79,22 +84,21 @@ def plot(sample):
     chip = {'Sample ID': sample, 'n': n, 'd': d}
 
     # Structure 1
-    st1 = LifetimeTmm()
-    st1.set_vacuum_wavelength(lam0)
-    st1.add_layer(d_clad * lam0, n_dict['SiO2'])
-    st1.add_layer(chip['d'], chip['n'])
-    st1.add_layer(d_clad * lam0, n_dict['Air'])
-    st1.info()
+    st = LifetimeTmm()
+    st.set_vacuum_wavelength(lam0)
+    st.add_layer(d_clad * lam0, n_dict['SiO2'])
+    st.add_layer(chip['d'], chip['n'])
+    st.add_layer(d_clad * lam0, n_dict['Air'])
+    st.info()
 
-    result1 = st1.calc_spe_structure(th_pow=11)
+    result1 = st.calc_spe_structure(th_pow=11)
     try:
         spe1 = result1['leaky']['avg'] + result1['guided']['avg']
     except KeyError:
         spe1 = result1['leaky']['avg']
 
     z = result1['z']
-    z = st1.calc_z_to_lambda(z)
-    boundaries = [st1.calc_z_to_lambda(i) for i in st1.get_layer_boundaries()[:-1]]
+    z = st.calc_z_to_lambda(z)
 
     # ------- Plots -------
     fig, (ax1, ax2) = plt.subplots(2, 1, sharex='col', sharey='none')
@@ -111,9 +115,29 @@ def plot(sample):
     ax1.set_title('Leaky')
     ax2.set_title('Guided')
 
-    for z in st1.get_layer_boundaries()[:-1]:
-        ax1.axvline(x=z, color='k', lw=2)
-        ax2.axvline(x=z, color='k', lw=2)
+    for zb in st.get_layer_boundaries()[:-1]:
+        zb = st.calc_z_to_lambda(zb)
+        ax1.axvline(x=zb, color='k', lw=2)
+        ax2.axvline(x=zb, color='k', lw=2)
+
+    # Draw rectangles for the refractive index
+    ax1b = ax1.twinx()
+    ax2b = ax2.twinx()
+    for z0, dz, n in zip(st.d_cumulative, st.d_list, st.n_list):
+        z0 = st.calc_z_to_lambda(z0)
+        dz = st.calc_z_to_lambda(dz, center=False)
+        rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.2)
+        ax1b.add_patch(rect)
+        ax1b.set_ylabel('n')
+        ax1b.set_ylim(0, 1.5 * max(st.n_list.real))
+        rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.2)
+        ax2b.add_patch(rect)
+        ax2b.set_ylabel('n')
+        ax2b.set_ylim(0, 1.5 * max(st.n_list.real))
+    ax1.set_zorder(ax1b.get_zorder() + 1)  # put ax1 in front of ax2
+    ax1.patch.set_visible(False)  # hide ax1'canvas'
+    ax2.set_zorder(ax2b.get_zorder() + 1)  # put ax1 in front of ax2
+    ax2.patch.set_visible(False)  # hide ax1'canvas'
 
     if SAVE:
         plt.savefig('../Images/{}_individual'.format(chip['Sample ID']))
@@ -121,17 +145,124 @@ def plot(sample):
     fig, ax1 = plt.subplots()
     ax1.plot(z, spe1)
 
-    # Plot internal layer boundaries
-    for i in boundaries:
-        ax1.axvline(i, color='k', lw=2)
+    # Labels
+    ax1.set_ylabel('$\Gamma / \Gamma_0$')
+    ax1.set_xlabel('Position z ($\lambda$)')
+    # ax1.legend()
+
+    # Draw rectangles for the refractive index
+    ax2 = ax1.twinx()
+    for z0, dz, n in zip(st.d_cumulative, st.d_list, st.n_list):
+        z0 = st.calc_z_to_lambda(z0)
+        dz = st.calc_z_to_lambda(dz, center=False)
+        rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.15)
+        ax2.add_patch(rect)  # Note: add to ax1 so that zorder has effect
+    ax2.set_ylabel('n')
+    ax2.set_ylim(0, 1.5 * max(st.n_list.real))
+    ax1.set_zorder(ax2.get_zorder() + 1)  # put ax1 in front of ax2
+    ax1.patch.set_visible(False)  # hide ax1'canvas'
+
+    for zb in st.get_layer_boundaries()[:-1]:
+        zb = st.calc_z_to_lambda(zb)
+        ax1.axvline(x=zb, color='k', lw=2)
+
+    if SAVE:
+        plt.savefig('../Images/{}_total'.format(chip['Sample ID']))
+    plt.show()
+
+
+def plot_te_tm(sample):
+    # Load Data
+    df = pd.read_csv('../Data/Screening.csv', index_col='Sample ID')
+    n = df.loc[sample]['n']
+    d = df.loc[sample]['d'] * 1e3  # in nm not um
+    chip = {'Sample ID': sample, 'n': n, 'd': d}
+
+    # Structure 1
+    st = LifetimeTmm()
+    st.set_vacuum_wavelength(lam0)
+    st.add_layer(d_clad * lam0, n_dict['SiO2'])
+    st.add_layer(chip['d'], chip['n'])
+    st.add_layer(d_clad * lam0, n_dict['Air'])
+    st.info()
+
+    result1 = st.calc_spe_structure(th_pow=11)
+    try:
+        spe1 = result1['leaky']['avg'] + result1['guided']['avg']
+    except KeyError:
+        spe1 = result1['leaky']['avg']
+
+    z = result1['z']
+    z = st.calc_z_to_lambda(z)
+
+    # ------- Plots -------
+    fig, (ax1, ax2) = plt.subplots(2, 1, sharex='col', sharey='none')
+    ax1.plot(z, result1['leaky']['avg'])
+    try:
+        ax2.plot(z, result1['guided']['avg'])
+    except KeyError:
+        pass
+
+    # Labels
+    ax1.set_ylabel('$\Gamma / \Gamma_0$')
+    ax2.set_ylabel('$\Gamma / \Gamma_0$')
+    ax2.set_xlabel('Position z ($\lambda$)')
+    ax1.set_title('Leaky')
+    ax2.set_title('Guided')
+
+    for zb in st.get_layer_boundaries()[:-1]:
+        zb = st.calc_z_to_lambda(zb)
+        ax1.axvline(x=zb, color='k', lw=2)
+        ax2.axvline(x=zb, color='k', lw=2)
+
+    # Draw rectangles for the refractive index
+    ax1b = ax1.twinx()
+    ax2b = ax2.twinx()
+    for z0, dz, n in zip(st.d_cumulative, st.d_list, st.n_list):
+        z0 = st.calc_z_to_lambda(z0)
+        dz = st.calc_z_to_lambda(dz, center=False)
+        rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.2)
+        ax1b.add_patch(rect)
+        ax1b.set_ylabel('n')
+        ax1b.set_ylim(0, 1.5 * max(st.n_list.real))
+        rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.2)
+        ax2b.add_patch(rect)
+        ax2b.set_ylabel('n')
+        ax2b.set_ylim(0, 1.5 * max(st.n_list.real))
+    ax1.set_zorder(ax1b.get_zorder() + 1)  # put ax1 in front of ax2
+    ax1.patch.set_visible(False)  # hide ax1'canvas'
+    ax2.set_zorder(ax2b.get_zorder() + 1)  # put ax1 in front of ax2
+    ax2.patch.set_visible(False)  # hide ax1'canvas'
+
+    if SAVE:
+        plt.savefig('../Images/{}_individual'.format(chip['Sample ID']))
+
+    fig, ax1 = plt.subplots()
+    ax1.plot(z, spe1)
 
     # Labels
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax1.set_xlabel('Position z ($\lambda$)')
     # ax1.legend()
 
+    # Draw rectangles for the refractive index
+    ax2 = ax1.twinx()
+    for z0, dz, n in zip(st.d_cumulative, st.d_list, st.n_list):
+        z0 = st.calc_z_to_lambda(z0)
+        dz = st.calc_z_to_lambda(dz, center=False)
+        rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.15)
+        ax2.add_patch(rect)  # Note: add to ax1 so that zorder has effect
+    ax2.set_ylabel('n')
+    ax2.set_ylim(0, 1.5 * max(st.n_list.real))
+    ax1.set_zorder(ax2.get_zorder() + 1)  # put ax1 in front of ax2
+    ax1.patch.set_visible(False)  # hide ax1'canvas'
+
+    for zb in st.get_layer_boundaries()[:-1]:
+        zb = st.calc_z_to_lambda(zb)
+        ax1.axvline(x=zb, color='k', lw=2)
+
     if SAVE:
-        plt.savefig('../Images/{}_total'.format(chip['Sample ID']))
+        plt.savefig('../Images/{}_total_te_tm'.format(chip['Sample ID']))
     plt.show()
 
 
@@ -327,7 +458,7 @@ if __name__ == "__main__":
     lam0 = 1535
 
     # Cladding thickness (in units of lam0)
-    d_clad = 1.5
+    d_clad = 0.5
 
     # Dictionary of material refractive indexes
     n_dict = {'Air': 1,
@@ -339,8 +470,9 @@ if __name__ == "__main__":
               'Diiodomethane': 1.71
               }
 
-    # excitation_profile(sample='T21')
-    # plot(sample='T21')
-    fig6(sample='T21')
+    # excitation_profile(sample='T2')
+    # plot(sample='T2')
+    plot_te_tm(sample='T2')
+    # fig6(sample='T2')
     # loop_csv()
     # loop_list()
