@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 from lifetmm.SpontaneousEmissionRate import LifetimeTmm
 from lifetmm.TransferMatrix import TransferMatrix
@@ -115,39 +116,90 @@ def guiding_electric_field():
 
 
 def test():
-    st = TransferMatrix()
-    st.add_layer(1.5e3, 1)
-    st.add_layer(1.1967e3, 1.6058)
-    st.add_layer(1.5e3, 1.442)
+    # Dictionary of material refractive indexes
+    n_dict = {'Air': 1,
+              'Water': 1.3183,
+              'SiO2': 1.442,
+              'Glycerol': 1.46,
+              'EDTS': 1.56,
+              'Cassia Oil': 1.6,
+              'Diiodomethane': 1.71,
+              'TZN': 1.9
+              }
 
-    st.set_vacuum_wavelength(976)
-    st.set_field('E')
-    st.set_incident_angle(30, units='degrees')
+    # Multilayer Structure
+    d_clad = 1.5
+    st = TransferMatrix()
+    st.set_vacuum_wavelength(lam0)
+    st.add_layer(d_clad * lam0, n_dict['SiO2'])
+    st.add_layer(1 * lam0, n_dict['EDTS'])
+    st.add_layer(d_clad * lam0, n_dict['Air'])
+    st.flip()
     st.info()
 
-    # Do calculations
-    st.set_polarization('s')
-    result = st.calc_field_structure()
-    z = result['z']
-    y_s = result['field_squared']
+    # Simulation Wavelength
+    st.set_vacuum_wavelength(1550)
+    st.set_field('E')
+    st.set_polarization('TE')
 
-    st.set_polarization('p')
-    result = st.calc_field_structure()
-    y_p = result['field_squared']
+    # Find guided mode indices
+    st.set_leaky_or_guiding('guiding')
+    alpha = st.calc_guided_modes(normalised=True)
 
-    # Plot results
-    plt.figure()
-    plt.plot(z, y_s, label='s')
-    plt.plot(z, y_p, label='p')
+    fig, ax1 = plt.subplots()
+    for a in alpha:
+        st.set_guided_mode(a)
+        result = st.calc_field_structure()
+        z = result['z']
+        E = result['field']
+        ax1.plot(z, abs(E) ** 2, label='No absorption')
+
+    # Multilayer Structure - now with absorption
+    d_clad = 1.5
+    st = TransferMatrix()
+    st.set_vacuum_wavelength(lam0)
+    st.add_layer(d_clad * lam0, n_dict['SiO2'])
+    st.add_layer(1 * lam0, n_dict['EDTS'])
+    st.add_layer(d_clad * lam0, n_dict['Air']+1j)
+    st.info()
+    st.flip()
+
+    # Simulation Wavelength
+    st.set_vacuum_wavelength(1550)
+    st.set_field('E')
+    st.set_polarization('TE')
+
+    # Find guided mode indices
+    st.set_leaky_or_guiding('guiding')
+    alpha = st.calc_guided_modes(normalised=True)
+
+    for a in alpha:
+        st.set_guided_mode(a)
+        result = st.calc_field_structure()
+        z = result['z']
+        E = result['field']
+        ax1.plot(z, abs(E) ** 2, label='Absorption')
+
+        # Draw rectangles for the refractive index
+    from matplotlib.patches import Rectangle
+    ax2 = ax1.twinx()
+    for z0, dz, n in zip(st.d_cumulative, st.d_list, st.n_list):
+        # z0 = st.calc_z_to_lambda(z0)
+        # dz = st.calc_z_to_lambda(dz, center=False)
+        rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.15)
+        ax2.add_patch(rect)  # Note: add to ax1 so that zorder has effect
+    ax2.set_ylabel('n')
+    ax2.set_ylim(0, 1.5 * max(st.n_list.real))
+    ax1.set_zorder(ax2.get_zorder() + 1)  # put ax1 in front of ax2
+    ax1.patch.set_visible(False)  # hide ax1'canvas'
+
     for z in st.get_layer_boundaries()[:-1]:
-        plt.axvline(x=z, color='k', lw=2)
-    plt.xlabel('Position in Device (nm)')
-    plt.ylabel('Normalized |E|$^2$ Intensity ($|E(z)/E_0(0)|^2$)')
-    plt.legend()
-    if SAVE:
-        plt.savefig('../Images/McGehee structure')
-    plt.show()
+        ax1.axvline(x=z, color='k', lw=2)
 
+    ax1.legend()
+    if SAVE:
+        plt.savefig('../Images/guided fields.png', dpi=300)
+    plt.show()
 
 if __name__ == "__main__":
     SAVE = False
@@ -160,8 +212,8 @@ if __name__ == "__main__":
     sio2 = 1.45
     si = 3.48 - 5j
 
-    mcgehee()
+    # mcgehee()
     # spe()
     # guiding_plot()
     # guiding_electric_field()
-    # test()
+    test()
