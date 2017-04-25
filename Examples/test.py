@@ -201,6 +201,84 @@ def test():
         plt.savefig('../Images/guided fields.png', dpi=300)
     plt.show()
 
+
+def PJ_dipoe_calculation():
+    from matplotlib.patches import Rectangle
+
+    st = LifetimeTmm()
+    st.set_vacuum_wavelength(514.5)
+
+    # Add layers
+    # st.add_layer(lam0, 1.44)
+    st.add_layer(750, 1 ** 0.5)
+    # st.add_layer(750, 1)
+    st.add_layer(750, 2.3409 ** 0.5)
+    st.info()
+
+    result = st.calc_spe_structure(th_pow=11)
+    try:
+        # spe = result['leaky']['perpendicular'] + result['guided']['perpendicular']
+        spe = result['leaky']['parallel'] + result['guided']['parallel']
+    except KeyError:
+        # spe = result['leaky']['perpendicular']
+        spe = result['leaky']['parallel']
+
+    z = result['z']
+
+    fig, ax1 = plt.subplots()
+    ax1.plot(z, spe)
+
+    # Labels
+    ax1.set_ylabel('$\Gamma / \Gamma_0$')
+    ax1.set_xlabel('Position z (nm)')
+    # ax1.legend()
+
+    # Draw rectangles for the refractive index
+    ax2 = ax1.twinx()
+    for z0, dz, n in zip(st.d_cumulative, st.d_list, st.n_list):
+        rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.15)
+        ax2.add_patch(rect)  # Note: add to ax1 so that zorder has effect
+    ax2.set_ylabel('n')
+    ax2.set_ylim(ax1.get_ylim())
+    ax1.set_zorder(ax2.get_zorder() + 1)  # put ax1 in front of ax2
+    ax1.patch.set_visible(False)  # hide ax1'canvas'
+
+    for zb in st.get_layer_boundaries()[:-1]:
+        ax1.axvline(x=zb, color='k', lw=2)
+
+    if SAVE:
+        plt.savefig('../Images/PJ_dipole')
+    plt.show()
+
+
+def tester():
+    """Plot reflection from a structure vs z component wave-vector"""
+    st = LifetimeTmm()
+    st.set_vacuum_wavelength(514.5)
+    st.set_polarization('TM')
+
+    # Add layers
+    st.add_layer(0, 1)
+    st.add_layer(0, 2 ** 0.5)
+    # st.add_layer(0, (-8+0.96j)**0.5)
+    st.info()
+
+    n_11_list = np.linspace(0, 5, 2000)
+    r_list = []
+    for n_11 in n_11_list:
+        st.n_11 = n_11
+        reflection, transmission = st.calc_reflection_and_transmission()
+        r_list.append(np.sqrt(reflection))
+
+    fig, ax = plt.subplots()
+    ax.plot(n_11_list, r_list)
+    # Line to show plane/evanescent wave boundary
+    ax.axvline(1, color='k')
+    ax.set_xlabel(r'$k_{z}/k_{0}$')
+    ax.set_ylabel(r'$|r|^2$')
+    plt.show()
+
+
 if __name__ == "__main__":
     SAVE = False
 
@@ -210,10 +288,12 @@ if __name__ == "__main__":
     # Material refractive index at lam0
     air = 1
     sio2 = 1.45
-    si = 3.48 - 5j
+    si = 3.48
 
     # mcgehee()
     # spe()
     # guiding_plot()
     # guiding_electric_field()
-    test()
+    # test()
+    # PJ_dipoe_calculation()
+    tester()

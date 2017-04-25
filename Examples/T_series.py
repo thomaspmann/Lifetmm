@@ -183,7 +183,7 @@ def plot_te_tm(sample):
     st.set_vacuum_wavelength(lam0)
     st.add_layer(d_clad * lam0, n_dict['SiO2'])
     st.add_layer(chip['d'], chip['n'])
-    st.add_layer(d_clad * lam0, n_dict['Air'])
+    st.add_layer(d_clad * lam0, n_dict['Si'])
     st.info()
 
     result1 = st.calc_spe_structure(th_pow=11)
@@ -267,9 +267,6 @@ def plot_te_tm(sample):
 
 
 def fig6(sample):
-    """
-    Silicon layer bounded by two semi infinite air claddings.
-    """
     # Load Data
     df = pd.read_csv('../Data/Screening.csv', index_col='Sample ID')
     n = df.loc[sample]['n']
@@ -319,7 +316,12 @@ def fig6(sample):
     plt.show()
 
 
-def purcell_factor(chip, n1, n2, layer):
+def purcell_factor(sample, n1, n2, layer):
+    df = pd.read_csv('../Data/Screening.csv', index_col='Sample ID')
+    n = df.loc[sample]['n']
+    d = df.loc[sample]['d'] * 1e3  # in nm not um
+    chip = {'Sample ID': sample, 'n': n, 'd': d}
+
     # Structure 1
     st1 = LifetimeTmm()
     st1.set_vacuum_wavelength(lam0)
@@ -467,12 +469,14 @@ if __name__ == "__main__":
               'Glycerol': 1.46,
               'EDTS': 1.56,
               'Cassia Oil': 1.6,
-              'Diiodomethane': 1.71
+              'Diiodomethane': 1.71,
+              'Si': 3.4757
               }
 
     # excitation_profile(sample='T2')
     # plot(sample='T2')
-    plot_te_tm(sample='T2')
+    purcell_factor(sample='T2', n1='Air', n2='Si', layer=1)
+    # plot_te_tm(sample='T2')
     # fig6(sample='T2')
     # loop_csv()
     # loop_list()
