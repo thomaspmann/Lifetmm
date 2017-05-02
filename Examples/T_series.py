@@ -76,14 +76,15 @@ def excitation_profile(sample):
     plt.show()
 
 
-def plot(sample):
-    # Load Data
+def plot_leaky_guided_total(sample):
+    """Plot leaky and guided SE rates and then sum for randomly orientated dipole."""
+    # Load Sample Data
     df = pd.read_csv('../Data/Screening.csv', index_col='Sample ID')
     n = df.loc[sample]['n']
     d = df.loc[sample]['d'] * 1e3  # in nm not um
     chip = {'Sample ID': sample, 'n': n, 'd': d}
 
-    # Structure 1
+    # Create Structure
     st = LifetimeTmm()
     st.set_vacuum_wavelength(lam0)
     st.add_layer(d_clad * lam0, n_dict['SiO2'])
@@ -91,24 +92,17 @@ def plot(sample):
     st.add_layer(d_clad * lam0, n_dict['Air'])
     st.info()
 
-    result1 = st.calc_spe_structure(th_pow=11)
-    try:
-        spe1 = result1['leaky']['avg'] + result1['guided']['avg']
-    except KeyError:
-        spe1 = result1['leaky']['avg']
-
-    z = result1['z']
+    # Calculate
+    res = st.calc_spe_structure(th_pow=11)
+    z = res['z']
     z = st.calc_z_to_lambda(z)
 
     # ------- Plots -------
     fig, (ax1, ax2) = plt.subplots(2, 1, sharex='col', sharey='none')
-    ax1.plot(z, result1['leaky']['avg'])
-    try:
-        ax2.plot(z, result1['guided']['avg'])
-    except KeyError:
-        pass
+    ax1.plot(z, res['leaky']['avg'])
+    if st.supports_guiding():
+        ax2.plot(z, res['guided']['avg'])
 
-    # Labels
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax2.set_ylabel('$\Gamma / \Gamma_0$')
     ax2.set_xlabel('Position z ($\lambda$)')
@@ -143,12 +137,106 @@ def plot(sample):
         plt.savefig('../Images/{}_individual'.format(chip['Sample ID']))
 
     fig, ax1 = plt.subplots()
-    ax1.plot(z, spe1)
-
-    # Labels
+    if st.supports_guiding():
+        ax1.plot(z, res['leaky']['avg'] + res['guided']['avg'], label='Avg')
+    else:
+        ax1.plot(z, res['leaky']['avg'], label='Avg')
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax1.set_xlabel('Position z ($\lambda$)')
-    # ax1.legend()
+    ax1.legend()
+
+    # Draw rectangles for the refractive index
+    ax2 = ax1.twinx()
+    for z0, dz, n in zip(st.d_cumulative, st.d_list, st.n_list):
+        z0 = st.calc_z_to_lambda(z0)
+        dz = st.calc_z_to_lambda(dz, center=False)
+        rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.15)
+        ax2.add_patch(rect)  # Note: add to ax1 so that zorder has effect
+    ax2.set_ylabel('n')
+    ax2.set_ylim(0, 1.5 * max(st.n_list.real))
+    ax1.set_zorder(ax2.get_zorder() + 1)  # put ax1 in front of ax2
+    ax1.patch.set_visible(False)  # hide ax1'canvas'
+
+    for zb in st.get_layer_boundaries()[:-1]:
+        zb = st.calc_z_to_lambda(zb)
+        ax1.axvline(x=zb, color='k', lw=2)
+
+    if SAVE:
+        plt.savefig('../Images/{}_total'.format(chip['Sample ID']))
+    plt.show()
+
+
+def plot_vertical_horizontal_total(sample):
+    """Plot SE rates for vertical and horizontal dipoles. Then plot sum for randomly orientated dipole."""
+    # Load Sample Data
+    df = pd.read_csv('../Data/Screening.csv', index_col='Sample ID')
+    n = df.loc[sample]['n']
+    d = df.loc[sample]['d'] * 1e3  # in nm not um
+    chip = {'Sample ID': sample, 'n': n, 'd': d}
+
+    # Create Structure
+    st = LifetimeTmm()
+    st.set_vacuum_wavelength(lam0)
+    st.add_layer(d_clad * lam0, n_dict['SiO2'])
+    st.add_layer(chip['d'], chip['n'])
+    st.add_layer(d_clad * lam0, n_dict['Air'])
+    st.info()
+
+    # Calculate
+    res = st.calc_spe_structure(th_pow=11)
+    z = res['z']
+    z = st.calc_z_to_lambda(z)
+
+    # ------- Plots -------
+    fig, (ax1, ax2) = plt.subplots(2, 1, sharex='col', sharey='none')
+    if st.supports_guiding():
+        ax1.plot(z, res['leaky']['parallel'] + res['guided']['parallel'], label='h')
+        ax2.plot(z, res['leaky']['perpendicular'] + res['guided']['perpendicular'], label='v')
+    else:
+        ax1.plot(z, res['leaky']['parallel'], label='h')
+        ax2.plot(z, res['leaky']['perpendicular'], label='v')
+
+    ax1.set_ylabel('$\Gamma / \Gamma_0$')
+    ax2.set_ylabel('$\Gamma / \Gamma_0$')
+    ax2.set_xlabel('Position z ($\lambda$)')
+    ax1.set_title('Parallel/Horizontal')
+    ax2.set_title('Perpendicular/Vertical')
+
+    for zb in st.get_layer_boundaries()[:-1]:
+        zb = st.calc_z_to_lambda(zb)
+        ax1.axvline(x=zb, color='k', lw=2)
+        ax2.axvline(x=zb, color='k', lw=2)
+
+    # Draw rectangles for the refractive index
+    ax1b = ax1.twinx()
+    ax2b = ax2.twinx()
+    for z0, dz, n in zip(st.d_cumulative, st.d_list, st.n_list):
+        z0 = st.calc_z_to_lambda(z0)
+        dz = st.calc_z_to_lambda(dz, center=False)
+        rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.2)
+        ax1b.add_patch(rect)
+        ax1b.set_ylabel('n')
+        ax1b.set_ylim(0, 1.5 * max(st.n_list.real))
+        rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.2)
+        ax2b.add_patch(rect)
+        ax2b.set_ylabel('n')
+        ax2b.set_ylim(0, 1.5 * max(st.n_list.real))
+    ax1.set_zorder(ax1b.get_zorder() + 1)  # put ax1 in front of ax2
+    ax1.patch.set_visible(False)  # hide ax1'canvas'
+    ax2.set_zorder(ax2b.get_zorder() + 1)  # put ax1 in front of ax2
+    ax2.patch.set_visible(False)  # hide ax1'canvas'
+
+    if SAVE:
+        plt.savefig('../Images/{}_individual'.format(chip['Sample ID']))
+
+    fig, ax1 = plt.subplots()
+    if st.supports_guiding():
+        ax1.plot(z, res['leaky']['avg'] + res['guided']['avg'], label='Avg')
+    else:
+        ax1.plot(z, res['leaky']['avg'], label='Avg')
+    ax1.set_ylabel('$\Gamma / \Gamma_0$')
+    ax1.set_xlabel('Position z ($\lambda$)')
+    ax1.legend()
 
     # Draw rectangles for the refractive index
     ax2 = ax1.twinx()
@@ -457,7 +545,7 @@ if __name__ == "__main__":
     SAVE = True  # Save figs and data? (bool)
 
     # Set vacuum wavelength
-    lam0 = 1535
+    lam0 = 1550
 
     # Cladding thickness (in units of lam0)
     d_clad = 0.5
@@ -474,8 +562,9 @@ if __name__ == "__main__":
               }
 
     # excitation_profile(sample='T2')
-    # plot(sample='T2')
-    purcell_factor(sample='T2', n1='Air', n2='Si', layer=1)
+    # plot_leaky_guided_total(sample='T2')
+    plot_vertical_horizontal_total(sample='T2')
+    # purcell_factor(sample='T2', n1='Air', n2='Si', layer=1)
     # plot_te_tm(sample='T2')
     # fig6(sample='T2')
     # loop_csv()

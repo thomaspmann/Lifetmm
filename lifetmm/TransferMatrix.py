@@ -511,3 +511,10 @@ class TransferMatrix:
         ax.set_xlim([0, self.d_cumulative[-1]])
         ax.set(xlabel=r'x', ylabel=r'A.U.')
         plt.show()
+
+    def supports_guiding(self):
+        n = self.n_list
+        if np.any(n[1:-1] > max(n[0], n[-1])):
+            return True
+        else:
+            return False

@@ -134,7 +134,7 @@ def test():
     st.add_layer(d_clad * lam0, n_dict['SiO2'])
     st.add_layer(1 * lam0, n_dict['EDTS'])
     st.add_layer(d_clad * lam0, n_dict['Air'])
-    st.flip()
+    # st.flip()
     st.info()
 
     # Simulation Wavelength
@@ -294,6 +294,6 @@ if __name__ == "__main__":
     # spe()
     # guiding_plot()
     # guiding_electric_field()
-    # test()
+    test()
     # PJ_dipoe_calculation()
-    tester()
+    # tester()
