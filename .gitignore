@@ -3,3 +3,4 @@
 .DS_Store
 *Thumbs.db
 lifetmm/Methods/__pycache__/
+*.ipynb_checkpoints*
