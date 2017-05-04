@@ -1,3 +1,10 @@
+"""
+Transfer matrix model for light inside a multilayer dielectric structure.
+
+[1] Modeling photocurrent action spectra of photovoltaic devices based on organic thin films, Pettersson
+[2] Principles of Nano-Optics, L. Novotny, B. Hecht
+"""
+
 import logging
 import time
 
@@ -18,9 +25,9 @@ class TransferMatrix:
         self.d_cumulative = np.array([], dtype=int)
         self.num_layers = 0
         # Light parameters
-        self.lam_vac = 0
-        self.k_vac = 0
-        self.omega = 0
+        self.lam_vac = np.nan
+        self.k_vac = np.nan
+        self.omega = np.nan
         self.field = 'E'
         self.pol = 'TE'
         self.guided = False
@@ -39,6 +46,8 @@ class TransferMatrix:
             logging.warning('WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. '
                             'CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.')
             d = round(d)
+        if self.num_layers == 0:
+            assert np.isreal(n), ValueError('Incomming medium must be transparent (n is real).')
         self.d_list = np.append(self.d_list, d)
         self.n_list = np.append(self.n_list, n)
         # Recalculate structure info
@@ -100,7 +109,7 @@ class TransferMatrix:
 
     def set_incident_angle(self, th, units='radians'):
         """
-        Set the incident angle of the plane wave for a leaky mode.
+        Set the incident angle of the plane wave (for a leaky mode).
         """
         assert not self.guided, ValueError('Run set_leaky_or_guiding(leaky=True) first to evaluate leaky modes.')
         if hasattr(th, 'size') and th.size > 1:
@@ -116,11 +125,12 @@ class TransferMatrix:
             self.th = th * (pi / 180)
         else:
             raise ValueError('Units of angle not recognised. Please enter \'radians\' or \'degrees\'.')
-        self.n_11 = self.n_list[0].real * sin(self.th)
+        # Parallel normalised wave vector (continuous through interfaces)
+        self.n_11 = self.n_list[0] * sin(self.th)
 
     def set_guided_mode(self, n_11):
         """
-        Set the normalised parallel wave vector, n_11=k_11/k_0, for the guided mode to be evaluated.
+        Set the normalised parallel wave vector, n_11=k_11/k_0 (for a guided mode where AOI is complex).
         """
         assert self.guided, ValueError('Run set_leaky_or_guiding(leaky=False) first.')
         assert not isinstance(n_11, (list, np.ndarray)), ValueError('n_11 must be a number and not array/list.')
@@ -132,22 +142,25 @@ class TransferMatrix:
 
     def calc_xi(self, j):
         """
-        Normalised perpendicular wave-vector in layer j.
+        Normalised perpendicular wave-vector in layer j. (q_j in Eq4 in [1]). 
+        Note: Can be complex for use in fresnel equations when calculating interference matrix (metal layers).
         """
-        n = self.n_list[j]  # Normalised layer wave-vector magnitude (k(j)/k_vac)
-        return sqrt(n ** 2 - self.n_11 ** 2)
+        nj = self.n_list[j]  # Normalised (complex) layer wave-vector magnitude (k(j)/k_vac)
+        return sqrt(nj ** 2 - self.n_11 ** 2)
 
     def calc_k(self, j):
         """
-        Calculate the wave vector magnitude in layer j.
+        Calculate the wave vector magnitude (|k| = omega n / c) in layer j.
         """
         assert 0 <= j <= self.num_layers - 1, ValueError('j must be between 0 and num_layers-1.')
+        assert not np.isnan(self.k_vac), ValueError('Wavevector not defined. Please set the vacuum wavelength.')
         return self.n_list[j].real * self.k_vac
 
     def calc_q(self, j):
         """
         Perpendicular wave vector in layer j.
         """
+        assert not np.isnan(self.k_vac), ValueError('Wavevector not defined. Please set the vacuum wavelength.')
         xi = self.calc_xi(j)
         return xi * self.k_vac
 
@@ -155,6 +168,7 @@ class TransferMatrix:
         """
         Parallel wave vector (same in all layers).
         """
+        assert not np.isnan(self.k_vac), ValueError('Wavevector not defined. Please set the vacuum wavelength.')
         return self.n_11 * self.k_vac
 
     def calc_wave_vector_components(self, j):
@@ -171,25 +185,26 @@ class TransferMatrix:
         """
         Returns the interference matrix between layers j and k.
         """
-        n_j = self.n_list[j]
-        n_k = self.n_list[k]
-        xi_j = self.calc_xi(j)
-        xi_k = self.calc_xi(k)
+        nj = self.n_list[j]
+        nk = self.n_list[k]
+        qj = self.calc_xi(j)  # Using q notation instead of xi to match eq 3a and 3b in [1]
+        qk = self.calc_xi(k)  # Ditto
         # Evaluate reflection and transmission coefficients for E field
         if self.pol in ['p', 'TM']:
-            r = (xi_j * n_k ** 2 - xi_k * n_j ** 2) / (xi_j * n_k ** 2 + xi_k * n_j ** 2)
-            t = (2 * n_j * n_k * xi_j) / (xi_j * n_k ** 2 + xi_k * n_j ** 2)
+            # Note r_p is defined where the E field flips direction by pi on reflection [2] pg.22.
+            r = (nk ** 2 * qj - nj ** 2 * qk) / (nk ** 2 * qj + nj ** 2 * qk)
+            t = (2 * nj * nk * qj) / (qj * nk ** 2 + qk * nj ** 2)
         elif self.pol in ['s', 'TE']:
-            r = (xi_j - xi_k) / (xi_j + xi_k)
-            t = (2 * xi_j) / (xi_j + xi_k)
+            r = (qj - qk) / (qj + qk)
+            t = (2 * qj) / (qj + qk)
         else:
             raise ValueError('A polarisation for the field must be set.')
         if self.field == 'H':
             # Convert transmission coefficient for E field to that of the H field.
             # The reflection coefficient is the same as the medium does not change.
-            t *= n_k / n_j
+            t *= nk / nj
         if t == 0:
-            logging.debug('Transmission of i_matrix = 0. Returning nan.')
+            logging.debug('Transmission of i_matrix = 0. Returning inf.')
             return np.array([[np.inf, np.inf], [np.inf, np.inf]], dtype=complex)
         else:
             return (1 / t) * np.array([[1, r], [r, 1]], dtype=complex)
@@ -200,6 +215,7 @@ class TransferMatrix:
         """
         qj = self.calc_q(j)
         dj = self.d_list[j]
+        assert dj > 0, ValueError('Layer {} does not have a thickness.'.format(j))
         assert exp(-1j * qj * dj) < np.finfo(np.complex).max, ValueError('l_matrix is unstable.')
         return np.array([[exp(-1j * qj * dj), 0], [0, exp(1j * qj * dj)]], dtype=complex)
 
