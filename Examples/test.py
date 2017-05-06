@@ -97,7 +97,7 @@ def guiding_electric_field():
     alpha = st.calc_guided_modes(normalised=True)
     plt.figure()
     for i, a in enumerate(alpha):
-        st.set_guided_mode(a)
+        st.set_mode_n_11(a)
         result = st.calc_field_structure()
         z = result['z']
         # z = st.calc_z_to_lambda(z)
@@ -148,7 +148,7 @@ def test():
 
     fig, ax1 = plt.subplots()
     for a in alpha:
-        st.set_guided_mode(a)
+        st.set_mode_n_11(a)
         result = st.calc_field_structure()
         z = result['z']
         E = result['field']
@@ -174,7 +174,7 @@ def test():
     alpha = st.calc_guided_modes(normalised=True)
 
     for a in alpha:
-        st.set_guided_mode(a)
+        st.set_mode_n_11(a)
         result = st.calc_field_structure()
         z = result['z']
         E = result['field']

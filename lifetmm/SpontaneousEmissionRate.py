@@ -19,9 +19,8 @@ class LifetimeTmm(TransferMatrix):
         Evaluate the spontaneous emission rates for dipoles in a layer radiating into 'Lower' or 'Upper' modes.
         Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
         """
-        self.set_leaky_or_guiding('leaky')
-
         # Option checks
+        assert self.mode_type() == 'Leaky', ValueError('The mode you are trying to solve for is not Leaky')
         assert emission in ['Lower', 'Upper'], ValueError('Emission option must be either "Upper" or "Lower".')
         assert isinstance(th_pow, int), ValueError('th_pow must be an integer.')
         assert self.d_list[layer] > 0, ValueError('Layer must have a thickness to use this function.')
@@ -43,7 +42,6 @@ class LifetimeTmm(TransferMatrix):
         # Note: don't include pi/2 as then transmission and reflection do not make sense (light not incident).
         # res for linspace must have this form for the simpsons integration later. Can change the power.
         res = 2 ** th_pow + 1
-
         th_in, dth = np.linspace(0, pi / 2, num=res, endpoint=False, retstep=True)
 
         # Structure to hold field E(z) components of each mode for each dipole orientation for a given theta
@@ -142,6 +140,7 @@ class LifetimeTmm(TransferMatrix):
         spe['TM_p'] = spe['TM_p_full'] + spe['TM_p_partial']
         spe['TM_s'] = spe['TM_s_full'] + spe['TM_s_partial']
         spe['total'] = spe['TE'] + spe['TM_p'] + spe['TM_s']
+
         # Flip structure and results back to original orientation
         if emission == 'Upper':
             self.flip()
@@ -155,7 +154,7 @@ class LifetimeTmm(TransferMatrix):
         Evaluate the spontaneous emission rate vs z of the structure for each dipole orientation.
         Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
         """
-        self.set_leaky_or_guiding('leaky')
+        assert self.mode_type() == 'Leaky', ValueError('The mode you are trying to solve for is not Leaky')
 
         # z positions to evaluate E field at over entire structure
         z_pos = np.arange((self.z_step / 2.0), self.d_cumulative[-1], self.z_step)
@@ -238,7 +237,6 @@ class LifetimeTmm(TransferMatrix):
 
     def calc_spe_layer_guided(self, layer, roots_te=None, roots_tm=None, vg_te=None, vg_tm=None):
         assert self.d_list[layer] > 0, ValueError('Layer must have a thickness to use this function.')
-        self.set_leaky_or_guiding('guiding')
 
         # Only re-evaluate the guided roots and v_g if not passed to function. Computationally intensive.
         # Will only be required if the function is not called from self.spe_structure_guided()
@@ -281,7 +279,9 @@ class LifetimeTmm(TransferMatrix):
         self.set_polarization('TE')
         self.set_field('E')
         for n_11, v in zip(roots_te, vg_te):
-            self.set_guided_mode(n_11)
+            self.set_mode_n_11(n_11)
+            assert self.mode_type() == 'Guided', ValueError('The mode you are trying to solve for is not Guided')
+
             # Evaluate the normalisation (B4) and apply
             norm = 0
             for j in range(0, self.num_layers):
@@ -320,7 +320,8 @@ class LifetimeTmm(TransferMatrix):
         self.set_field('H')
         # Find guided modes parallel wave vector
         for n_11, v in zip(roots_tm, vg_tm):
-            self.set_guided_mode(n_11)
+            self.set_mode_n_11(n_11)
+            assert self.mode_type() == 'Guided', ValueError('The mode you are trying to solve for is not Guided')
 
             # Evaluate the normalisation (B8) and apply
             norm = 0
@@ -364,7 +365,7 @@ class LifetimeTmm(TransferMatrix):
         return {'z': z, 'spe': spe}
 
     def calc_spe_structure_guided(self):
-        self.set_leaky_or_guiding('guiding')
+        assert self.supports_guiding(), ValueError('This structure does not support guided modes.')
 
         # z positions to evaluate E field at over entire structure
         z_pos = np.arange((self.z_step / 2.0), self.d_cumulative[-1], self.z_step)
@@ -431,21 +432,11 @@ class LifetimeTmm(TransferMatrix):
         leaky = result['spe']
         z = result['z']
 
-        n = self.n_list.real
-        if np.any(n[1:-1] > max(n[0], n[-1])):
+        if self.supports_guiding():
             logging.info("Structure suppports waveguiding. Calculating guided modes...")
             guided = self.calc_spe_structure_guided()['spe']
             logging.info('Done!')
+            return {'z': z, 'leaky': leaky, 'guided': guided}
         else:
             logging.info("Structure does not support waveguiding.")
-        return {'z': z, 'leaky': leaky, 'guided': guided}
-
-
-# Helper Functions
-def flip_spe_results(spe):
-    """
-    Flip the array containing the spe result
-    """
-    for key in spe.dtype.names:
-        spe[key] = spe[key][::-1]
-    return spe
+            return {'z': z, 'leaky': leaky}

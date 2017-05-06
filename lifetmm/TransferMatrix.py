@@ -30,7 +30,6 @@ class TransferMatrix:
         self.omega = np.nan
         self.field = 'E'
         self.pol = 'TE'
-        self.guided = False
         self.th = 0  # Angle of incidence from normal to multilayer [Leaky modes only]
         self.n_11 = 0  # Normalised parallel wave vector (or n_eff as used with guided modes )
         # Default simulation parameters
@@ -96,22 +95,10 @@ class TransferMatrix:
         assert field in ['E', 'H'], ValueError("The field must be either 'E' of 'H'.")
         self.field = field
 
-    def set_leaky_or_guiding(self, mode='leaky'):
-        """
-        Determines whether simulation will solve for a guiding mode or leaky mode.
-        """
-        if mode == 'leaky':
-            self.guided = False
-        elif mode == 'guiding':
-            self.guided = True
-        else:
-            ValueError('options for mode must be either "leaky" or "guiding"')
-
     def set_incident_angle(self, th, units='radians'):
         """
         Set the incident angle of the plane wave (for a leaky mode).
         """
-        assert not self.guided, ValueError('Run set_leaky_or_guiding(leaky=True) first to evaluate leaky modes.')
         if hasattr(th, 'size') and th.size > 1:
             raise ValueError('This function is not vectorized; you need to run one '
                              'calculation for each angle at a time')
@@ -128,16 +115,12 @@ class TransferMatrix:
         # Parallel normalised wave vector (continuous through interfaces)
         self.n_11 = self.n_list[0] * sin(self.th)
 
-    def set_guided_mode(self, n_11):
+    def set_mode_n_11(self, n_11):
         """
         Set the normalised parallel wave vector, n_11=k_11/k_0 (for a guided mode where AOI is complex).
         """
-        assert self.guided, ValueError('Run set_leaky_or_guiding(leaky=False) first.')
         assert not isinstance(n_11, (list, np.ndarray)), ValueError('n_11 must be a number and not array/list.')
         n = self.n_list.real
-        # See Quantum Electronics by Yariv pg.603
-        assert max(n) >= n_11 >= min(n[0], n[-1]), \
-            ValueError('Input n_11 is not valid for a guided mode.', max(n), n_11, min(n[0], n[-1]))
         self.n_11 = n_11
 
     def calc_xi(self, j):
@@ -258,7 +241,8 @@ class TransferMatrix:
         Coefficients are in units of the fwd incoming wave amplitude for leaky modes
         and in terms of the superstrate (j=0) outgoing wave amplitude for guided modes.
         """
-        if not self.guided:
+        n = self.n_list.real
+        if self.n_11 < max(n[0], n[-1]):  # Mode is radiative
             # Calculate leaky amplitudes
             s = self.s_matrix()
             # Reflection for incoming wave incident of LHS of structure
@@ -281,8 +265,7 @@ class TransferMatrix:
 
                 field_plus = t_prime / (1 - r_prime_minus * r_dprime * exp(1j * 2 * q * d))
                 field_minus = field_plus * r_dprime * exp(1j * 2 * q * d)
-        else:
-            # Calculate guided amplitudes (2 outgoing waves no incoming)
+        else:  # Calculate guided amplitudes (2 outgoing waves no incoming)
             if layer == 0:
                 field_plus = 0 + 0j
                 field_minus = 1 + 0j
@@ -379,10 +362,8 @@ class TransferMatrix:
         Method: Evaluates the poles of the transfer matrix (S_11=0) as a function of n_11 in the
         guided regime:  n_clad < k_ll/k < max(n), k_11/k = n_11
         """
-        assert self.guided, ValueError('Run set_leaky_or_guiding(leaky=False) first.')
-        # Eq (11)
         n = self.n_list.real
-        assert np.any(n[1:-1] > max(n[0], n[-1])), ValueError('This structure does not support wave guiding.')
+        assert self.supports_guiding(), ValueError('This structure does not support wave guiding.')
         # Find supported guiding modes - max(n_clad) > n_11 >= max(n)
         n_11 = roots(self._s11, 1 * max(n[0], n[-1]), max(n), verbose=verbose)
         # Flip array to arrange from lowest to highest mode (highest to lowest n_11)
@@ -530,7 +511,16 @@ class TransferMatrix:
 
     def supports_guiding(self):
         n = self.n_list
+        # Eq (11)
         if np.any(n[1:-1] > max(n[0], n[-1])):
             return True
         else:
             return False
+
+    def mode_type(self):
+        # See Quantum Electronics by Yariv pg.603
+        n = self.n_list
+        if len(n) > 2 and max(n[1:-1]) >= self.n_11 >= min(n[0], n[-1]):
+            return 'Guided'
+        else:
+            return 'Leaky'

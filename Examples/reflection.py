@@ -1,21 +1,20 @@
 """
-Calculate the reflection from (multilayered) planar interfaces as a function of incidence angle.
+Calculate the fresnel reflection from (multilayer) planar interfaces as a function of incidence angle.
 
 [2] Principles of Nano-Optics, L. Novotny, B. Hecht
 """
 
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy import abs
 
 from lifetmm.TransferMatrix import TransferMatrix
 
 
-def single_interface(n1=1.47, n2=1.0):
+def single_interface(n1=1.47 + 0.0j, n2=1.0 + 0.0j):
     """
-    Dependence of the power reflectivity on the angle of incidence, if the light comes from a medium with 1.47 and 
-    there is air (n = 1) on the other side of the interface.
-    
-    Recreates figure 2 in https://www.rp-photonics.com/total_internal_reflection.html
+    Dependence of the power reflectivity and phase on the angle of incidence.
+    Light incident from medium of refractive index n1 to medium of refractive index n2
     """
     # Setup simulation
     st = TransferMatrix()
@@ -23,20 +22,18 @@ def single_interface(n1=1.47, n2=1.0):
     st.add_layer(0, n2)
     st.info()
 
+    # Do calculations
     th_list = np.linspace(0, 90, 200, endpoint=False)
     rs_list = []
     rp_list = []
     for theta in th_list:
-        # Do calculations
         st.set_incident_angle(theta, units='degrees')
-        # r, t = st.calc_r_and_t()
         st.set_polarization('s')
         rs, t = st.calc_r_and_t()
         rs_list.append(rs)
         st.set_polarization('p')
         rp, t = st.calc_r_and_t()
         rp_list.append(rp)
-
     rs_list = np.array(rs_list)
     rp_list = np.array(rp_list)
 
@@ -46,7 +43,7 @@ def single_interface(n1=1.47, n2=1.0):
     ax1.plot(th_list, abs(rs_list) ** 2, '--', label='s')
     ax1.plot(th_list, abs(rp_list) ** 2, label='p')
     ax1.plot(th_list, (abs(rs_list) ** 2 + abs(rp_list) ** 2) / 2, label='Unpolarised')
-    ax2.set_ylabel('Reflection phase(deg)')
+    ax2.set_ylabel('Reflection phase (deg)')
     ax2.plot(th_list, np.angle(rs_list, deg=True), '--', label='s')
     # Note r_p is defined where the E field flips on reflection [2] pg.22
     # therefore we multiply by e^(i*pi) to shift by 180 degrees so that a negative angle implies a flipped E field
@@ -153,7 +150,7 @@ def gold_on_substrate():
 
 
 if __name__ == "__main__":
-    single_interface(n1=1, n2=1.444)
+    single_interface(n1=1, n2=1.442)
     # air_dielectric_interface()
     # air_metal_interface()
     # gold_on_substrate()
