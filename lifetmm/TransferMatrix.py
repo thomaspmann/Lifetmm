@@ -329,10 +329,8 @@ class TransferMatrix:
         z_mat = sum(comp1 > comp2, 0)
         return np.where(z_mat == layer)
 
-    def _s11(self, n_11):
-        # Don't use self.set_guided_mode when root finding as bounds for guiding n_11
-        # are already taken care of in root_search but when evaluating will go outside
-        self.n_11 = n_11
+    def _s11(self):
+        """Return s_11 of s-matrix."""
         s = self.s_matrix()
         return s[0, 0].real
 
@@ -447,6 +445,7 @@ class TransferMatrix:
         self.d_list = self.d_list[::-1]
         self.n_list = self.n_list[::-1]
         self.d_cumulative = np.cumsum(self.d_list)
+        logging.info('WARNING: Rerun set_incident_angle() function before doing the calculations to recalculate n_11.')
 
     def info(self):
         """

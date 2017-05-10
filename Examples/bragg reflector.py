@@ -13,8 +13,8 @@ from tqdm import tqdm
 from lifetmm.TransferMatrix import TransferMatrix
 
 
-def dbr():
-    """ Reflection coefficient for DBR (at 1.55um)"""
+def dbr_reflectivity():
+    """ Reflection coefficient for top and bottom DBRs (at 1.55um) given in [1]"""
 
     # Emission wavelength
     lam0 = 1550
@@ -24,36 +24,40 @@ def dbr():
 
     # Setup simulation
     st = TransferMatrix()
-    st.set_vacuum_wavelength(lam0)
+    # Bottom
     st.add_layer(0, sio2)
-    for i in range(2):
-        st.add_layer(lam0 / 4, si)
-        st.add_layer(lam0 / 4, sio2)
-    st.add_layer(lam0 / 4, si)
+    for i in range(4):
+        st.add_layer(lam0 / (4 * sio2), sio2)
+        st.add_layer(lam0 / (4 * si), si)
+    # Active region
+    st.add_layer(lam0 / (2 * sio2), sio2)
 
+    st.set_vacuum_wavelength(lam0)
+    st.set_incident_angle(0, units='degrees')
+    # st.show_structure()
     st.info()
 
-    th_list = np.linspace(0, 90, 2000, endpoint=False)
-    rs_list = []
-    rp_list = []
-    for theta in th_list:
-        # Do calculations
-        st.set_incident_angle(theta, units='degrees')
-        st.set_polarization('s')
-        r, t = st.calc_reflection_and_transmission(correction=False)
-        rs_list.append(r)
-        st.set_polarization('p')
-        r, t = st.calc_reflection_and_transmission(correction=False)
-        rp_list.append(r)
+    r, t = st.calc_reflection_and_transmission(correction=False)
+    print('Bottom DBR: R={0:.3f}% and T={1:.3f}%'.format(100 * r, 100 * t))
 
-    # Plot
-    fig, ax = plt.subplots()
-    ax.plot(th_list, rs_list, '--', label='s')
-    ax.plot(th_list, rp_list, label='p')
-    ax.set_xlabel('AOI (degrees)')
-    ax.set_ylabel(r'Reflection ($|r|^2)$')
-    plt.legend()
-    plt.show()
+    # Setup simulation
+    st = TransferMatrix()
+
+    # Active region
+    st.add_layer(lam0 / (2 * sio2), sio2)
+    # Top DBR
+    for i in range(2):
+        st.add_layer(lam0 / (4 * si), si)
+        st.add_layer(lam0 / (4 * sio2), sio2)
+    st.add_layer(lam0 / (4 * si), si)
+    st.add_layer(0, 1)
+
+    st.set_vacuum_wavelength(lam0)
+    st.set_incident_angle(0, units='degrees')
+    # st.show_structure()
+    st.info()
+    r, t = st.calc_reflection_and_transmission(correction=False)
+    print('Top DBR: R={0:.3f}% and T={1:.3f}%'.format(100 * r, 100 * t))
 
 
 def fabry_perot_vs_aoi():
@@ -164,6 +168,6 @@ def fabry_perot_vs_wavelength():
     plt.show()
 
 if __name__ == "__main__":
-    # dbr()
-    fabry_perot_vs_aoi()
+    dbr_reflectivity()
+    # fabry_perot_vs_aoi()
     # fabry_perot_vs_wavelength()
