@@ -471,20 +471,20 @@ class TransferMatrix:
         # Shades to fill rectangles with based on refractive index
         alphas = abs(self.n_list) / max(abs(self.n_list))
 
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        for i, dx in enumerate(self.d_list[1:-1]):
-            x = self.d_cumulative[i]
-            layer_text = ('{0.real:.2f} + {0.imag:.2f}j'.format(self.n_list[i + 1]))
-            p = patches.Rectangle(
-                (x, 0.0),  # (x,y)
-                dx,  # width
-                1.0,  # height
-                alpha=alphas[i + 1],
-                linewidth=2,
-                label=layer_text,
-            )
-            ax.add_patch(p)
+        fig, ax = plt.subplots()
+        for i, dx in enumerate(self.d_list):
+            if dx > 0:
+                x = self.d_cumulative[i]
+                layer_text = ('{0.real:.2f} + {0.imag:.2f}j'.format(self.n_list[i]))
+                p = patches.Rectangle(
+                    (x - dx, 0.0),  # (x,y)
+                    dx,  # width
+                    1.0,  # height
+                    alpha=alphas[i],
+                    linewidth=2,
+                    label=layer_text,
+                )
+                ax.add_patch(p)
         # Create legend without duplicate keys
         handles, labels = ax.get_legend_handles_labels()
         by_label = OrderedDict(zip(labels, handles))

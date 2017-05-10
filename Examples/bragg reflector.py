@@ -25,7 +25,7 @@ def dbr_reflectivity():
     # Setup simulation
     st = TransferMatrix()
     # Bottom
-    st.add_layer(0, sio2)
+    st.add_layer(0, si)
     for i in range(4):
         st.add_layer(lam0 / (4 * sio2), sio2)
         st.add_layer(lam0 / (4 * si), si)
@@ -35,7 +35,7 @@ def dbr_reflectivity():
     st.set_vacuum_wavelength(lam0)
     st.set_incident_angle(0, units='degrees')
     # st.show_structure()
-    st.info()
+    # st.info()
 
     r, t = st.calc_reflection_and_transmission(correction=False)
     print('Bottom DBR: R={0:.3f}% and T={1:.3f}%'.format(100 * r, 100 * t))
@@ -55,7 +55,7 @@ def dbr_reflectivity():
     st.set_vacuum_wavelength(lam0)
     st.set_incident_angle(0, units='degrees')
     # st.show_structure()
-    st.info()
+    # st.info()
     r, t = st.calc_reflection_and_transmission(correction=False)
     print('Top DBR: R={0:.3f}% and T={1:.3f}%'.format(100 * r, 100 * t))
 
@@ -86,7 +86,7 @@ def fabry_perot_vs_aoi():
     st.add_layer(0, 1)
 
     st.set_vacuum_wavelength(lam0)
-    # st.show_structure()
+    st.show_structure()
     st.info()
 
     th_list = np.linspace(0, 90, 2000, endpoint=False)
@@ -169,5 +169,5 @@ def fabry_perot_vs_wavelength():
 
 if __name__ == "__main__":
     dbr_reflectivity()
-    # fabry_perot_vs_aoi()
-    # fabry_perot_vs_wavelength()
+    fabry_perot_vs_aoi()
+    fabry_perot_vs_wavelength()
