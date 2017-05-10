@@ -5,14 +5,11 @@ Example scripts for the LifetimeTmm package.
 import matplotlib.pyplot as plt
 import numpy as np
 
-from lifetmm import LifetimeTmm
-
-SAVE = False  # Save figs? (bool)
+from lifetmm.SpontaneousEmissionRate import LifetimeTmm
 
 
 def example1():
-    """ Silicon to air semi-infinite half spaces.
-    """
+    """ Silicon to air semi-infinite half spaces."""
     # Vacuum wavelength
     lam0 = 1550
 
@@ -46,11 +43,7 @@ def example1():
     ax.set_xlabel('n')
     plt.legend()
     plt.tight_layout()
-    if SAVE:
-        plt.savefig('../Images/spe_vs_n.png', dpi=300)
-        np.savez('../Data/spe_vs_n', n=n_list, spe=spe_list)
     plt.show()
-
 
 if __name__ == "__main__":
     example1()

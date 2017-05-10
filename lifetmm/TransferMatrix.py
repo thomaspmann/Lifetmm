@@ -20,9 +20,9 @@ log = logging.getLogger(__name__)
 class TransferMatrix:
     def __init__(self):
         # Structure parameters
-        self.d_list = np.array([], dtype=int)
+        self.d_list = np.array([], dtype=float)
         self.n_list = np.array([], dtype=complex)
-        self.d_cumulative = np.array([], dtype=int)
+        self.d_cumulative = np.array([], dtype=float)
         self.num_layers = 0
         # Light parameters
         self.lam_vac = np.nan
@@ -32,19 +32,17 @@ class TransferMatrix:
         self.pol = 'TE'
         self.th = 0  # Angle of incidence from normal to multilayer [Leaky modes only]
         self.n_11 = 0  # Normalised parallel wave vector (or n_eff as used with guided modes )
-        # Default simulation parameters
-        self.z_step = 1
 
     def add_layer(self, d, n):
         """
         Add layer of thickness d and refractive index n to the structure.
         Ensure that dimensions are consistent with layer thicknesses.
         """
+        assert isinstance(d, (int, float)), \
+            ValueError('Thickness d must be either an integer or a float.')
         assert d >= 0, ValueError('Thickness must >= 0.')
-        if not float(d).is_integer():
-            logging.warning('WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. '
-                            'CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.')
-            d = round(d)
+        assert isinstance(d, (int, float, complex)), \
+            ValueError('Refractive index n must be either an integer, float or complex number.')
         if self.num_layers == 0:
             assert np.isreal(n), ValueError('Incomming medium must be transparent (n is real).')
         self.d_list = np.append(self.d_list, d)
@@ -57,29 +55,16 @@ class TransferMatrix:
         """
         Set the vacuum wavelength to be simulated.
         Ensure that dimensions are consistent with layer thicknesses.
+        Only run this function after the structure has been defined.
         """
-        assert not hasattr(lam_vac, 'size'), ValueError('This function is not vectorized; you need to run one '
-                                                        'calculation for each wavelength at a time')
+        assert isinstance(lam_vac, (int, float, complex)), \
+            ValueError('This function is not vectorized; you need to run one calculation for each wavelength at a time')
         assert lam_vac > 0, ValueError('Wavelength must > 0.')
-        if not float(lam_vac).is_integer():
-            logging.warning('WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. '
-                            'CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.')
-            lam_vac = round(lam_vac)
+        assert self.num_layers > 0, ValueError('Define the structure first before using this function.')
         logging.debug('Lam_vac = %d nm', lam_vac)
         self.lam_vac = lam_vac
         self.k_vac = 2 * pi / lam_vac
         self.omega = c * self.k_vac
-
-    def set_z_step(self, step):
-        """
-        Set the resolution in z (perpendicular to the multilayer) of the simulation.
-        Default is set to 1 if not called explicitly
-        """
-        if not float(step).is_integer():
-            logging.warning('WARNING: ROUNDING THICKNESS TO THE NEAREST INTEGER. '
-                            'CONSIDER REDUCING SI UNITS FOR GREATER RESOLUTION.')
-            step = round(step)
-        self.z_step = step
 
     def set_polarization(self, pol):
         """
@@ -120,7 +105,6 @@ class TransferMatrix:
         Set the normalised parallel wave vector, n_11=k_11/k_0 (for a guided mode where AOI is complex).
         """
         assert not isinstance(n_11, (list, np.ndarray)), ValueError('n_11 must be a number and not array/list.')
-        n = self.n_list.real
         self.n_11 = n_11
 
     def calc_xi(self, j):
@@ -280,7 +264,7 @@ class TransferMatrix:
                 field_minus = s_prime[0, 0] / det(s_prime)
         return field_plus, field_minus
 
-    def calc_layer_field(self, layer):
+    def calc_layer_field(self, layer, z_step=1):
         """
         Evaluate the field (E or H) as a function of z (depth) into the layer, j.
         field_plus is the forward component of the field (e.g. E_j^+)
@@ -292,7 +276,7 @@ class TransferMatrix:
         k, q, k_11 = self.calc_wave_vector_components(layer)
 
         # z positions to evaluate field at at
-        z = np.arange((self.z_step / 2.0), self.d_list[layer], self.z_step)
+        z = np.arange((z_step / 2.0), self.d_list[layer], z_step)
         # Note field_plus and field_minus are defined at cladding-layer boundary so need to
         # propagate wave 'backwards' in the lower cladding by reversing z
         if layer == 0:
@@ -304,15 +288,15 @@ class TransferMatrix:
         field_squared = abs(field) ** 2
 
         # average value of the field_squared
-        field_avg = sum(field_squared) / (self.z_step * self.d_list[layer])
+        field_avg = sum(field_squared) / (z_step * self.d_list[layer])
 
         return {'z': z, 'field': field, 'field_squared': field_squared, 'field_avg': field_avg}
 
-    def calc_field_structure(self):
+    def calc_field_structure(self, z_step=1):
         """
         Evaluate the field at all z positions within the structure.
         """
-        z = np.arange((self.z_step / 2.0), self.d_cumulative[-1], self.z_step)
+        z = np.arange((z_step / 2.0), self.d_cumulative[-1], z_step)
         # get z_mat - specifies what layer the corresponding point in z is in
         comp1 = np.kron(np.ones((self.num_layers, 1)), z)
         comp2 = np.transpose(np.kron(np.ones((len(z), 1)), self.d_cumulative))
@@ -336,9 +320,9 @@ class TransferMatrix:
         field_squared = abs(field) ** 2
         return {'z': z, 'field': field, 'field_squared': field_squared}
 
-    def get_layer_indices(self, layer):
+    def get_layer_indices(self, layer, z_step=1):
         """Return z array indices for a chosen layer."""
-        z = np.arange((self.z_step / 2.0), self.d_cumulative[-1], self.z_step)
+        z = np.arange((z_step / 2.0), self.d_cumulative[-1], z_step)
         # get z_mat - specifies what layer the corresponding point in z is in
         comp1 = np.kron(np.ones((self.num_layers, 1)), z)
         comp2 = np.transpose(np.kron(np.ones((len(z), 1)), self.d_cumulative))
@@ -468,12 +452,13 @@ class TransferMatrix:
         """
         Command line verbose feedback of the structure.
         """
+        logging.info('****************************')
         logging.info('****** Simulation info *****\n')
         logging.info('Multi-layered Structure:')
-        logging.info('d\t\tn')
+        logging.info('    d\t\tn')
         for n, d in zip(self.n_list, self.d_list):
-            logging.info('{0:4g}\t{1:g}'.format(d, n))
-        logging.info('Free space wavelength: {:g}'.format(self.lam_vac))
+            logging.info('{0:5.4g}\t\t{1:4g}'.format(d, n))
+        logging.info('\nFree space wavelength: {:g}'.format(self.lam_vac))
         logging.info('****************************\n')
 
     def show_structure(self):
@@ -504,9 +489,10 @@ class TransferMatrix:
         # Create legend without duplicate keys
         handles, labels = ax.get_legend_handles_labels()
         by_label = OrderedDict(zip(labels, handles))
-        ax.legend(by_label.values(), by_label.keys(), loc='best')
+        ax.legend(by_label.values(), by_label.keys(), title='n')
         ax.set_xlim([0, self.d_cumulative[-1]])
-        ax.set(xlabel=r'x', ylabel=r'A.U.')
+        ax.set(xlabel=r'x')
+        ax.yaxis.set_visible(False)
         plt.show()
 
     def supports_guiding(self):

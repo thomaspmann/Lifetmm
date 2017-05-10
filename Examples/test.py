@@ -93,7 +93,6 @@ def guiding_electric_field():
 
     st.set_polarization('TM')
     st.set_field('H')
-    st.set_leaky_or_guiding('guiding')
     alpha = st.calc_guided_modes(normalised=True)
     plt.figure()
     for i, a in enumerate(alpha):
@@ -143,7 +142,6 @@ def test():
     st.set_polarization('TE')
 
     # Find guided mode indices
-    st.set_leaky_or_guiding('guiding')
     alpha = st.calc_guided_modes(normalised=True)
 
     fig, ax1 = plt.subplots()
@@ -170,7 +168,6 @@ def test():
     st.set_polarization('TE')
 
     # Find guided mode indices
-    st.set_leaky_or_guiding('guiding')
     alpha = st.calc_guided_modes(normalised=True)
 
     for a in alpha:

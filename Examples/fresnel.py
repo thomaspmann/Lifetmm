@@ -7,6 +7,7 @@ Calculate the fresnel reflection from (multilayer) planar interfaces as a functi
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import abs
+from tqdm import tqdm
 
 from lifetmm.TransferMatrix import TransferMatrix
 
@@ -131,11 +132,59 @@ def gold_on_substrate():
     plt.show()
 
 
-if __name__ == "__main__":
-    n1 = 1
-    n2 = 0.52406 + 10.742j  # Gold @ 1550nm
-    # n2 = 1.442  # Sio2 @ 1550nm
+def reflection_vs_wavelength():
+    """Plot reflectance of a structure vs wavelength.
+    
+    Note that we assume a non-dispersive media (n not a function of lam0) 
+    so ony valid for small wavelength ranges.
+    """
 
-    # single_interface_reflection(n1, n2)
-    # single_interface_transmission(n1, n2)
-    gold_on_substrate()
+    # Emission wavelength
+    lam0 = 1550
+    # Material refractive index @ lam0
+    si = 3.48
+    sio2 = 1.442
+
+    # Create structure
+    st = TransferMatrix()
+    st.add_layer(0, sio2)
+    st.add_layer(lam0 / 4, si)
+    st.add_layer(0, 1)
+
+    st.set_vacuum_wavelength(lam0)
+    st.set_incident_angle(0, units='degrees')
+    st.info()
+
+    lam_list = np.linspace(1400, 1600, 200, endpoint=True)
+    rs_list = []
+    rp_list = []
+    for lam in tqdm(lam_list):
+        # Do calculations
+        st.set_vacuum_wavelength(int(lam))
+        st.set_polarization('s')
+        r, t = st.calc_reflection_and_transmission(correction=False)
+        rs_list.append(r)
+        st.set_polarization('p')
+        r, t = st.calc_reflection_and_transmission(correction=False)
+        rp_list.append(r)
+
+    # Plot
+    fig, ax = plt.subplots()
+    ax.plot(lam_list, rp_list, label='p')
+    ax.plot(lam_list, rs_list, '--', label='s')
+    ax.set_xlabel('Wavelength (nm)')
+    ax.set_ylabel(r'Reflection ($|r|^2)$')
+    plt.legend()
+    plt.show()
+
+
+if __name__ == "__main__":
+    # Material refractive index at 1550 nm
+    air = 1
+    gold = 0.52406 + 10.742j
+    sio2 = 1.442
+
+    # single_interface_reflection(n1=air, n2=gold)
+    # single_interface_transmission(n1=air, n2=gold)
+    # gold_on_substrate()
+    reflection_vs_wavelength()
