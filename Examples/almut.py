@@ -40,15 +40,19 @@ def dbr_reflectivity_vs_aoi():
     # Emission wavelength
     lam0 = 1550
     # Material refractive index
+    edts = 1.6
     si = 3.48
-    sio2 = 1.442
+    au = 0.52406 + 10.742j
+    sio2 = edts  # 1.442
 
     # Setup simulation
     st = TransferMatrix()
-    st.add_layer(100, sio2)
+    st.add_layer(100, edts)
     st.add_layer(lam0 / (4 * sio2), sio2)
-    st.add_layer(lam0 / (4 * si), si)
-    st.add_layer(lam0 / (2 * sio2), sio2)
+    # st.add_layer(lam0 / (4 * si), si)
+    st.add_layer(7, au)
+    st.add_layer(lam0 / (4 * sio2), sio2)
+    st.add_layer(100, edts)
 
     st.set_vacuum_wavelength(lam0)
     # st.show_structure()
