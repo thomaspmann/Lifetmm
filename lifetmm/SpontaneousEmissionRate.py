@@ -14,13 +14,12 @@ log = logging.getLogger(__name__)
 
 
 class LifetimeTmm(TransferMatrix):
-    def calc_spe_layer_leaky(self, layer, emission='Lower', th_pow=8):
+    def calc_spe_layer_leaky(self, layer, emission='Lower', th_pow=8, z_step=1):
         """
         Evaluate the spontaneous emission rates for dipoles in a layer radiating into 'Lower' or 'Upper' modes.
         Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
         """
         # Option checks
-        assert self.mode_type() == 'Leaky', ValueError('The mode you are trying to solve for is not Leaky')
         assert emission in ['Lower', 'Upper'], ValueError('Emission option must be either "Upper" or "Lower".')
         assert isinstance(th_pow, int), ValueError('th_pow must be an integer.')
         assert self.d_list[layer] > 0, ValueError('Layer must have a thickness to use this function.')
@@ -32,7 +31,7 @@ class LifetimeTmm(TransferMatrix):
             layer = self.num_layers - layer - 1
 
         # z positions to evaluate E at
-        z = np.arange((self.z_step / 2.0), self.d_list[layer], self.z_step)
+        z = np.arange((z_step / 2.0), self.d_list[layer], z_step)
         if layer == 0:
             # A_plus and A_minus are defined at first cladding-layer boundary.
             # Therefore must propagate waves backwards in the first cladding.
@@ -149,7 +148,7 @@ class LifetimeTmm(TransferMatrix):
 
         return {'z': z, 'spe': spe}
 
-    def calc_spe_structure_leaky(self, th_pow=8):
+    def calc_spe_structure_leaky(self, th_pow=8, z_step=1):
         """
         Evaluate the spontaneous emission rate vs z of the structure for each dipole orientation.
         Rates are normalised w.r.t. free space emission or a randomly orientated dipole.
@@ -157,7 +156,7 @@ class LifetimeTmm(TransferMatrix):
         assert self.mode_type() == 'Leaky', ValueError('The mode you are trying to solve for is not Leaky')
 
         # z positions to evaluate E field at over entire structure
-        z_pos = np.arange((self.z_step / 2.0), self.d_cumulative[-1], self.z_step)
+        z_pos = np.arange((z_step / 2.0), self.d_cumulative[-1], z_step)
 
         # get z_mat - specifies what layer the corresponding point in z_pos is in
         comp1 = np.kron(np.ones((self.num_layers, 1)), z_pos)
@@ -235,7 +234,7 @@ class LifetimeTmm(TransferMatrix):
 
         return {'z': z_pos, 'spe': spe}
 
-    def calc_spe_layer_guided(self, layer, roots_te=None, roots_tm=None, vg_te=None, vg_tm=None):
+    def calc_spe_layer_guided(self, layer, roots_te=None, roots_tm=None, vg_te=None, vg_tm=None, z_step=1):
         assert self.d_list[layer] > 0, ValueError('Layer must have a thickness to use this function.')
 
         # Only re-evaluate the guided roots and v_g if not passed to function. Computationally intensive.
@@ -258,7 +257,7 @@ class LifetimeTmm(TransferMatrix):
             logging.info('Done!')
 
         # z positions to evaluate E at
-        z = np.arange((self.z_step / 2.0), self.d_list[layer], self.z_step)
+        z = np.arange((z_step / 2.0), self.d_list[layer], z_step)
         if layer == 0:
             # A_plus and A_minus are defined at first cladding-layer boundary.
             # Therefore must propagate waves backwards in the first cladding.
@@ -364,11 +363,11 @@ class LifetimeTmm(TransferMatrix):
 
         return {'z': z, 'spe': spe}
 
-    def calc_spe_structure_guided(self):
+    def calc_spe_structure_guided(self, z_step=1):
         assert self.supports_guiding(), ValueError('This structure does not support guided modes.')
 
         # z positions to evaluate E field at over entire structure
-        z_pos = np.arange((self.z_step / 2.0), self.d_cumulative[-1], self.z_step)
+        z_pos = np.arange((z_step / 2.0), self.d_cumulative[-1], z_step)
 
         # get z_mat - specifies what layer the corresponding point in z_pos is in
         comp1 = np.kron(np.ones((self.num_layers, 1)), z_pos)

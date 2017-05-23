@@ -12,6 +12,7 @@ from lifetmm.TransferMatrix import TransferMatrix
 
 
 def excitation_profile(sample):
+    """Plot the E field in the layer of the angled excitation of the laser @ 976nm."""
     # Load Data
     df = pd.read_csv('../Data/Screening.csv', index_col='Sample ID')
     n = df.loc[sample]['n']

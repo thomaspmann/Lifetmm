@@ -38,10 +38,10 @@ class TransferMatrix:
         Add layer of thickness d and refractive index n to the structure.
         Ensure that dimensions are consistent with layer thicknesses.
         """
-        assert isinstance(d, (int, float)), \
+        assert isinstance(d, (int, float)) or np.isreal(d), \
             ValueError('Thickness d must be either an integer or a float.')
         assert d >= 0, ValueError('Thickness must >= 0.')
-        assert isinstance(d, (int, float, complex)), \
+        assert isinstance(n, (int, float, complex)), \
             ValueError('Refractive index n must be either an integer, float or complex number.')
         if self.num_layers == 0:
             assert np.isreal(n), ValueError('Incomming medium must be transparent (n is real).')
@@ -329,8 +329,9 @@ class TransferMatrix:
         z_mat = sum(comp1 > comp2, 0)
         return np.where(z_mat == layer)
 
-    def _s11(self):
-        """Return s_11 of s-matrix."""
+    def _s11(self, n_11):
+        """Return s_11 of s-matrix for a given n_11."""
+        self.n_11 = n_11
         s = self.s_matrix()
         return s[0, 0].real
 

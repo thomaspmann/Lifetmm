@@ -16,9 +16,9 @@ def fig3():
     """
     # Create structure
     st = LifetimeTmm()
-    st.set_vacuum_wavelength(lam0)
     st.add_layer(lam0, si)
     st.add_layer(lam0, air)
+    st.set_vacuum_wavelength(lam0)
     st.info()
 
     # Calculate spontaneous emission over whole structure
@@ -75,9 +75,9 @@ def fig4():
     """
     # Create structure
     st = LifetimeTmm()
-    st.set_vacuum_wavelength(lam0)
     st.add_layer(lam0, si)
     st.add_layer(lam0, air)
+    st.set_vacuum_wavelength(lam0)
     st.info()
 
     # Calculate spontaneous emission over whole structure
@@ -119,10 +119,10 @@ def fig4():
 def fig5():
     # Create structure
     st = LifetimeTmm()
-    st.set_vacuum_wavelength(lam0)
     st.add_layer(1.5 * lam0, air)
     st.add_layer(lam0, si)
     st.add_layer(1.5 * lam0, air)
+    st.set_vacuum_wavelength(lam0)
     st.info()
 
     result = st.calc_spe_structure_guided()
@@ -162,10 +162,10 @@ def fig6():
     """
     # Create structure
     st = LifetimeTmm()
-    st.set_vacuum_wavelength(lam0)
     st.add_layer(2.5 * lam0, air)
     st.add_layer(lam0, si)
     st.add_layer(2.5 * lam0, air)
+    st.set_vacuum_wavelength(lam0)
     st.info()
 
     # Calculate spontaneous emission over whole structure
@@ -217,13 +217,12 @@ def fig7():
 
     k0 = 2 * np.pi / lam0
     for d in d_list:
-
         # Create structure
         st = LifetimeTmm()
-        st.set_vacuum_wavelength(lam0)
         st.add_layer(0, air)
         st.add_layer(d, si)
         st.add_layer(0, air)
+        st.set_vacuum_wavelength(lam0)
         st.info()
 
         # Calculate spontaneous emission of layer
@@ -284,10 +283,10 @@ def fig7():
 def fig8():
     # Create structure
     st = LifetimeTmm()
-    st.set_vacuum_wavelength(lam0)
     st.add_layer(1.5 * lam0, sio2)
     st.add_layer(lam0, si)
     st.add_layer(1.5 * lam0, air)
+    st.set_vacuum_wavelength(lam0)
     st.info()
 
     # Do Simulation
@@ -331,10 +330,10 @@ def fig9():
     """
     # Create structure
     st = LifetimeTmm()
-    st.set_vacuum_wavelength(lam0)
     st.add_layer(2.5 * lam0, sio2)
     st.add_layer(lam0, si)
     st.add_layer(2.5 * lam0, air)
+    st.set_vacuum_wavelength(lam0)
     st.info()
 
     # Calculate spontaneous emission over whole structure
@@ -379,13 +378,13 @@ def fig13a():
     """
     # Create structure
     st = LifetimeTmm()
-    st.set_vacuum_wavelength(lam0)
     st.add_layer(1e3, si)
     st.add_layer(1900, sio2)
     st.add_layer(100, si)
     st.add_layer(20, sio2)
     st.add_layer(100, si)
     st.add_layer(1e3, air)
+    st.set_vacuum_wavelength(lam0)
     st.info()
 
     # Calculate spontaneous emission over whole structure
@@ -426,13 +425,13 @@ def fig13b():
     """
     # Create structure
     st = LifetimeTmm()
-    st.set_vacuum_wavelength(lam0)
     # st.add_layer(1e3, si)
     st.add_layer(1900, sio2)
     st.add_layer(100, si)
     st.add_layer(20, sio2)
     st.add_layer(100, si)
     st.add_layer(1e3, air)
+    st.set_vacuum_wavelength(lam0)
     st.info()
 
     # Calculate spontaneous emission over whole structure
@@ -481,7 +480,7 @@ if __name__ == "__main__":
     # fig3()
     # fig4()
     # fig5()
-    # fig6()
+    fig6()
     # fig7()
     fig8()
     fig9()
