@@ -6,13 +6,11 @@ from lifetmm.SpontaneousEmissionRate import LifetimeTmm
 
 def PJ_dipoe_calculation():
     st = LifetimeTmm()
-    st.set_vacuum_wavelength(514.5)
-
-    # Add layers
     # st.add_layer(lam0, 1.44)
     st.add_layer(750, 1 ** 0.5)
     # st.add_layer(750, 1)
     st.add_layer(750, 2.3409 ** 0.5)
+    st.set_vacuum_wavelength(514.5)
     st.info()
 
     result = st.calc_spe_structure(th_pow=11)
@@ -194,5 +192,5 @@ if __name__ == "__main__":
     sio2 = 1.45
     si = 3.48
 
-    # PJ_dipoe_calculation()
-    plot_vertical_horizontal_total()
+    PJ_dipoe_calculation()
+    # plot_vertical_horizontal_total()
