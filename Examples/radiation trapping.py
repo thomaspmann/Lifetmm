@@ -1,62 +1,21 @@
+"""
+Calculations to look at the SE rate in structures designed to reduce radiation trapping
+"""
+
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
 from lifetmm.SpontaneousEmissionRate import LifetimeTmm
 
 
-def PJ_dipoe_calculation():
-    st = LifetimeTmm()
-    # st.add_layer(lam0, 1.44)
-    st.add_layer(750, 1 ** 0.5)
-    # st.add_layer(750, 1)
-    st.add_layer(750, 2.3409 ** 0.5)
-    st.set_vacuum_wavelength(514.5)
-    st.info()
-
-    result = st.calc_spe_structure(th_pow=11)
-    try:
-        # spe = result['leaky']['perpendicular'] + result['guided']['perpendicular']
-        spe = result['leaky']['parallel'] + result['guided']['parallel']
-    except KeyError:
-        # spe = result['leaky']['perpendicular']
-        spe = result['leaky']['parallel']
-
-    z = result['z']
-
-    fig, ax1 = plt.subplots()
-    ax1.plot(z, spe)
-
-    # Labels
-    ax1.set_ylabel('$\Gamma / \Gamma_0$')
-    ax1.set_xlabel('Position z (nm)')
-    # ax1.legend()
-
-    # Draw rectangles for the refractive index
-    ax2 = ax1.twinx()
-    for z0, dz, n in zip(st.d_cumulative, st.d_list, st.n_list):
-        rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.15)
-        ax2.add_patch(rect)  # Note: add to ax1 so that zorder has effect
-    ax2.set_ylabel('n')
-    ax2.set_ylim(ax1.get_ylim())
-    ax1.set_zorder(ax2.get_zorder() + 1)  # put ax1 in front of ax2
-    ax1.patch.set_visible(False)  # hide ax1'canvas'
-
-    for zb in st.get_layer_boundaries()[:-1]:
-        ax1.axvline(x=zb, color='k', lw=2)
-
-    if SAVE:
-        plt.savefig('../Images/PJ_dipole')
-    plt.show()
-
-
-def plot_vertical_horizontal_total():
+def all_plots():
     """Plot SE rates for vertical and horizontal dipoles. Then plot sum for randomly orientated dipole."""
 
     # Create structure
     st = LifetimeTmm()
     st.add_layer(2.5 * lam0, air)
-    st.add_layer(lam0, sio2)
-    st.add_layer(2.5 * lam0, si)
+    st.add_layer(lam0, edts)
+    st.add_layer(2.5 * lam0, sio2)
     st.set_vacuum_wavelength(lam0)
     st.info()
 
@@ -76,7 +35,7 @@ def plot_vertical_horizontal_total():
     ax2 = fig.add_subplot(212)
     ax2.plot(z, spe['TM_s'], label='TM')
 
-    ax1.set_title('Spontaneous Emission Rate (leaky). Silicon (n=3.48) with air cladding (n=1.)')
+    ax1.set_title('Spontaneous Emission Rate (leaky).')
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax2.set_ylabel('$\Gamma /\Gamma_0$')
     ax2.set_xlabel('z/$\lambda$')
@@ -97,18 +56,18 @@ def plot_vertical_horizontal_total():
         rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.2)
         ax1b.add_patch(rect)
         ax1b.set_ylabel('n')
-        ax1b.set_ylim(0, 1.5 * max(st.n_list.real))
+        ax1b.set_ylim(ax1.get_ylim())
         rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.2)
         ax2b.add_patch(rect)
         ax2b.set_ylabel('n')
-        ax2b.set_ylim(0, 1.5 * max(st.n_list.real))
+        ax2b.set_ylim(ax2.get_ylim())
     ax1.set_zorder(ax1b.get_zorder() + 1)  # put ax1 in front of ax2
     ax1.patch.set_visible(False)  # hide ax1'canvas'
     ax2.set_zorder(ax2b.get_zorder() + 1)  # put ax1 in front of ax2
     ax2.patch.set_visible(False)  # hide ax1'canvas'
 
     if SAVE:
-        plt.savefig('../Images/henkjan_leaky')
+        plt.savefig('../Images/leaky')
     plt.show()
 
     # Guided modes plot
@@ -122,7 +81,7 @@ def plot_vertical_horizontal_total():
         ax2 = fig.add_subplot(212)
         ax2.plot(z, spe['TM_s'], label='TM')
 
-        ax1.set_title('Spontaneous Emission Rate (guided). Silicon (n=3.48) with air cladding (n=1.)')
+        ax1.set_title('Spontaneous Emission Rate (guided).')
         ax1.set_ylabel('$\Gamma / \Gamma_0$')
         ax2.set_ylabel('$\Gamma /\Gamma_0$')
         ax2.set_xlabel('z/$\lambda$')
@@ -143,18 +102,18 @@ def plot_vertical_horizontal_total():
             rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.2)
             ax1b.add_patch(rect)
             ax1b.set_ylabel('n')
-            ax1b.set_ylim(0, 1.5 * max(st.n_list.real))
+            ax1b.set_ylim(ax1.get_ylim())
             rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.2)
             ax2b.add_patch(rect)
             ax2b.set_ylabel('n')
-            ax2b.set_ylim(0, 1.5 * max(st.n_list.real))
+            ax2b.set_ylim(ax2.get_ylim())
         ax1.set_zorder(ax1b.get_zorder() + 1)  # put ax1 in front of ax2
         ax1.patch.set_visible(False)  # hide ax1'canvas'
         ax2.set_zorder(ax2b.get_zorder() + 1)  # put ax1 in front of ax2
         ax2.patch.set_visible(False)  # hide ax1'canvas'
 
         if SAVE:
-            plt.savefig('../Images/henkjan_guided')
+            plt.savefig('../Images/guided')
         plt.show()
 
     # parallel and perpendicular dipole orientation (leaky + guided)
@@ -186,18 +145,19 @@ def plot_vertical_horizontal_total():
         rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.2)
         ax1b.add_patch(rect)
         ax1b.set_ylabel('n')
-        ax1b.set_ylim(0, 1.5 * max(st.n_list.real))
+        ax1b.set_ylim(ax1.get_ylim())
         rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.2)
         ax2b.add_patch(rect)
         ax2b.set_ylabel('n')
-        ax2b.set_ylim(0, 1.5 * max(st.n_list.real))
+        ax2b.set_ylim(ax2.get_ylim())
     ax1.set_zorder(ax1b.get_zorder() + 1)  # put ax1 in front of ax2
     ax1.patch.set_visible(False)  # hide ax1'canvas'
     ax2.set_zorder(ax2b.get_zorder() + 1)  # put ax1 in front of ax2
     ax2.patch.set_visible(False)  # hide ax1'canvas'
 
     if SAVE:
-        plt.savefig('../Images/henkjan_individual')
+        plt.savefig('../Images/individual')
+    plt.show()
 
     # Average dipole orientation (leaky + guided)
     fig, ax1 = plt.subplots()
@@ -205,6 +165,7 @@ def plot_vertical_horizontal_total():
         ax1.plot(z, res['leaky']['avg'] + res['guided']['avg'], label='Avg')
     else:
         ax1.plot(z, res['leaky']['avg'], label='Avg')
+    ax1.set_title('Average total SE rate.')
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
     ax1.set_xlabel('Position z ($\lambda$)')
     ax1.legend()
@@ -217,7 +178,7 @@ def plot_vertical_horizontal_total():
         rect = Rectangle((z0 - dz, 0), dz, n.real, facecolor='c', alpha=0.15)
         ax2.add_patch(rect)  # Note: add to ax1 so that zorder has effect
     ax2.set_ylabel('n')
-    ax2.set_ylim(0, 1.5 * max(st.n_list.real))
+    ax2.set_ylim(ax1.get_ylim())
     ax1.set_zorder(ax2.get_zorder() + 1)  # put ax1 in front of ax2
     ax1.patch.set_visible(False)  # hide ax1'canvas'
 
@@ -227,7 +188,7 @@ def plot_vertical_horizontal_total():
         ax1.axvline(x=zb, color='k', lw=2)
 
     if SAVE:
-        plt.savefig('../Images/henkjan_total')
+        plt.savefig('../Images/total')
     plt.show()
 
 
@@ -240,7 +201,7 @@ if __name__ == "__main__":
     # Material refractive index at lam0
     air = 1
     sio2 = 1.45
+    edts = 1.6
     si = 3.48
 
-    # PJ_dipoe_calculation()
-    plot_vertical_horizontal_total()
+    all_plots()
