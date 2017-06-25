@@ -11,10 +11,13 @@ from lifetmm.SpontaneousEmissionRate import LifetimeTmm
 def all_plots():
     """Plot SE rates for vertical and horizontal dipoles. Then plot sum for randomly orientated dipole."""
 
+    import matplotlib as mpl
+    mpl.rc('figure', dpi=300)
+
     # Create structure
     st = LifetimeTmm()
-    st.add_layer(2.5 * lam0, air)
-    st.add_layer(lam0, edts)
+    st.add_layer(2.5 * lam0, si)
+    st.add_layer(100, edts)
     st.add_layer(2.5 * lam0, sio2)
     st.set_vacuum_wavelength(lam0)
     st.info()
@@ -68,7 +71,7 @@ def all_plots():
 
     if SAVE:
         plt.savefig('../Images/leaky')
-    plt.show()
+    # plt.show()
 
     # Guided modes plot
     if st.supports_guiding():
@@ -114,7 +117,7 @@ def all_plots():
 
         if SAVE:
             plt.savefig('../Images/guided')
-        plt.show()
+            # plt.show()
 
     # parallel and perpendicular dipole orientation (leaky + guided)
     fig, (ax1, ax2) = plt.subplots(2, 1, sharex='col', sharey='none')
@@ -157,7 +160,7 @@ def all_plots():
 
     if SAVE:
         plt.savefig('../Images/individual')
-    plt.show()
+    # plt.show()
 
     # Average dipole orientation (leaky + guided)
     fig, ax1 = plt.subplots()
