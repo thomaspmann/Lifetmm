@@ -8,6 +8,7 @@ Transfer matrix model for light inside a multilayer dielectric structure.
 import logging
 import time
 
+import matplotlib.pyplot as plt
 import numpy as np
 from numpy import pi, sqrt, sin, exp
 from scipy.constants import c
@@ -510,3 +511,63 @@ class TransferMatrix:
             return 'Guided'
         else:
             return 'Leaky'
+
+    def plot_reflectivity_vs_angle(self):
+        """ Reflection vs AOI"""
+
+        th_list = np.linspace(0, 90, 1000, endpoint=False)
+        rs_list = []
+        rp_list = []
+        for theta in th_list:
+            self.set_incident_angle(theta, units='degrees')
+            self.set_polarization('s')
+            rs, t = self.calc_r_and_t()
+            rs_list.append(rs)
+            self.set_polarization('p')
+            rp, t = self.calc_r_and_t()
+            rp_list.append(rp)
+        rs_list = np.array(rs_list)
+        rp_list = np.array(rp_list)
+
+        # Plot
+        fig, (ax1, ax2) = plt.subplots(2, sharex='row')
+        ax1.set_ylabel(r'Reflection ($|r|^2)$')
+        ax1.plot(th_list, abs(rs_list) ** 2, '--', label='s')
+        ax1.plot(th_list, abs(rp_list) ** 2, label='p')
+        ax1.plot(th_list, (abs(rs_list) ** 2 + abs(rp_list) ** 2) / 2, label='Unpolarised')
+        ax2.set_ylabel('Reflection phase (deg)')
+        ax2.plot(th_list, np.angle(rs_list, deg=True), '--', label='s')
+        # Note r_p is defined where the E field flips on reflection [2] pg.22
+        # therefore we multiply by e^(i*pi) to shift by 180 degrees so that a negative angle implies a flipped E field
+        ax2.plot(th_list, np.angle(-1 * rp_list, deg=True), label='p')
+        ax2.set_xlabel('AOI (degrees)')
+        ax1.legend()
+        ax2.legend()
+        plt.show()
+
+    def plot_reflectivity_vs_wavelength(self, lam_lower=500, lam_upper=1500):
+        """ Reflection coefficient for Fabry-Perot microcavity (designed at 1.55um) vs lam0"""
+
+        lam_list = np.linspace(lam_lower, lam_upper, 2000, endpoint=True)
+        rs_list = []
+        rp_list = []
+        for lam in lam_list:
+            # Do calculations
+            self.set_vacuum_wavelength(lam)
+            self.set_polarization('s')
+            r, t = self.calc_reflection_and_transmission(correction=False)
+            rs_list.append(r)
+            self.set_polarization('p')
+            r, t = self.calc_reflection_and_transmission(correction=False)
+            rp_list.append(r)
+
+        # Plot
+        fig, ax = plt.subplots()
+        ax.plot(lam_list, rs_list, '--', label='s')
+        ax.plot(lam_list, rp_list, label='p')
+        ax.set_xlabel('Wavelength (nm)')
+        ax.set_ylabel(r'Reflection ($|r|^2)$')
+        plt.legend()
+        plt.show()
+
+        return lam_list, rs_list, rp_list

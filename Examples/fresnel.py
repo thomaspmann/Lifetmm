@@ -7,66 +7,15 @@ Calculate the fresnel reflection from (multilayer) planar interfaces as a functi
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import abs
-from tqdm import tqdm
 
 from lifetmm.TransferMatrix import TransferMatrix
 
 
-def single_interface_reflection(n1=1.47 + 0.0j, n2=1.0 + 0.0j):
+def transmission_vs_angle(st):
     """
     Dependence of the power reflectivity and phase on the angle of incidence.
     Light incident from medium of refractive index n1 to medium of refractive index n2
     """
-    # Setup simulation
-    st = TransferMatrix()
-    st.add_layer(0, n1)
-    st.add_layer(0, n2)
-    st.info()
-
-    # Do calculations
-    th_list = np.linspace(0, 90, 200, endpoint=False)
-    rs_list = []
-    rp_list = []
-    for theta in th_list:
-        st.set_incident_angle(theta, units='degrees')
-        st.set_polarization('s')
-        rs, t = st.calc_r_and_t()
-        rs_list.append(rs)
-        st.set_polarization('p')
-        rp, t = st.calc_r_and_t()
-        rp_list.append(rp)
-    rs_list = np.array(rs_list)
-    rp_list = np.array(rp_list)
-
-    # Plot
-    fig, (ax1, ax2) = plt.subplots(2, sharex='row')
-    ax1.set_ylabel(r'Reflection ($|r|^2)$')
-    ax1.plot(th_list, abs(rs_list) ** 2, '--', label='s')
-    ax1.plot(th_list, abs(rp_list) ** 2, label='p')
-    ax1.plot(th_list, (abs(rs_list) ** 2 + abs(rp_list) ** 2) / 2, label='Unpolarised')
-    ax2.set_ylabel('Reflection phase (deg)')
-    ax2.plot(th_list, np.angle(rs_list, deg=True), '--', label='s')
-    # Note r_p is defined where the E field flips on reflection [2] pg.22
-    # therefore we multiply by e^(i*pi) to shift by 180 degrees so that a negative angle implies a flipped E field
-    ax2.plot(th_list, np.angle(-1 * rp_list, deg=True), label='p')
-    ax2.set_xlabel('AOI (degrees)')
-    ax1.legend()
-    ax2.legend()
-    plt.show()
-
-
-def single_interface_transmission(n1=1.47 + 0.0j, n2=1.0 + 0.0j):
-    """
-    Dependence of the power reflectivity and phase on the angle of incidence.
-    Light incident from medium of refractive index n1 to medium of refractive index n2
-    """
-    # Setup simulation
-    st = TransferMatrix()
-    st.add_layer(0, n1)
-    st.add_layer(0, n2)
-    st.info()
-
-    # Do calculations
     th_list = np.linspace(0, 90, 200, endpoint=False)
     ts_list = []
     tp_list = []
@@ -98,93 +47,22 @@ def single_interface_transmission(n1=1.47 + 0.0j, n2=1.0 + 0.0j):
     plt.show()
 
 
-def gold_on_substrate():
-    """ Reflection coefficient for air-gold on silica substrate (at 1.55um)"""
+if __name__ == "__main__":
+    lam0 = 1550
+
+    # Material refractive index at lam0 nm
+    air = 1
+    sio2 = 1.442
+    au = 0.52406 + 10.742j  # gold
+    ag = 0.14447 + 11.366j  # silver
+    al = 1.5785 + 15.658j
+
     # Setup simulation
     st = TransferMatrix()
-    st.set_vacuum_wavelength(1550)
-    # st.set_vacuum_wavelength(1550)
-    st.add_layer(0, 1.6)
-    st.add_layer(10, 0.52406 + 10.742j)
-    st.add_layer(0, 1.6)
-    st.info()
-
-    th_list = np.linspace(0, 90, 2000, endpoint=False)
-    rs_list = []
-    rp_list = []
-    for theta in th_list:
-        # Do calculations
-        st.set_incident_angle(theta, units='degrees')
-        st.set_polarization('s')
-        r, t = st.calc_reflection_and_transmission(correction=False)
-        rs_list.append(r)
-        st.set_polarization('p')
-        r, t = st.calc_reflection_and_transmission(correction=False)
-        rp_list.append(r)
-
-    # Plot
-    fig, ax = plt.subplots()
-    ax.plot(th_list, rs_list, '--', label='s')
-    ax.plot(th_list, rp_list, label='p')
-    ax.set_xlabel('AOI (degrees)')
-    ax.set_ylabel(r'Reflection ($|r|^2)$')
-    plt.legend()
-    plt.show()
-
-
-def reflection_vs_wavelength():
-    """Plot reflectance of a structure vs wavelength.
-    
-    Note that we assume a non-dispersive media (n not a function of lam0) 
-    so ony valid for small wavelength ranges.
-    """
-
-    # Emission wavelength
-    lam0 = 1550
-    # Material refractive index @ lam0
-    si = 3.48
-    sio2 = 1.442
-
-    # Create structure
-    st = TransferMatrix()
     st.add_layer(0, sio2)
-    st.add_layer(lam0 / 4, si)
-    st.add_layer(0, 1)
-
+    st.add_layer(100, ag)
+    st.add_layer(0, air)
     st.set_vacuum_wavelength(lam0)
-    st.set_incident_angle(0, units='degrees')
     st.info()
-
-    lam_list = np.linspace(1400, 1600, 200, endpoint=True)
-    rs_list = []
-    rp_list = []
-    for lam in tqdm(lam_list):
-        # Do calculations
-        st.set_vacuum_wavelength(int(lam))
-        st.set_polarization('s')
-        r, t = st.calc_reflection_and_transmission(correction=False)
-        rs_list.append(r)
-        st.set_polarization('p')
-        r, t = st.calc_reflection_and_transmission(correction=False)
-        rp_list.append(r)
-
-    # Plot
-    fig, ax = plt.subplots()
-    ax.plot(lam_list, rp_list, label='p')
-    ax.plot(lam_list, rs_list, '--', label='s')
-    ax.set_xlabel('Wavelength (nm)')
-    ax.set_ylabel(r'Reflection ($|r|^2)$')
-    plt.legend()
-    plt.show()
-
-
-if __name__ == "__main__":
-    # Material refractive index at 1550 nm
-    air = 1
-    gold = 0.52406 + 10.742j
-    sio2 = 1.442
-
-    # single_interface_reflection(n1=air, n2=gold)
-    # single_interface_transmission(n1=air, n2=gold)
-    # gold_on_substrate()
-    reflection_vs_wavelength()
+    st.plot_reflectivity_vs_angle()
+    # reflection_vs_angle(st)
