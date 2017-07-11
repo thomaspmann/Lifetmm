@@ -7,14 +7,14 @@ import numpy as np
 import pandas as pd
 from matplotlib.patches import Rectangle
 
-from lifetmm.SpontaneousEmissionRate import LifetimeTmm
+from lifetmm.SPE import SPE
 
 
 def plot_leaky_guided_total():
     """Plot leaky and guided SE rates and then sum for randomly orientated dipole."""
 
     # Create Structure
-    st = LifetimeTmm()
+    st = SPE()
     st.add_layer(d_clad * lam0, n_dict['SiO2'])
     st.add_layer(1000, 1.56)
     st.add_layer(1000, n_dict['TiO2'])
@@ -106,7 +106,7 @@ def plot_vertical_horizontal_total(sample):
     chip = {'Sample ID': sample, 'n': n, 'd': d}
 
     # Create Structure
-    st = LifetimeTmm()
+    st = SPE()
     st.set_vacuum_wavelength(lam0)
     st.add_layer(d_clad * lam0, n_dict['SiO2'])
     st.add_layer(chip['d'], chip['n'])
@@ -198,7 +198,7 @@ def plot_te_tm(sample):
     chip = {'Sample ID': sample, 'n': n, 'd': d}
 
     # Structure 1
-    st = LifetimeTmm()
+    st = SPE()
     st.set_vacuum_wavelength(lam0)
     st.add_layer(d_clad * lam0, n_dict['SiO2'])
     st.add_layer(chip['d'], chip['n'])
@@ -293,7 +293,7 @@ def fig6(sample):
     chip = {'Sample ID': sample, 'n': n, 'd': d}
 
     # Structure 1
-    st = LifetimeTmm()
+    st = SPE()
     st.set_vacuum_wavelength(lam0)
     st.add_layer(d_clad * lam0, n_dict['SiO2'])
     st.add_layer(chip['d'], chip['n'])
@@ -342,7 +342,7 @@ def purcell_factor(sample, n1, n2, layer):
     chip = {'Sample ID': sample, 'n': n, 'd': d}
 
     # Structure 1
-    st1 = LifetimeTmm()
+    st1 = SPE()
     st1.set_vacuum_wavelength(lam0)
     st1.add_layer(d_clad * lam0, n_dict['SiO2'])
     st1.add_layer(chip['d'], chip['n'])
@@ -354,11 +354,11 @@ def purcell_factor(sample, n1, n2, layer):
         spe1 = result1['leaky']['avg'] + result1['guided']['avg']
     except KeyError:
         spe1 = result1['leaky']['avg']
-    ind = st1.get_layer_indices(layer)
+    ind = st1.get_layer_index(layer)
     fp1 = np.mean(spe1[ind])
 
     # Structure 2
-    st2 = LifetimeTmm()
+    st2 = SPE()
     st2.set_vacuum_wavelength(lam0)
     st2.add_layer(d_clad * lam0, n_dict['SiO2'])
     st2.add_layer(chip['d'], chip['n'])
@@ -370,7 +370,7 @@ def purcell_factor(sample, n1, n2, layer):
         spe2 = result2['leaky']['avg'] + result2['guided']['avg']
     except KeyError:
         spe2 = result2['leaky']['avg']
-    ind = st1.get_layer_indices(layer)
+    ind = st1.get_layer_index(layer)
     fp2 = np.mean(spe2[ind])
 
     z = result1['z']

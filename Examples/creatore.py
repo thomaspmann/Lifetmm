@@ -7,7 +7,7 @@ Script to recreate the plots in the paper
 import matplotlib.pyplot as plt
 import numpy as np
 
-from lifetmm.SpontaneousEmissionRate import LifetimeTmm
+from lifetmm.SPE import SPE
 
 
 def fig3():
@@ -15,7 +15,7 @@ def fig3():
     Silicon to air semi-infinite half spaces.
     """
     # Create structure
-    st = LifetimeTmm()
+    st = SPE()
     st.add_layer(lam0, si)
     st.add_layer(lam0, air)
     st.set_vacuum_wavelength(lam0)
@@ -74,7 +74,7 @@ def fig4():
     Silicon to air semi-infinite half spaces.
     """
     # Create structure
-    st = LifetimeTmm()
+    st = SPE()
     st.add_layer(lam0, si)
     st.add_layer(lam0, air)
     st.set_vacuum_wavelength(lam0)
@@ -118,7 +118,7 @@ def fig4():
 
 def fig5():
     # Create structure
-    st = LifetimeTmm()
+    st = SPE()
     st.add_layer(1.5 * lam0, air)
     st.add_layer(lam0, si)
     st.add_layer(1.5 * lam0, air)
@@ -161,7 +161,7 @@ def fig6():
     Silicon layer bounded by two semi infinite air claddings.
     """
     # Create structure
-    st = LifetimeTmm()
+    st = SPE()
     st.add_layer(2.5 * lam0, air)
     st.add_layer(lam0, si)
     st.add_layer(2.5 * lam0, air)
@@ -218,7 +218,7 @@ def fig7():
     k0 = 2 * np.pi / lam0
     for d in d_list:
         # Create structure
-        st = LifetimeTmm()
+        st = SPE()
         st.add_layer(0, air)
         st.add_layer(d, si)
         st.add_layer(0, air)
@@ -282,7 +282,7 @@ def fig7():
 
 def fig8():
     # Create structure
-    st = LifetimeTmm()
+    st = SPE()
     st.add_layer(1.5 * lam0, sio2)
     st.add_layer(lam0, si)
     st.add_layer(1.5 * lam0, air)
@@ -329,7 +329,7 @@ def fig9():
     Silicon layer bounded by two semi infinite air claddings.
     """
     # Create structure
-    st = LifetimeTmm()
+    st = SPE()
     st.add_layer(2.5 * lam0, sio2)
     st.add_layer(lam0, si)
     st.add_layer(2.5 * lam0, air)
@@ -377,7 +377,7 @@ def fig13a():
     Silicon layer bounded by two semi infinite air claddings.
     """
     # Create structure
-    st = LifetimeTmm()
+    st = SPE()
     st.add_layer(1e3, si)
     st.add_layer(1900, sio2)
     st.add_layer(100, si)
@@ -424,7 +424,7 @@ def fig13b():
     Silicon layer bounded by two semi infinite air claddings.
     """
     # Create structure
-    st = LifetimeTmm()
+    st = SPE()
     # st.add_layer(1e3, si)
     st.add_layer(1900, sio2)
     st.add_layer(100, si)
@@ -477,11 +477,11 @@ if __name__ == "__main__":
     si = 3.48
     air = 1
 
-    # fig3()
-    # fig4()
-    # fig5()
+    fig3()
+    fig4()
+    fig5()
     fig6()
-    # fig7()
+    fig7()
     fig8()
     fig9()
     fig13a()

@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numpy import pi
 
-from lifetmm import LifetimeTmm
+from lifetmm.SPE import SPE
 
 
 def fig3():
@@ -21,17 +21,17 @@ def fig3():
          * th_num option is specified to give a higher accuracy on the integration.
     """
     # Vacuum emission wavelength
-    lam_vac = 1550
+    lam0 = 1550
 
     results = []
     n_list = np.linspace(1, 2, 10)
     for n in n_list:
         print('Evaluating n={:g}'.format(n))
         # Create structure
-        st = LifetimeTmm()
-        st.set_vacuum_wavelength(lam_vac)
-        st.add_layer(1550, 1.5)
+        st = SPE()
+        st.add_layer(lam0, 1.5)
         st.add_layer(0, n)
+        st.set_vacuum_wavelength(lam0)
         # Calculate average total spontaneous emission of layer 0 (1st)
         result = st.calc_spe_layer_leaky(layer=0, emission='Lower', th_pow=11)
         spe = result['spe']['total']
@@ -65,27 +65,27 @@ def fig4():
     distance from the interface.
     """
     # Vacuum wavelength
-    lam_vac = 1550
+    lam0 = 1550
     # Plotting units
-    units = lam_vac / (2 * pi)
+    units = lam0 / (2 * pi)
 
     # Create plot
-    f, ax = plt.subplots(figsize=(15, 7))
+    f, ax = plt.subplots()
 
     for n in [1, 3]:
         print('Evaluating n={:g}'.format(n))
         # Create structure
-        st = LifetimeTmm()
-        st.set_vacuum_wavelength(lam_vac)
+        st = SPE()
         st.add_layer(4 * units, n)
         st.add_layer(4 * units, 1.5)
+        st.set_vacuum_wavelength(lam0)
         st.info()
         # Calculate spontaneous emission over whole structure
-        result = st.calc_spe_structure_leaky()
+        result = st.calc_spe_structure()
         z = result['z']
         # Shift so centre of structure at z=0
         z -= st.get_structure_thickness() / 2
-        spe = result['spe']['total']
+        spe = result['leaky']['avg']
         # Plot spontaneous emission rates
         ax.plot(z/units, spe, label=('n='+str(n)), lw=2)
         ax.axhline(y=n, xmin=0, xmax=0.4, ls='dotted', color='k', lw=2)

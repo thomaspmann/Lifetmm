@@ -5,12 +5,12 @@ Thin film calculations for S-series.
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
-from lifetmm.SpontaneousEmissionRate import LifetimeTmm
+from lifetmm.SPE import SPE
 
 
 def plot():
     # Structure 1
-    st = LifetimeTmm()
+    st = SPE()
     st.set_vacuum_wavelength(lam0)
     st.add_layer(d_clad * lam0, n_dict['SiO2'])
     st.add_layer(1 * lam0, n_dict['TZN'])

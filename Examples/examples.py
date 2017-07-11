@@ -5,7 +5,7 @@ Example scripts for the LifetimeTmm package.
 import matplotlib.pyplot as plt
 import numpy as np
 
-from lifetmm.SpontaneousEmissionRate import LifetimeTmm
+from lifetmm.SPE import SPE
 
 
 def example1():
@@ -18,7 +18,7 @@ def example1():
     for n in n_list:
         print('Evaluating n={}'.format(n))
         # Create structure
-        st = LifetimeTmm()
+        st = SPE()
         st.set_vacuum_wavelength(lam0)
         st.add_layer(1550, 1.5)
         st.add_layer(1550, n)
