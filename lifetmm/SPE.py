@@ -13,7 +13,7 @@ from lifetmm.TransferMatrix import TransferMatrix
 log = logging.getLogger(__name__)
 
 
-class LifetimeTmm(TransferMatrix):
+class SPE(TransferMatrix):
     def calc_spe_layer_leaky(self, layer, emission='Lower', th_pow=8, z_step=1):
         """
         Evaluate the spontaneous emission rates for dipoles in a layer radiating into 'Lower' or 'Upper' modes.
@@ -424,16 +424,85 @@ class LifetimeTmm(TransferMatrix):
 
         return {'z': z_pos, 'spe': spe}
 
-    def calc_spe_structure(self, th_pow=10):
+    def calc_spe_layer(self, layer, th_pow=10, z_step=1):
         logging.info("Calculating leaky modes...")
-        result = self.calc_spe_structure_leaky(th_pow=th_pow)
-        logging.info('Done!')
-        leaky = result['spe']
+
+        # Calculate lower leaky modes
+        result = self.calc_spe_layer_leaky(layer, emission='Lower', th_pow=th_pow)
+        spe_layer = result['spe']
         z = result['z']
+        # Structure to hold field spontaneous emission rate components over z
+        leaky = np.zeros(len(z), dtype=[('total', 'float64'),
+                                        ('parallel', 'float64'),
+                                        ('perpendicular', 'float64'),
+                                        ('avg', 'float64'),
+                                        ('lower', 'float64'),
+                                        ('upper', 'float64'),
+                                        ('TE', 'float64'),
+                                        ('TM_p', 'float64'),
+                                        ('TM_s', 'float64'),
+                                        ('TE_lower', 'float64'),
+                                        ('TM_p_lower', 'float64'),
+                                        ('TM_s_lower', 'float64'),
+                                        ('TE_lower_full', 'float64'),
+                                        ('TM_p_lower_full', 'float64'),
+                                        ('TM_s_lower_full', 'float64'),
+                                        ('TE_lower_partial', 'float64'),
+                                        ('TM_p_lower_partial', 'float64'),
+                                        ('TM_s_lower_partial', 'float64'),
+                                        ('TE_upper', 'float64'),
+                                        ('TM_p_upper', 'float64'),
+                                        ('TM_s_upper', 'float64')])
+        leaky['TE_lower'] += spe_layer['TE']
+        leaky['TM_p_lower'] += spe_layer['TM_p']
+        leaky['TM_s_lower'] += spe_layer['TM_s']
+        leaky['TE_lower_full'] += spe_layer['TE_full']
+        leaky['TM_s_lower_full'] += spe_layer['TM_s_full']
+        leaky['TM_p_lower_full'] += spe_layer['TM_p_full']
+        leaky['TE_lower_partial'] += spe_layer['TE_partial']
+        leaky['TM_s_lower_partial'] += spe_layer['TM_s_partial']
+        leaky['TM_p_lower_partial'] += spe_layer['TM_p_partial']
+
+        # Calculate upper leaky modes (always leaky as n[0] > n[-1])
+        spe_layer = self.calc_spe_layer_leaky(layer, emission='Upper', th_pow=th_pow)['spe']
+        leaky['TE_upper'] += spe_layer['TE']
+        leaky['TM_p_upper'] += spe_layer['TM_p']
+        leaky['TM_s_upper'] += spe_layer['TM_s']
+
+        # Totals
+        leaky['TE'] = leaky['TE_lower'] + leaky['TE_upper']
+        leaky['TM_p'] = leaky['TM_p_lower'] + leaky['TM_p_upper']
+        leaky['TM_s'] = leaky['TM_s_lower'] + leaky['TM_s_upper']
+        leaky['lower'] = leaky['TE_lower'] + leaky['TM_p_lower'] + leaky['TM_s_lower']
+        leaky['upper'] = leaky['TE_upper'] + leaky['TM_p_upper'] + leaky['TM_s_upper']
+        leaky['total'] = leaky['TE'] + leaky['TM_p'] + leaky['TM_s']
+        leaky['parallel'] = leaky['TE'] + leaky['TM_p']
+        leaky['perpendicular'] = leaky['TM_s']
+
+        # Average for a randomly orientated dipole
+        leaky['avg'] = (2 / 3) * leaky['parallel'] + (1 / 3) * leaky['perpendicular']
+
+        logging.info('Done!')
 
         if self.supports_guiding():
             logging.info("Structure suppports waveguiding. Calculating guided modes...")
-            guided = self.calc_spe_structure_guided()['spe']
+            guided = self.calc_spe_layer_guided(layer, z_step)['spe']
+            logging.info('Done!')
+            return {'z': z, 'leaky': leaky, 'guided': guided}
+        else:
+            logging.info("Structure does not support waveguiding.")
+            return {'z': z, 'leaky': leaky}
+
+    def calc_spe_structure(self, th_pow=10, z_step=1):
+        logging.info("Calculating leaky modes...")
+        result = self.calc_spe_structure_leaky(th_pow=th_pow, z_step=z_step)
+        z = result['z']
+        leaky = result['spe']
+        logging.info('Done!')
+
+        if self.supports_guiding():
+            logging.info("Structure supports waveguiding. Calculating guided modes...")
+            guided = self.calc_spe_structure_guided(z_step=z_step)['spe']
             logging.info('Done!')
             return {'z': z, 'leaky': leaky, 'guided': guided}
         else:

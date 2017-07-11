@@ -1,11 +1,11 @@
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
-from lifetmm.SpontaneousEmissionRate import LifetimeTmm
+from lifetmm.SPE import SPE
 
 
 def PJ_dipoe_calculation():
-    st = LifetimeTmm()
+    st = SPE()
     # st.add_layer(lam0, 1.44)
     st.add_layer(750, 1 ** 0.5)
     # st.add_layer(750, 1)
@@ -53,7 +53,7 @@ def plot_vertical_horizontal_total():
     """Plot SE rates for vertical and horizontal dipoles. Then plot sum for randomly orientated dipole."""
 
     # Create structure
-    st = LifetimeTmm()
+    st = SPE()
     st.add_layer(2.5 * lam0, air)
     st.add_layer(lam0, sio2)
     st.add_layer(2.5 * lam0, si)

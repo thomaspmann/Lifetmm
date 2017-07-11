@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from lifetmm.SpontaneousEmissionRate import LifetimeTmm
+from lifetmm.SPE import SPE
 from lifetmm.TransferMatrix import TransferMatrix
 
 
@@ -39,7 +39,7 @@ def mcgehee():
 
 
 def spe():
-    st = LifetimeTmm()
+    st = SPE()
     st.set_vacuum_wavelength(lam0)
 
     # Add layers
@@ -202,7 +202,7 @@ def test():
 def PJ_dipoe_calculation():
     from matplotlib.patches import Rectangle
 
-    st = LifetimeTmm()
+    st = SPE()
     st.set_vacuum_wavelength(514.5)
 
     # Add layers
@@ -250,7 +250,7 @@ def PJ_dipoe_calculation():
 
 def tester():
     """Plot reflection from a structure vs z component wave-vector"""
-    st = LifetimeTmm()
+    st = SPE()
     st.set_vacuum_wavelength(514.5)
     st.set_polarization('TM')
 

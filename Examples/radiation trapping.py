@@ -5,7 +5,7 @@ Calculations to look at the SE rate in structures designed to reduce radiation t
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
-from lifetmm.SpontaneousEmissionRate import LifetimeTmm
+from lifetmm.SPE import SPE
 
 
 def all_plots():
@@ -15,7 +15,7 @@ def all_plots():
     mpl.rc('figure', dpi=250)
 
     # Create structure
-    st = LifetimeTmm()
+    st = SPE()
     st.add_layer(2.5 * lam0, si)
     st.add_layer(100, edts)
     st.add_layer(2.5 * lam0, si)

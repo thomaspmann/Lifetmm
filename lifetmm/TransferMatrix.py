@@ -83,7 +83,7 @@ class TransferMatrix:
 
     def set_incident_angle(self, th, units='radians'):
         """
-        Set the incident angle of the plane wave (for a leaky mode).
+        Set the incident angle of the plane wave (for a leaky mode). 0 deg is normal to the interface.
         """
         if hasattr(th, 'size') and th.size > 1:
             raise ValueError('This function is not vectorized; you need to run one '
@@ -157,9 +157,9 @@ class TransferMatrix:
         nk = self.n_list[k]
         qj = self.calc_xi(j)  # Using q notation instead of xi to match eq 3a and 3b in [1]
         qk = self.calc_xi(k)  # Ditto
-        # Evaluate reflection and transmission coefficients for E field
+        # Evaluate reflection and transmission coefficients for E field - ok for complex index of refraction [1]
         if self.pol in ['p', 'TM']:
-            # Note r_p is defined where the E field flips direction by pi on reflection [2] pg.22.
+            # Note r_p is defined where the E field flips direction by pi on reflection. See Fig 2.2 in [2].
             r = (nk ** 2 * qj - nj ** 2 * qk) / (nk ** 2 * qj + nj ** 2 * qk)
             t = (2 * nj * nk * qj) / (qj * nk ** 2 + qk * nj ** 2)
         elif self.pol in ['s', 'TE']:
@@ -321,7 +321,7 @@ class TransferMatrix:
         field_squared = abs(field) ** 2
         return {'z': z, 'field': field, 'field_squared': field_squared}
 
-    def get_layer_indices(self, layer, z_step=1):
+    def get_layer_index(self, layer, z_step=1):
         """Return z array indices for a chosen layer."""
         z = np.arange((z_step / 2.0), self.d_cumulative[-1], z_step)
         # get z_mat - specifies what layer the corresponding point in z is in
@@ -330,7 +330,7 @@ class TransferMatrix:
         z_mat = sum(comp1 > comp2, 0)
         return np.where(z_mat == layer)
 
-    def _s11(self, n_11):
+    def calc_s11(self, n_11):
         """Return s_11 of s-matrix for a given n_11."""
         self.n_11 = n_11
         s = self.s_matrix()
@@ -349,7 +349,7 @@ class TransferMatrix:
         n = self.n_list.real
         assert self.supports_guiding(), ValueError('This structure does not support wave guiding.')
         # Find supported guiding modes - max(n_clad) > n_11 >= max(n)
-        n_11 = roots(self._s11, 1 * max(n[0], n[-1]), max(n), verbose=verbose)
+        n_11 = roots(self.calc_s11, 1 * max(n[0], n[-1]), max(n), verbose=verbose)
         # Flip array to arrange from lowest to highest mode (highest to lowest n_11)
         n_11 = n_11[::-1]
 
@@ -514,7 +514,7 @@ class TransferMatrix:
 
     def plot_reflectivity_vs_angle(self):
         """ Reflection vs AOI"""
-
+        th_init = self.th
         th_list = np.linspace(0, 90, 1000, endpoint=False)
         rs_list = []
         rp_list = []
@@ -544,10 +544,13 @@ class TransferMatrix:
         ax1.legend()
         ax2.legend()
         plt.show()
+        self.set_incident_angle(th_init, units='degrees')
+        return th_list, rs_list, rp_list
 
     def plot_reflectivity_vs_wavelength(self, lam_lower=500, lam_upper=1500):
         """ Reflection coefficient for Fabry-Perot microcavity (designed at 1.55um) vs lam0"""
 
+        lam_init = self.lam_vac
         lam_list = np.linspace(lam_lower, lam_upper, 2000, endpoint=True)
         rs_list = []
         rp_list = []
@@ -570,4 +573,5 @@ class TransferMatrix:
         plt.legend()
         plt.show()
 
+        self.set_vacuum_wavelength(lam_init)
         return lam_list, rs_list, rp_list
