@@ -321,7 +321,7 @@ class TransferMatrix:
         field_squared = abs(field) ** 2
         return {'z': z, 'field': field, 'field_squared': field_squared}
 
-    def get_layer_index(self, layer, z_step=1):
+    def get_layer_position_indices(self, layer, z_step=1):
         """Return z array indices for a chosen layer."""
         z = np.arange((z_step / 2.0), self.d_cumulative[-1], z_step)
         # get z_mat - specifies what layer the corresponding point in z is in
@@ -352,6 +352,10 @@ class TransferMatrix:
         n_11 = roots(self.calc_s11, 1 * max(n[0], n[-1]), max(n), verbose=verbose)
         # Flip array to arrange from lowest to highest mode (highest to lowest n_11)
         n_11 = n_11[::-1]
+
+        # TODO: check
+        ind = np.where(n_11 - min(n) < 0.01)
+        n_11 = np.delete(n_11, ind)
 
         if normalised:
             return n_11
@@ -414,23 +418,23 @@ class TransferMatrix:
         t = 1 / s[0, 0]
         return r, t
 
-    def calc_reflection_and_transmission(self, correction=True):
+    def calc_reflectance_and_transmittance(self, correction=True):
         """
         Return the reflectance and transmittance of the structure.
         Correction option for transmission due to beam expansion:
             https://en.wikipedia.org/wiki/Fresnel_equations
         """
         r, t = self.calc_r_and_t()
-        reflection = abs(r) ** 2
-        transmission = abs(t) ** 2
+        reflectance = abs(r) ** 2
+        transmittance = abs(t) ** 2
         if correction:
             n_1 = self.n_list[0].real
             n_2 = self.n_list[-1].real
             th_out = snell(n_1, n_2, self.th)
             rho = n_2 / n_1
             m = np.cos(th_out) / np.cos(self.th)
-            transmission *= rho * m
-        return reflection, transmission
+            transmittance *= rho * m
+        return reflectance, transmittance
 
     def calc_absorption(self):
         n = self.n_list
@@ -558,10 +562,10 @@ class TransferMatrix:
             # Do calculations
             self.set_vacuum_wavelength(lam)
             self.set_polarization('s')
-            r, t = self.calc_reflection_and_transmission(correction=False)
+            r, t = self.calc_reflectance_and_transmittance(correction=False)
             rs_list.append(r)
             self.set_polarization('p')
-            r, t = self.calc_reflection_and_transmission(correction=False)
+            r, t = self.calc_reflectance_and_transmittance(correction=False)
             rp_list.append(r)
 
         # Plot

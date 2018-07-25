@@ -1,6 +1,7 @@
 import logging
 import time
 
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy.integrate as integrate
 from numpy import pi, sin, sum, exp, conj
@@ -396,6 +397,12 @@ class SPE(TransferMatrix):
         logging.info('Calculating group velocity for each mode...')
         vg_tm = self.calc_group_velocity()
         logging.info('Done!')
+
+        # if vg_te == 0 or vg_tm == 0:
+        #     # Average for a randomly orientated dipole
+        #     spe['avg'] = (2 / 3) * spe['parallel'] + (1 / 3) * spe['perpendicular']
+        #     return {'z': z_pos, 'spe': spe}
+
         logging.info('Evaluating guided mode spontaneous emission profiles:')
         for layer in range(min(z_mat), max(z_mat) + 1):
             # logging.info simulation information to command line
@@ -503,8 +510,54 @@ class SPE(TransferMatrix):
         if self.supports_guiding():
             logging.info("Structure supports waveguiding. Calculating guided modes...")
             guided = self.calc_spe_structure_guided(z_step=z_step)['spe']
+            total = leaky['avg'] + guided['avg']
             logging.info('Done!')
-            return {'z': z, 'leaky': leaky, 'guided': guided}
+            return {'z': z, 'leaky': leaky, 'guided': guided, 'total': total}
         else:
             logging.info("Structure does not support waveguiding.")
-            return {'z': z, 'leaky': leaky}
+            return {'z': z, 'leaky': leaky, 'total': leaky['avg']}
+
+
+# Helper Functions
+def plot_two_structures(st1, st2, result1, result2, param):
+    fig, ax1 = plt.subplots()
+    ax1.plot(result1['z'], result1[param], label='St1')
+    for i in [i for i in st1.get_layer_boundaries()[:-1]]:
+        ax1.axvline(i, color='k', ls='-')
+    ax1.plot(result2['z'], result2[param], label='St2')
+    for i in [i for i in st2.get_layer_boundaries()[:-1]]:
+        ax1.axvline(i, color='k', ls='-')
+    ax1.set_ylabel('$\Gamma / \Gamma_0$')
+    ax1.set_xlabel('Position z (nm)')
+    ax1.legend()
+    # plt.show()
+
+
+def purcell_factor(st1, st2, layer):
+    result1 = st1.calc_spe_structure(th_pow=11)
+    spe1 = result1['total']
+    ind1 = st1.get_layer_position_indices(layer)
+    # Average layer SPE rate
+    fp1 = np.mean(spe1[ind1])
+
+    result2 = st2.calc_spe_structure(th_pow=11)
+    spe2 = result2['total']
+    ind2 = st2.get_layer_position_indices(layer)
+    # Average layer SPE rate
+    fp2 = np.mean(spe2[ind2])
+    # Average layer purcell factor
+    fp = fp2 / fp1
+    print('Avg. Purcell Factor over layer = {:e}'.format(fp))
+
+    # Plot the SPE avg for each structure vs z
+    plot_two_structures(st1, st2, result1, result2, 'total')
+
+    # Plot purcell factor of layer at each z
+    fig, ax1 = plt.subplots()
+    z = result2['z']
+    ax1.plot(z[ind1], spe2[ind2] / spe1[ind1])
+    # Labels
+    ax1.set_ylabel('Purcell factor (St1/St2)')
+    ax1.set_xlabel('Position z (nm)')
+    plt.show()
+    return fp

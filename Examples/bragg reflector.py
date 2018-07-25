@@ -33,7 +33,7 @@ def dbr_reflectivity():
     # st.show_structure()
     # st.info()
 
-    r, t = st.calc_reflection_and_transmission(correction=False)
+    r, t = st.calc_reflectance_and_transmittance(correction=False)
     print('Bottom DBR: R={0:.3f}% and T={1:.3f}%'.format(100 * r, 100 * t))
 
     # Setup simulation
@@ -52,7 +52,7 @@ def dbr_reflectivity():
     st.set_incident_angle(0, units='degrees')
     # st.show_structure()
     # st.info()
-    r, t = st.calc_reflection_and_transmission(correction=False)
+    r, t = st.calc_reflectance_and_transmittance(correction=False)
     print('Top DBR: R={0:.3f}% and T={1:.3f}%'.format(100 * r, 100 * t))
 
     # Whole DBR

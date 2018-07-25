@@ -424,7 +424,7 @@ def purcell_factor(sample, n1, n2, layer):
         spe1 = result1['leaky']['avg'] + result1['guided']['avg']
     except KeyError:
         spe1 = result1['leaky']['avg']
-    ind = st1.get_layer_index(layer)
+    ind = st1.get_layer_position_indices(layer)
     fp1 = np.mean(spe1[ind])
 
     # Structure 2
@@ -440,7 +440,7 @@ def purcell_factor(sample, n1, n2, layer):
         spe2 = result2['leaky']['avg'] + result2['guided']['avg']
     except KeyError:
         spe2 = result2['leaky']['avg']
-    ind = st1.get_layer_index(layer)
+    ind = st1.get_layer_position_indices(layer)
     fp2 = np.mean(spe2[ind])
 
     z = result1['z']
