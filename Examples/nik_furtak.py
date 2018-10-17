@@ -72,12 +72,12 @@ def fig4():
     # Create plot
     f, ax = plt.subplots()
 
-    for n in [1, 3]:
+    for n in [3.45]:
         print('Evaluating n={:g}'.format(n))
         # Create structure
         st = SPE()
-        st.add_layer(4 * units, n)
-        st.add_layer(4 * units, 1.5)
+        st.add_layer(7 * units, n)
+        st.add_layer(7 * units, 1)
         st.set_vacuum_wavelength(lam0)
         st.info()
         # Calculate spontaneous emission over whole structure
@@ -87,28 +87,28 @@ def fig4():
         z -= st.get_structure_thickness() / 2
         spe = result['leaky']['avg']
         # Plot spontaneous emission rates
-        ax.plot(z/units, spe, label=('n='+str(n)), lw=2)
+        ax.plot(z / units, spe, label=('n=' + str(n)), lw=2)
         ax.axhline(y=n, xmin=0, xmax=0.4, ls='dotted', color='k', lw=2)
 
         # Plot internal layer boundaries
         for z in st.get_layer_boundaries()[:-1]:
             # Shift so centre of structure at z=0
             z -= st.get_structure_thickness() / 2
-            ax.axvline(z/units, color='k', lw=2)
+            ax.axvline(z / units, color='k', lw=2)
 
-    ax.axhline(1.5, ls='--', color='k', lw=2)
+    ax.axhline(1, ls='--', color='k', lw=2)
     ax.set_title('Spontaneous emission rate at boundary for semi-infinite media. RHS n=1.5.')
     ax.set_ylabel('$\Gamma / \Gamma_0$')
     ax.set_xlabel('Position z ($\lambda$/2$\pi$)')
     plt.legend(title='LHS n')
     plt.tight_layout()
     if SAVE:
-        plt.savefig('../Images/spe_vs_n.png', dpi=300)
+        plt.savefig('../Images/Si_to_air_fixedR.png', dpi=900)
     plt.show()
 
 
 if __name__ == "__main__":
-    SAVE = False
+    SAVE = True
 
-    fig3()
+    # fig3()
     fig4()

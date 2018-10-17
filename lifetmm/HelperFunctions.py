@@ -1,6 +1,8 @@
+import logging
+
 import numpy as np
 import scipy as sp
-import logging
+
 log = logging.getLogger(__name__)
 
 
@@ -62,8 +64,8 @@ def roots(f, a, b, eps=1e-5, verbose=True):
 # Optical Functions
 def snell(n_1, n_2, th_1):
     """
-    Return angle theta in layer 2 with refractive index n_2, assuming
-    it has angle th_1 in layer with refractive index n_1. Use Snell's law. Note
+    Return angle theta in layer 2 with refractive index n_2, assuming the incoming
+    light has angle th_1 in layer with refractive index n_1. Use Snell's law. Note
     that "angles" may be complex!!
     """
     # Important that the arcsin here is scipy.arcsin, not numpy.arcsin!! (They

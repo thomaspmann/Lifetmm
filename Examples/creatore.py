@@ -466,6 +466,7 @@ def fig13b():
         plt.savefig('../Images/creatore_fig13b')
     plt.show()
 
+
 if __name__ == "__main__":
     SAVE = False
 
@@ -478,11 +479,11 @@ if __name__ == "__main__":
     air = 1
 
     fig3()
-    fig4()
-    fig5()
-    fig6()
-    fig7()
-    fig8()
-    fig9()
-    fig13a()
-    fig13b()
+    # fig4()
+    # fig5()
+    # fig6()
+    # fig7()
+    # fig8()
+    # fig9()
+    # fig13a()
+    # fig13b()

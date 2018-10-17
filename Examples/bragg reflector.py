@@ -76,10 +76,10 @@ def dbr_reflectivity():
     # st.show_structure()
     st.info()
     # Reflection coefficient for Fabry-Perot microcavity (at 1.55um) vs AOI
-    st.plot_reflectivity_vs_angle()
+    st.calc_reflectivity_vs_angle()
     # Reflection coefficient for Fabry-Perot microcavity (at 1.55um) vs wavelength.
     # Drop in refletance gives the resonance wavelength of the cavity.
-    st.plot_reflectivity_vs_wavelength(1500, 1600)
+    st.calc_reflectivity_vs_wavelength(1500, 1600)
 
 if __name__ == "__main__":
     dbr_reflectivity()

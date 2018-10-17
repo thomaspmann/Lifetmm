@@ -41,7 +41,7 @@ def example1():
     st.set_vacuum_wavelength(lam0)
     # st.show_structure()
     st.info()
-    st.plot_reflectivity_vs_wavelength()
+    st.calc_reflectivity_vs_wavelength()
 
 
 def example2():
@@ -66,7 +66,7 @@ def example2():
     st.set_vacuum_wavelength(lam0)
     # st.show_structure()
     st.info()
-    st.plot_reflectivity_vs_angle()
+    st.calc_reflectivity_vs_angle()
 
 
 if __name__ == "__main__":

@@ -436,6 +436,111 @@ class TransferMatrix:
             transmittance *= rho * m
         return reflectance, transmittance
 
+    def calc_reflectivity_vs_angle(self, th_lower=0, th_upper=90, num=1E4, plot=True):
+        """ Reflection vs AOI"""
+        th_init = self.th
+        th_list = np.linspace(th_lower, th_upper, num, endpoint=False)
+        rs_list = []
+        rp_list = []
+        for theta in th_list:
+            self.set_incident_angle(theta, units='degrees')
+            self.set_polarization('s')
+            rs, t = self.calc_r_and_t()
+            rs_list.append(rs)
+            self.set_polarization('p')
+            rp, t = self.calc_r_and_t()
+            rp_list.append(rp)
+        rs_list = np.array(rs_list)
+        rp_list = np.array(rp_list)
+
+        if plot:
+            fig, (ax1, ax2) = plt.subplots(2, sharex='row')
+            ax1.set_ylabel(r'Reflection ($|r|^2)$')
+            ax1.plot(th_list, abs(rs_list) ** 2, '--', label='s')
+            ax1.plot(th_list, abs(rp_list) ** 2, label='p')
+            ax1.plot(th_list, (abs(rs_list) ** 2 + abs(rp_list) ** 2) / 2, label='Unpolarised')
+            ax2.set_ylabel('Reflection phase (deg)')
+            ax2.plot(th_list, np.angle(rs_list, deg=True), '--', label='s')
+            # Note r_p is defined where the E field flips on reflection [2] pg.22
+            # therefore we multiply by e^(i*pi) to shift by 180 degrees so that a
+            # negative angle implies a flipped E field
+            ax2.plot(th_list, np.angle(-1 * rp_list, deg=True), label='p')
+            ax2.set_xlabel('AOI (degrees)')
+            ax1.legend()
+            ax2.legend()
+            plt.show()
+            self.set_incident_angle(th_init, units='degrees')
+            return {'th_list': th_list, 'rs_list': rs_list, 'rp_list': rp_list, 'fig': fig}
+        else:
+            return {'th_list': th_list, 'rs_list': rs_list, 'rp_list': rp_list}
+
+    def calc_transmission_vs_angle(self, th_lower=0, th_upper=90, num=1E4, plot=True):
+        """
+        Dependence of the power reflectivity and phase on the angle of incidence.
+        Light incident from medium of refractive index n1 to medium of refractive index n2
+        """
+        th_list = np.linspace(th_lower, th_upper, num, endpoint=False)
+        ts_list = []
+        tp_list = []
+        for theta in th_list:
+            self.set_incident_angle(theta, units='degrees')
+            self.set_polarization('s')
+            rs, ts = self.calc_r_and_t()
+            ts_list.append(ts)
+            self.set_polarization('p')
+            rp, tp = self.calc_r_and_t()
+            tp_list.append(tp)
+        ts_list = np.array(ts_list)
+        tp_list = np.array(tp_list)
+
+        if plot:
+            fig, (ax1, ax2) = plt.subplots(2, sharex='row')
+            ax1.set_ylabel(r'Transmission ($|t|^2)$')
+            ax1.plot(th_list, abs(ts_list) ** 2, '--', label='s')
+            ax1.plot(th_list, abs(tp_list) ** 2, label='p')
+            ax1.plot(th_list, (abs(ts_list) ** 2 + abs(tp_list) ** 2) / 2, label='Unpolarised')
+            ax2.set_ylabel('Transmitted phase (deg)')
+            ax2.plot(th_list, np.angle(ts_list, deg=True), '--', label='s')
+            # Note r_p is defined where the E field flips on reflection [2] pg.22
+            # therefore we multiply by e^(i*pi) to shift by 180 degrees so that a negative angle implies a flipped E field
+            ax2.plot(th_list, np.angle(-1 * tp_list, deg=True), label='p')
+            ax2.set_xlabel('AOI (degrees)')
+            ax1.legend()
+            ax2.legend()
+            plt.show()
+            return {'th_list': th_list, 'ts_list': ts_list, 'tp_list': tp_list, 'fig': fig}
+        else:
+            return {'th_list': th_list, 'ts_list': ts_list, 'tp_list': tp_list}
+
+    def calc_reflectivity_vs_wavelength(self, lam_lower=500, lam_upper=1500, num=1000, plot=True):
+        """ Reflection coefficient vs lam0"""
+
+        lam_init = self.lam_vac
+        lam_list = np.linspace(lam_lower, lam_upper, num, endpoint=True)
+        rs_list = []
+        rp_list = []
+        for lam in lam_list:
+            # Do calculations
+            self.set_vacuum_wavelength(lam)
+            self.set_polarization('s')
+            r, t = self.calc_reflectance_and_transmittance(correction=False)
+            rs_list.append(r)
+            self.set_polarization('p')
+            r, t = self.calc_reflectance_and_transmittance(correction=False)
+            rp_list.append(r)
+
+        if plot:
+            fig, ax = plt.subplots()
+            ax.plot(lam_list, rs_list, '--', label='s')
+            ax.plot(lam_list, rp_list, label='p')
+            ax.set_xlabel('Wavelength (nm)')
+            ax.set_ylabel(r'Reflection ($|r|^2)$')
+            plt.legend()
+            plt.show()
+
+        self.set_vacuum_wavelength(lam_init)
+        return lam_list, rs_list, rp_list
+
     def calc_absorption(self):
         n = self.n_list
         # Absorption coefficient in 1/cm
@@ -515,67 +620,3 @@ class TransferMatrix:
             return 'Guided'
         else:
             return 'Leaky'
-
-    def plot_reflectivity_vs_angle(self):
-        """ Reflection vs AOI"""
-        th_init = self.th
-        th_list = np.linspace(0, 90, 1000, endpoint=False)
-        rs_list = []
-        rp_list = []
-        for theta in th_list:
-            self.set_incident_angle(theta, units='degrees')
-            self.set_polarization('s')
-            rs, t = self.calc_r_and_t()
-            rs_list.append(rs)
-            self.set_polarization('p')
-            rp, t = self.calc_r_and_t()
-            rp_list.append(rp)
-        rs_list = np.array(rs_list)
-        rp_list = np.array(rp_list)
-
-        # Plot
-        fig, (ax1, ax2) = plt.subplots(2, sharex='row')
-        ax1.set_ylabel(r'Reflection ($|r|^2)$')
-        ax1.plot(th_list, abs(rs_list) ** 2, '--', label='s')
-        ax1.plot(th_list, abs(rp_list) ** 2, label='p')
-        ax1.plot(th_list, (abs(rs_list) ** 2 + abs(rp_list) ** 2) / 2, label='Unpolarised')
-        ax2.set_ylabel('Reflection phase (deg)')
-        ax2.plot(th_list, np.angle(rs_list, deg=True), '--', label='s')
-        # Note r_p is defined where the E field flips on reflection [2] pg.22
-        # therefore we multiply by e^(i*pi) to shift by 180 degrees so that a negative angle implies a flipped E field
-        ax2.plot(th_list, np.angle(-1 * rp_list, deg=True), label='p')
-        ax2.set_xlabel('AOI (degrees)')
-        ax1.legend()
-        ax2.legend()
-        plt.show()
-        self.set_incident_angle(th_init, units='degrees')
-        return th_list, rs_list, rp_list
-
-    def plot_reflectivity_vs_wavelength(self, lam_lower=500, lam_upper=1500):
-        """ Reflection coefficient for Fabry-Perot microcavity (designed at 1.55um) vs lam0"""
-
-        lam_init = self.lam_vac
-        lam_list = np.linspace(lam_lower, lam_upper, 2000, endpoint=True)
-        rs_list = []
-        rp_list = []
-        for lam in lam_list:
-            # Do calculations
-            self.set_vacuum_wavelength(lam)
-            self.set_polarization('s')
-            r, t = self.calc_reflectance_and_transmittance(correction=False)
-            rs_list.append(r)
-            self.set_polarization('p')
-            r, t = self.calc_reflectance_and_transmittance(correction=False)
-            rp_list.append(r)
-
-        # Plot
-        fig, ax = plt.subplots()
-        ax.plot(lam_list, rs_list, '--', label='s')
-        ax.plot(lam_list, rp_list, label='p')
-        ax.set_xlabel('Wavelength (nm)')
-        ax.set_ylabel(r'Reflection ($|r|^2)$')
-        plt.legend()
-        plt.show()
-
-        self.set_vacuum_wavelength(lam_init)
-        return lam_list, rs_list, rp_list

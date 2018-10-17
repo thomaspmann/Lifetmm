@@ -1,3 +1,9 @@
+#######################      NOTE      #######################
+# Easier to just use FFMPEG:
+# ffmpeg -framerate 20 -i %5d.png -s:v 1280x720 -c:v libx264 \
+# -profile:v high -crf 20 -pix_fmt yuv420p vid.mp4
+##############################################################
+
 import glob
 import os
 
@@ -25,6 +31,3 @@ ani.save("movie.mp4", writer=writer)
 
 plt.show()
 
-# Easier to just use FFMPEG:
-# ffmpeg -framerate 20 -i %5d.png -s:v 1280x720 -c:v libx264 \
-# -profile:v high -crf 20 -pix_fmt yuv420p vid.mp4
