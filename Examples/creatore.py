@@ -16,7 +16,7 @@ def fig3():
     """
     # Create structure
     st = SPE()
-    st.add_layer(lam0, si)
+    st.add_layer(lam0, 1.45)
     st.add_layer(lam0, air)
     st.set_vacuum_wavelength(lam0)
     st.info()
@@ -468,7 +468,7 @@ def fig13b():
 
 
 if __name__ == "__main__":
-    SAVE = False
+    SAVE = True
 
     # Set vacuum wavelength
     lam0 = 1550

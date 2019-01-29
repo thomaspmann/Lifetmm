@@ -79,7 +79,7 @@ def supplementary_material1():
     # Create structure
     st = SPE()
     st.add_layer(0.05 * lam0, 3.48)
-    st.add_layer(10, 2)
+    st.add_layer(50, 2)
     st.add_layer(0.05 * lam0, 1)
     st.set_vacuum_wavelength(lam0)
     st.info()
@@ -98,7 +98,7 @@ def supplementary_material1():
     ax1.plot(z, res['leaky']['parallel'], '--', label=r'$\parallel$')
     ax1.plot(z, res['leaky']['perpendicular'], '-.', label=r'$\bot$')
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
-    ax1.set_xlabel('Position z ($\lambda$)')
+    ax1.set_xlabel('Position z [$\lambda$]')
     ax1.legend(fontsize='small')
     ax1.set_ylim(0, ax1.get_ylim()[1])
     bounds = ax1.get_ylim()
@@ -119,6 +119,8 @@ def supplementary_material1():
     for zb in st.get_layer_boundaries()[:-1]:
         zb = st.calc_z_to_lambda(zb)
         ax1.axvline(x=zb, color='k', lw=2)
+
+    ax1.set_xlim([min(z), max(z)])
 
     if SAVE:
         plt.savefig('../Images/SupplementaryMaterial1')
@@ -137,7 +139,7 @@ def supplementary_material2():
     # Create structure
     st = SPE()
     st.add_layer(0.6 * lam0, 3.48)
-    st.add_layer(500, 2)
+    st.add_layer(lam0, 2)
     st.add_layer(0.6 * lam0, 1)
     st.set_vacuum_wavelength(lam0)
     st.info()
@@ -156,7 +158,7 @@ def supplementary_material2():
     ax1.plot(z, res['leaky']['parallel'], '--', label=r'$\parallel$')
     ax1.plot(z, res['leaky']['perpendicular'], '-.', label=r'$\bot$')
     ax1.set_ylabel('$\Gamma / \Gamma_0$')
-    ax1.set_xlabel('Position z ($\lambda$)')
+    ax1.set_xlabel('Position z [$\lambda$]')
     ax1.legend(fontsize='small')
     ax1.set_ylim(0, ax1.get_ylim()[1])
     bounds = ax1.get_ylim()
@@ -177,7 +179,7 @@ def supplementary_material2():
     for zb in st.get_layer_boundaries()[:-1]:
         zb = st.calc_z_to_lambda(zb)
         ax1.axvline(x=zb, color='k', lw=2)
-
+    ax1.set_xlim([min(z), max(z)])
     if SAVE:
         plt.savefig('../Images/SupplementaryMaterial2')
     plt.show()
@@ -249,8 +251,8 @@ def further_work1():
 # Update plot parameters for publication
 def update():
     # Set figure size
-    WIDTH = 412.56  # the number (in pt) latex spits out when typing: \the\linewidth (paper 246, thesis 412.56)
-    FACTOR = 0.8  # the fraction of the width you'd like the figure to occupy
+    WIDTH = 412.564  # the number (in pt) latex spits out when typing: \the\linewidth (paper 246, thesis 412.56)
+    FACTOR = 0.75  # the fraction of the width you'd like the figure to occupy
     fig_width_pt = WIDTH * FACTOR
 
     inches_per_pt = 1.0 / 72.27
@@ -266,7 +268,7 @@ def update():
         'text.usetex': True,
         'font.family': 'serif',
         'font.serif': 'cm',
-        'savefig.dpi': 900,
+        'savefig.dpi': 300,
         'savefig.format': 'pdf',
         'savefig.bbox': 'tight',
         'figure.figsize': fig_dims,
@@ -275,10 +277,10 @@ def update():
 
 
 if __name__ == "__main__":
-    SAVE = True
+    SAVE = False
 
     update()
-    # supplementary_material1()
+    supplementary_material1()
     supplementary_material2()
 
     # fig7()

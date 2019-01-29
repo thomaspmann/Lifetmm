@@ -353,7 +353,6 @@ class TransferMatrix:
         # Flip array to arrange from lowest to highest mode (highest to lowest n_11)
         n_11 = n_11[::-1]
 
-        # TODO: check
         ind = np.where(n_11 - min(n) < 0.01)
         n_11 = np.delete(n_11, ind)
 

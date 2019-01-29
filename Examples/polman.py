@@ -72,7 +72,7 @@ def fig4():
     # Create plot
     f, ax = plt.subplots()
 
-    for n in [1, 3]:
+    for n in [1, 2]:
         print('Evaluating n={:g}'.format(n))
         # Create structure
         st = SPE()
@@ -110,5 +110,5 @@ def fig4():
 if __name__ == "__main__":
     SAVE = False
 
-    fig3()
-    fig4()
+    # fig3()
+    # fig4()
